@@ -69,19 +69,6 @@ inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     };
 ```
 
-Then, farther down, add the following. (You will add the IP address later in this guide.)
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
 Test it out:
 
 ```bash
@@ -205,11 +192,7 @@ Once booted, you will see a QR code and text similar to this:
 │ Press 'Ctrl-C' for console access
 ```
 
-Take note of the IP address displayed above, either for wireless or lan, depending on how you connected. Then return to the setup machine and update this line that you added to the `clan.nix` file earlier; add in the actual IP address:
-
-```nix
-settings.host = "<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS
-```
+Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure in step 11.
 
 :::admonition[Important]{type=note}
 If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
@@ -237,17 +220,17 @@ You should now be online. You can test it by:
 ping www.clan.lol
 ```
 
-Press **Ctrl+D** to return to the installer app, and note the IP address, and add it to the `clan.nix` file as described earlier.
+Press **Ctrl+D** to return to the installer app, and note the installer IP address for the `--target-host` steps below.
 
 ## 8. Get Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
 ```bash
-clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
+clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
-Replace `<IP-ADDRESS>` with the IP address of your target machine.
+Replace `<INSTALLER-IP>` with the installer IP address noted above.
 
 You will be asked to enter "y" to proceed.
 
@@ -270,10 +253,10 @@ clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/dis
 Install NixOS on the target machine by typing:
 
 ```bash
-clan machines install test-machine --target-host root@<IP-ADDRESS>
+clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
-Replace `<IP-ADDRESS>` with the target machine's IP address as before.
+Replace `<INSTALLER-IP>` with the installer IP address as before.
 
 You will be asked whether you want to install; type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on) and a root password (you can either create one or let Clan assign a random one).
 
@@ -288,14 +271,29 @@ clan vars generate test-machine --no-sandbox
 You may need to re-enter the WiFi credentials and root password. Then run the install again:
 
 ```bash
-clan machines install test-machine --target-host <USER>@<IP-ADDRESS>
+clan machines install test-machine --target-host <USER>@<INSTALLER-IP>
 ```
 
 After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
-## 11. Test Connection
+## 11. Configure Access and Connect
 
-Now you can try connecting to the remote machine:
+After installation the machine reboots into the installed system and gets a **new IP address** — the installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in at the machine's console and run `ip -4 addr`), then tell Clan how to reach the machine.
+
+Find the `inventory.instances` line in `clan.nix` and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
 
 ```bash
 clan ssh test-machine
@@ -304,7 +302,7 @@ clan ssh test-machine
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
 
 ```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
 ```
 
 Then try again:
