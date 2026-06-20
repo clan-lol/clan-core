@@ -214,7 +214,7 @@ Now let's look at how you can use Clan to install and remove packages on a targe
 
 For this demonstration we'll add three command-line packages: `bat`, `btop`, and `tldr`. In clan.nix, under inventory.instances, add the following lines:
 
-```text {.nix title="clan.nix" hl_lines="2-6"}
+```nix [clan.nix] {2-6}
   inventory.instances = {
     packages = {
       roles.default.machines."test-machine".settings = {
@@ -275,7 +275,7 @@ When you need to add a new user, you can do so right from within the clan.nix fi
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
-```text {.nix title="clan.nix" hl_lines="2-9"}
+```nix [clan.nix] {2-9}
   inventory.instances = { # Add the following under this line
     user-alice = {
       module.name = "users";
@@ -313,7 +313,7 @@ cat ~/.ssh/id_ed25519.pub
 
 Then open `machines/test-machine/configuration.nix`. Add the following, before the closing brace:
 
-```text {.nix title="clan.nix" hl_lines="8-10"}
+```nix [machines/test-machine/configuration.nix] {8-10}
 {
   imports = [
 
@@ -347,7 +347,7 @@ replacing `<IP-ADDRESS>` with the Hetzner server's IP address.
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
-```text {.nix title="clan.nix" hl_lines="7"}
+```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
