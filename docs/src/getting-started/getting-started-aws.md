@@ -191,7 +191,7 @@ You will be asked to enter "y" to proceed.
 At some point, you will likely see "Connection timed out" occur multiple times. Please be patient, as the server is rebooting during this time, and it will eventually connect.
 :::
 
-## STep 7. Add a Disk Configuration.
+## Step 7. Add a Disk Configuration
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
