@@ -192,7 +192,7 @@ Once booted, you will see a QR code and text similar to this:
 │ Press 'Ctrl-C' for console access
 ```
 
-Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure in step 11.
+Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure in step 12.
 
 :::admonition[Important]{type=note}
 If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
@@ -222,7 +222,29 @@ ping www.clan.lol
 
 Press **Ctrl+D** to return to the installer app, and note the installer IP address for the `--target-host` steps below.
 
-## 8. Get Hardware Configuration
+## 8. Configure SSH access
+
+Copy your public key to the installer so the following `clan` commands can connect over SSH. When prompted, enter the root password shown on the installer screen:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<INSTALLER-IP>
+```
+
+Confirm that you can log in:
+
+```bash
+ssh root@<INSTALLER-IP>
+```
+
+You should see the installer prompt:
+
+```console
+[root@nixos-installer:~]#
+```
+
+This authorizes your key for the running installer session only. It is not written to the USB drive, so repeat this step if you reboot the installer.
+
+## 9. Get Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
@@ -234,7 +256,7 @@ Replace `<INSTALLER-IP>` with the installer IP address noted above.
 
 You will be asked to enter "y" to proceed.
 
-## 9. Add a disk configuration
+## 10. Add a disk configuration
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
@@ -248,7 +270,7 @@ This will generate an error; note the disk ID it prints out (typically starting 
 clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
-## 10. Install
+## 11. Install
 
 Install NixOS on the target machine by typing:
 
@@ -276,7 +298,7 @@ clan machines install test-machine --target-host <USER>@<INSTALLER-IP>
 
 After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
-## 11. Configure Access and Connect
+## 12. Configure Access and Connect
 
 After installation the machine reboots into the installed system and gets a **new IP address** — the installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in at the machine's console and run `ip -4 addr`), then tell Clan how to reach the machine.
 
