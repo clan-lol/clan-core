@@ -67,6 +67,7 @@
     }
 
     &.is-focused {
+      pointer-events: auto;
       transform: translateX(0);
     }
   }
