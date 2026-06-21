@@ -3,7 +3,7 @@
   import { Docs, getDocsContext } from "$lib/models/docs.ts";
   import NavToggler from "./NavToggler.svelte";
   import { resolve } from "$app/paths";
-  import SearchToggler from "./SearchToggler.svelte";
+  import SearchIcon from "$lib/assets/icons/search.svg?component";
   import VersionSwitcher from "./VersionSwitcher.svelte";
 
   const docs = getDocsContext();
@@ -19,7 +19,13 @@
     </div>
     <ol>
       <li>
-        <SearchToggler />
+        <button
+          class="search-button"
+          title="Search"
+          onclick={(): void => {
+            docs.topbarMode = "search";
+          }}><SearchIcon height="18" /></button
+        >
       </li>
       <li>
         <NavToggler />
@@ -30,10 +36,8 @@
 
 <style>
   .container {
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
+    padding-inline: var(--docs-gutter-inline-start)
+      var(--docs-gutter-inline-end);
     background: var(--bg-color);
     transition: var(--top-bar-toggle-duration);
 
@@ -68,6 +72,14 @@
     display: flex;
   }
 
+  .search-button {
+    padding: 0 14px;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
   .logo {
     display: flex;
     gap: 10px;
@@ -82,12 +94,6 @@
   @media (--docs-tablet) {
     .container {
       transition: none;
-    }
-  }
-
-  @media (--docs-desktop) {
-    .container {
-      padding: 0 24px;
     }
   }
 </style>

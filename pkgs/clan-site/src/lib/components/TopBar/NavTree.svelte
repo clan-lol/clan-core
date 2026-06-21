@@ -45,10 +45,8 @@
 <style>
   nav {
     display: none;
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
+    padding-inline: var(--docs-gutter-inline-start)
+      var(--docs-gutter-inline-end);
     color: var(--secondary-fg-color);
     font-weight: 500;
     font-size: 14px;
@@ -180,7 +178,6 @@
   @media (--docs-desktop) {
     nav {
       inline-size: 300px;
-      padding-inline-start: 24px;
     }
   }
 </style>
