@@ -50,10 +50,8 @@
     inset-inline: 0;
     display: flex;
     block-size: 60px;
-    /* safearea is always absolute */
-    /* stylelint-disable-next-line csstools/use-logical */
-    padding-left: max(14px, env(safe-area-inset-left));
-    padding-right: max(14px, env(safe-area-inset-right));
+    padding-inline: var(--docs-gutter-inline-start)
+      var(--docs-gutter-inline-end);
 
     &.real {
       background: color-mix(in srgb, var(--bg-color), #000 30%);

@@ -1,5 +1,7 @@
 /* Light mode (default) */
 :root {
+  --docs-gutter-inline-start: max(14px, env(safe-area-inset-left));
+  --docs-gutter-inline-end: max(14px, env(safe-area-inset-right));
   --fg-color: #000;
   --secondary-fg-color: #2c4347;
   --secondary-shadow-color: #2c4347;
@@ -88,6 +90,13 @@
   --heading-border-color: #bbb;
   --toc-shadow-color: #00000020;
   --top-bar-toggle-duration: 400ms;
+}
+
+@media (--docs-desktop) {
+  :root {
+    --docs-gutter-inline-start: 24px;
+    --docs-gutter-inline-end: 24px;
+  }
 }
 
 /* ── Dark mode */
