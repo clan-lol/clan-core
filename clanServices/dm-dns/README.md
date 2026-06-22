@@ -14,13 +14,13 @@ at `https://myservice.<clan domain>` is reachable from any machine in your clan
 with this service enabled. This allows easily hosting clan-internal services.
 
 It is recommended to combine this service with the [pki
-service](https://clan.lol/docs/unstable/services/official/pki), to
+service](/docs/services/official/pki), to
 have your internal services be secured with SSL.
 
 This service requires the following dependencies to work:
 
-- [**data-mesher**](https://clan.lol/docs/unstable/services/official/data-mesher): Must be configured and running on all machines
-- **endpoints exports**: Other services must export [`endpoints.hosts`](https://clan.lol/docs/unstable/reference/options/clan_service/#exports) for DNS
+- [**data-mesher**](/docs/services/official/data-mesher): Must be configured and running on all machines
+- **endpoints exports**: Other services must export [`endpoints.hosts`](/docs/reference/options/clan_service/#exports) for DNS
   entries to be generated
 
 ## Usage
