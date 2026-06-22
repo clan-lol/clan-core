@@ -6,7 +6,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.machines.update import _build_darwin_rebuild_cmd
+from clan_lib.machines.update import (
+    _build_darwin_rebuild_cmd,
+    upload_sources,
+)
 
 from clan_cli.machines.update import get_machines_for_update, run_update_with_network
 from clan_cli.tests.fixtures_flakes import FlakeForTest
@@ -225,6 +228,7 @@ def _make_machine(machine_class: str, name: str = "test-machine") -> MagicMock:
     machine.name = name
     machine._class_ = machine_class
     machine.flake.is_local = True
+    machine.flake.identifier = "/fake/flake"
     machine.flake.path = "/fake/flake"
     return machine
 
@@ -403,6 +407,93 @@ def test_nixos_activate_inhibitor_failure_suggests_reboot() -> None:
     assert actions == ["boot", "switch"], (
         f"Expected exactly boot + switch (no retry), got {actions}"
     )
+
+
+def test_run_update_preserves_explicit_path_flake_url_for_metadata() -> None:
+    machine = _make_machine("nixos")
+    machine.flake.identifier = "path:/fake/flake"
+
+    with (
+        patch("clan_cli.machines.update.Remote") as mock_remote_cls,
+        patch("clan_lib.machines.update.upload_secret_vars"),
+        patch(
+            "clan_lib.machines.update.nix_metadata",
+            return_value={"path": _FAKE_FLAKE_PATH},
+        ) as mock_nix_metadata,
+        patch("clan_lib.machines.update._nixos_build", return_value=_FAKE_CONFIG_PATH),
+        patch("clan_lib.machines.update.is_async_cancelled", return_value=False),
+    ):
+        mock_target_host_root = _setup_host_chain(mock_remote_cls)
+        mock_target_host_root.run.return_value = _run_result(0)
+
+        run_update_with_network(
+            machine=machine,
+            build_host=None,
+            upload_inputs=False,
+            host_key_check="none",
+            target_host_override="root@192.0.2.1",
+        )
+
+    mock_nix_metadata.assert_called_once_with("path:/fake/flake")
+
+
+def test_run_update_preserves_relative_flake_url_for_metadata() -> None:
+    machine = _make_machine("nixos")
+    machine.flake.identifier = "./deploy-wrapper"
+
+    with (
+        patch("clan_cli.machines.update.Remote") as mock_remote_cls,
+        patch("clan_lib.machines.update.upload_secret_vars"),
+        patch(
+            "clan_lib.machines.update.nix_metadata",
+            return_value={"path": _FAKE_FLAKE_PATH},
+        ) as mock_nix_metadata,
+        patch("clan_lib.machines.update._nixos_build", return_value=_FAKE_CONFIG_PATH),
+        patch("clan_lib.machines.update.is_async_cancelled", return_value=False),
+    ):
+        mock_target_host_root = _setup_host_chain(mock_remote_cls)
+        mock_target_host_root.run.return_value = _run_result(0)
+
+        run_update_with_network(
+            machine=machine,
+            build_host=None,
+            upload_inputs=False,
+            host_key_check="none",
+            target_host_override="root@192.0.2.1",
+        )
+
+    mock_nix_metadata.assert_called_once_with("./deploy-wrapper")
+
+
+def test_upload_sources_preserves_explicit_path_flake_url_for_archive() -> None:
+    machine = _make_machine("nixos")
+    machine.flake.identifier = "path:/fake/flake"
+    remote = MagicMock()
+    remote.nix_ssh_env.return_value = {}
+    remote.ssh_url.return_value = "ssh://root@example-host"
+
+    with (
+        patch(
+            "clan_lib.machines.update.nix_metadata",
+            return_value={"path": _FAKE_FLAKE_PATH, "locks": {"nodes": {}}},
+        ),
+        patch(
+            "clan_lib.machines.update.nix_command",
+            side_effect=lambda cmd: cmd,
+        ) as mock_nix_command,
+        patch(
+            "clan_lib.machines.update.run",
+            return_value=_run_result(stdout='{"path": "/nix/store/archive-path"}'),
+        ),
+    ):
+        upload_sources(machine, remote, upload_inputs=True)
+
+    archive_cmd = next(
+        call.args[0]
+        for call in mock_nix_command.call_args_list
+        if call.args[0][:2] == ["flake", "archive"]
+    )
+    assert archive_cmd[-1] == "path:/fake/flake"
 
 
 def test_nixos_activate_forwards_nixos_no_check() -> None:
