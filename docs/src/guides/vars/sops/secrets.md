@@ -84,6 +84,19 @@ clan secrets users add $USER \
     ...
 ```
 
+If you are using groups:
+
+```console
+clan secrets groups add-user admins <username>
+```
+
+Afterwards re-encrypt previous vars:
+
+```console
+$ clan secrets key update 
+$ clan vars fix
+```
+
 :::
 
 ## Manage Your Public Key(s)

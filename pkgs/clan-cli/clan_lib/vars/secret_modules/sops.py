@@ -174,6 +174,7 @@ class SecretStore(StoreBase):
             return (
                 "The local state of some secret vars is inconsistent and needs to be updated.\n"
                 f"Run 'clan vars fix {machine}' to apply the necessary changes."
+                "If you added a new key use 'clan secrets key update'."
                 "Problems to fix:\n"
                 "\n".join(o[2] for o in outdated if o[2])
             )
