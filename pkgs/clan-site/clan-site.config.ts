@@ -193,7 +193,7 @@ export const docsNav: DocsNavItems = [
       "reference/glossary",
       {
         label: "Releases",
-        children: ["releases/25-11"],
+        children: ["releases/26-05", "releases/25-11"],
       },
     ],
   },

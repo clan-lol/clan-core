@@ -124,13 +124,13 @@ First, download the installer ISO image for your target machine's architecture:
 For x86_64 machines:
 
 ```bash
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso
 ```
 
 For aarch64 (ARM) machines:
 
 ```bash
-wget https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-aarch64-linux.iso
+wget https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-aarch64-linux.iso
 ```
 
 Insert the USB drive into your setup computer. Determine its block device name by typing:

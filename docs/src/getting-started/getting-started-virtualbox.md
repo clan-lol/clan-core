@@ -18,11 +18,11 @@ For your setup machine, we recommend Linux (preferably NixOS) for your setup mac
 
 ## If you are on X86_64 architecture
 
-Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-x86_64-linux.iso).
+Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso).
 
 ## If you are on AArch64 architecture
 
-Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-installer-aarch64-linux.iso).
+Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-aarch64-linux.iso).
 
 ## 2. Install the ISO and run it
 
