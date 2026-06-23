@@ -6,6 +6,7 @@ reports added, removed, and type-changed options.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -90,9 +91,58 @@ class ExportDiff:
         return bool(self.changes)
 
 
+@dataclass(frozen=True, slots=True)
+class TemplateInfo:
+    """A single template's metadata: human description and content root."""
+
+    description: str
+    path: Path
+
+
+@dataclass(frozen=True, slots=True)
+class DescriptionChange:
+    """A template whose description text differs between versions."""
+
+    template: str
+    old: str
+    new: str
+
+
+@dataclass(frozen=True, slots=True)
+class TemplateContentChange:
+    """Files that differ inside a template present in both versions."""
+
+    template: str
+    added_files: tuple[str, ...]
+    removed_files: tuple[str, ...]
+    modified_files: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class TemplateDiff:
+    """Diff of ``clan.templates`` between two versions."""
+
+    old_label: str
+    new_label: str
+    added: tuple[str, ...] = ()
+    removed: tuple[str, ...] = ()
+    description_changed: tuple[DescriptionChange, ...] = ()
+    content_changed: tuple[TemplateContentChange, ...] = ()
+
+    @property
+    def has_changes(self) -> bool:
+        return bool(
+            self.added
+            or self.removed
+            or self.description_changed
+            or self.content_changed
+        )
+
+
 OptionsDict = dict[str, dict[str, Any]]
 ServicesDict = dict[str, set[str]]
 ExportsDict = dict[str, set[str]]
+TemplatesDict = dict[str, TemplateInfo]
 
 
 def load_options(path: Path) -> OptionsDict:
@@ -390,6 +440,159 @@ def format_export_diff(result: ExportDiff) -> str:
     return "\n".join(lines)
 
 
+def load_templates(path: Path) -> TemplatesDict:
+    """Load a templates manifest, return {``category/name``: TemplateInfo}.
+
+    The manifest is the JSON form of the flake's ``clan.templates`` output:
+    ``{category: {name: {description, path}}}``. Each ``path`` is a directory
+    holding the template's files. Keys are flattened to ``category/name`` so a
+    template is identified independently of its category.
+    """
+    with path.open() as f:
+        data: Any = json.load(f)
+    if not isinstance(data, dict):
+        msg = f"Expected top-level JSON object, got {type(data).__name__}"
+        raise TypeError(msg)
+
+    templates: TemplatesDict = {}
+    for category, entries in data.items():
+        if not isinstance(entries, dict):
+            continue
+        for name, entry in entries.items():
+            if not isinstance(entry, dict):
+                continue
+            template_path = entry.get("path")
+            if not isinstance(template_path, str):
+                continue
+            description = entry.get("description", "")
+            templates[f"{category}/{name}"] = TemplateInfo(
+                description=description if isinstance(description, str) else "",
+                path=Path(template_path),
+            )
+    return templates
+
+
+def _hash_template_dir(root: Path) -> dict[str, str]:
+    """Map each regular file under *root* to the sha256 of its bytes.
+
+    Keys are POSIX paths relative to *root* so two templates can be compared
+    regardless of the absolute store path each version was realised under.
+    Non-regular files (symlinks, fifos) are skipped.
+    """
+    hashes: dict[str, str] = {}
+    for file in sorted(root.rglob("*")):
+        if file.is_symlink() or not file.is_file():
+            continue
+        rel = file.relative_to(root).as_posix()
+        hashes[rel] = hashlib.sha256(file.read_bytes()).hexdigest()
+    return hashes
+
+
+def diff_templates(
+    old: TemplatesDict,
+    new: TemplatesDict,
+    *,
+    old_label: str = "old",
+    new_label: str = "new",
+) -> TemplateDiff:
+    """Compute structural and content diff between two template sets."""
+    old_keys = set(old)
+    new_keys = set(new)
+
+    added = tuple(sorted(new_keys - old_keys))
+    removed = tuple(sorted(old_keys - new_keys))
+
+    description_changed: list[DescriptionChange] = []
+    content_changed: list[TemplateContentChange] = []
+    for name in sorted(old_keys & new_keys):
+        old_info = old[name]
+        new_info = new[name]
+
+        if old_info.description != new_info.description:
+            description_changed.append(
+                DescriptionChange(
+                    template=name,
+                    old=old_info.description,
+                    new=new_info.description,
+                )
+            )
+
+        old_hashes = _hash_template_dir(old_info.path)
+        new_hashes = _hash_template_dir(new_info.path)
+        old_files = set(old_hashes)
+        new_files = set(new_hashes)
+        added_files = tuple(sorted(new_files - old_files))
+        removed_files = tuple(sorted(old_files - new_files))
+        modified_files = tuple(
+            f for f in sorted(old_files & new_files) if old_hashes[f] != new_hashes[f]
+        )
+        if added_files or removed_files or modified_files:
+            content_changed.append(
+                TemplateContentChange(
+                    template=name,
+                    added_files=added_files,
+                    removed_files=removed_files,
+                    modified_files=modified_files,
+                )
+            )
+
+    return TemplateDiff(
+        old_label=old_label,
+        new_label=new_label,
+        added=added,
+        removed=removed,
+        description_changed=tuple(description_changed),
+        content_changed=tuple(content_changed),
+    )
+
+
+def format_template_diff(result: TemplateDiff) -> str:
+    """Render a TemplateDiff as a human-readable report."""
+    if not result.has_changes:
+        return (
+            f"No template changes between {result.old_label} and {result.new_label}.\n"
+        )
+
+    lines: list[str] = [
+        f"Templates diff: {result.old_label} -> {result.new_label}",
+        (
+            f"Summary: +{len(result.added)} -{len(result.removed)} "
+            f"desc~{len(result.description_changed)} "
+            f"content~{len(result.content_changed)}"
+        ),
+        "",
+    ]
+
+    if result.added:
+        lines.append(f"Added ({len(result.added)})")
+        lines.extend(f"  {name}" for name in result.added)
+        lines.append("")
+
+    if result.removed:
+        lines.append(f"Removed ({len(result.removed)})")
+        lines.extend(f"  {name}" for name in result.removed)
+        lines.append("")
+
+    if result.description_changed:
+        lines.append(f"Description changed ({len(result.description_changed)})")
+        lines.extend(
+            f"  {dc.template}: {dc.old} -> {dc.new}"
+            for dc in result.description_changed
+        )
+        lines.append("")
+
+    if result.content_changed:
+        lines.append(f"Content changed ({len(result.content_changed)})")
+        for cc in result.content_changed:
+            lines.append(f"  {cc.template}:")
+            lines.extend(f"    +{f}" for f in cc.added_files)
+            lines.extend(f"    ~{f}" for f in cc.modified_files)
+            lines.extend(f"    -{f}" for f in cc.removed_files)
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 @dataclass(frozen=True, slots=True)
 class LayerPaths:
     """Paths to the options JSON files for one version."""
@@ -398,6 +601,7 @@ class LayerPaths:
     clan_options: Path | None = None
     nixos_options: Path | None = None
     services_json: Path | None = None
+    templates_json: Path | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -409,6 +613,7 @@ class MultiLayerDiff:
     services: ServiceDiff | None = None
     service_settings: DiffResult | None = None
     exports: ExportDiff | None = None
+    templates: TemplateDiff | None = None
 
 
 def _service_role(key: str) -> str:
@@ -481,12 +686,22 @@ def diff_layers(old: LayerPaths, new: LayerPaths) -> MultiLayerDiff:
             new_label=new.label,
         )
 
+    templates_diff = None
+    if old.templates_json and new.templates_json:
+        templates_diff = diff_templates(
+            load_templates(old.templates_json),
+            load_templates(new.templates_json),
+            old_label=old.label,
+            new_label=new.label,
+        )
+
     return MultiLayerDiff(
         clan=clan_diff,
         nixos=nixos_diff,
         services=services_diff,
         service_settings=settings_diff,
         exports=exports_diff,
+        templates=templates_diff,
     )
 
 
@@ -495,6 +710,7 @@ def _validate_layer_pairs(old: LayerPaths, new: LayerPaths) -> None:
         ("clan", old.clan_options, new.clan_options),
         ("nixos", old.nixos_options, new.nixos_options),
         ("services", old.services_json, new.services_json),
+        ("templates", old.templates_json, new.templates_json),
     ):
         if bool(old_path) != bool(new_path):
             provided = "old" if old_path else "new"
@@ -531,6 +747,11 @@ def format_multi_layer_diff(diff: MultiLayerDiff) -> str:
         parts.append("## Service settings")
         parts.append("")
         parts.append(format_diff(diff.service_settings, noun="Service settings"))
+
+    if diff.templates is not None:
+        parts.append("## Templates")
+        parts.append("")
+        parts.append(format_template_diff(diff.templates))
 
     if not parts:
         return "No option layers provided.\n"

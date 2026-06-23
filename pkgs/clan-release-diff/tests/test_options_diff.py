@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 import pytest
 from clan_release_diff.options_diff import (
     ChangeKind,
+    DescriptionChange,
     DiffResult,
     ExportChange,
     ExportDiff,
@@ -19,18 +20,24 @@ from clan_release_diff.options_diff import (
     OptionDiff,
     RoleChange,
     ServiceDiff,
+    TemplateContentChange,
+    TemplateDiff,
+    TemplateInfo,
     diff_exports,
     diff_layers,
     diff_options,
     diff_services,
+    diff_templates,
     format_diff,
     format_export_diff,
     format_multi_layer_diff,
     format_service_diff,
+    format_template_diff,
     load_options,
     load_service_exports,
     load_service_settings,
     load_services,
+    load_templates,
 )
 
 OPTION_A: dict[str, Any] = {
@@ -832,3 +839,319 @@ class TestDiffLayersExports:
         )
         text = format_multi_layer_diff(MultiLayerDiff(services=svc, exports=ex))
         assert text.index("## Services") < text.index("## Service exports")
+
+
+def _write_templates(
+    base: Path,
+    manifest: dict[str, dict[str, dict[str, Any]]],
+) -> Path:
+    """Materialize template dirs + a manifest JSON pointing at them.
+
+    ``manifest`` maps category -> name -> {"description": str, "files": {rel: content}}.
+    Returns the path to a manifest JSON in the flake-output shape
+    ``{category: {name: {description, path}}}``.
+    """
+    base.mkdir(parents=True, exist_ok=True)
+    out: dict[str, Any] = {}
+    for category, names in manifest.items():
+        out[category] = {}
+        for name, spec in names.items():
+            tdir = base / "templates" / category / name
+            tdir.mkdir(parents=True, exist_ok=True)
+            files: dict[str, str] = spec.get("files", {})
+            for rel, content in files.items():
+                fpath = tdir / rel
+                fpath.parent.mkdir(parents=True, exist_ok=True)
+                fpath.write_text(content)
+            out[category][name] = {
+                "description": spec.get("description", ""),
+                "path": str(tdir),
+            }
+    return _write_json(base / "templates.json", out)
+
+
+class TestLoadTemplates:
+    def test_flattens_to_category_name(self, tmp_path: Path) -> None:
+        manifest = _write_templates(
+            tmp_path / "v",
+            {
+                "clan": {"default": {"description": "d", "files": {"flake.nix": "x"}}},
+                "disko": {"ext4": {"description": "e", "files": {}}},
+            },
+        )
+        result = load_templates(manifest)
+        assert set(result) == {"clan/default", "disko/ext4"}
+        assert result["clan/default"].description == "d"
+        assert isinstance(result["clan/default"], TemplateInfo)
+        assert result["clan/default"].path.is_dir()
+
+    def test_skips_entry_without_path(self, tmp_path: Path) -> None:
+        p = _write_json(
+            tmp_path / "m.json",
+            {"clan": {"broken": {"description": "no path"}}},
+        )
+        assert load_templates(p) == {}
+
+    def test_skips_non_dict_category(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "m.json", {"clan": "not-a-dict"})
+        assert load_templates(p) == {}
+
+    def test_rejects_non_object(self, tmp_path: Path) -> None:
+        p = _write_json(tmp_path / "bad.json", [1, 2])  # type: ignore[arg-type]
+        with pytest.raises(TypeError, match="Expected top-level JSON object"):
+            load_templates(p)
+
+
+class TestDiffTemplates:
+    def test_identical(self, tmp_path: Path) -> None:
+        t = load_templates(
+            _write_templates(
+                tmp_path / "v",
+                {"clan": {"default": {"description": "d", "files": {"a.nix": "1"}}}},
+            )
+        )
+        result = diff_templates(t, t)
+        assert not result.has_changes
+
+    def test_added(self, tmp_path: Path) -> None:
+        old = load_templates(_write_templates(tmp_path / "old", {}))
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {"clan": {"default": {"description": "d", "files": {"a": "1"}}}},
+            )
+        )
+        result = diff_templates(old, new, old_label="25.11", new_label="main")
+        assert result.added == ("clan/default",)
+        assert result.removed == ()
+        assert result.old_label == "25.11"
+        assert result.new_label == "main"
+
+    def test_removed(self, tmp_path: Path) -> None:
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {"machine": {"new-machine": {"description": "m", "files": {"a": "1"}}}},
+            )
+        )
+        new = load_templates(_write_templates(tmp_path / "new", {}))
+        result = diff_templates(old, new)
+        assert result.removed == ("machine/new-machine",)
+        assert result.added == ()
+
+    def test_description_change(self, tmp_path: Path) -> None:
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {"clan": {"default": {"description": "old desc", "files": {"a": "1"}}}},
+            )
+        )
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {"clan": {"default": {"description": "new desc", "files": {"a": "1"}}}},
+            )
+        )
+        result = diff_templates(old, new)
+        assert len(result.description_changed) == 1
+        dc = result.description_changed[0]
+        assert dc.template == "clan/default"
+        assert dc.old == "old desc"
+        assert dc.new == "new desc"
+        assert result.content_changed == ()
+
+    def test_content_change_added_removed_modified(self, tmp_path: Path) -> None:
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {
+                    "clan": {
+                        "default": {
+                            "description": "d",
+                            "files": {
+                                "keep.nix": "same",
+                                "mod.nix": "before",
+                                "gone.nix": "x",
+                            },
+                        }
+                    }
+                },
+            )
+        )
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {
+                    "clan": {
+                        "default": {
+                            "description": "d",
+                            "files": {
+                                "keep.nix": "same",
+                                "mod.nix": "after",
+                                "fresh.nix": "y",
+                            },
+                        }
+                    }
+                },
+            )
+        )
+        result = diff_templates(old, new)
+        assert result.description_changed == ()
+        assert len(result.content_changed) == 1
+        cc = result.content_changed[0]
+        assert cc.template == "clan/default"
+        assert cc.added_files == ("fresh.nix",)
+        assert cc.removed_files == ("gone.nix",)
+        assert cc.modified_files == ("mod.nix",)
+
+    def test_nested_files_relative_keys(self, tmp_path: Path) -> None:
+        """Content compared by path relative to template root, not absolute."""
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {"clan": {"d": {"description": "x", "files": {"sub/a.nix": "1"}}}},
+            )
+        )
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {"clan": {"d": {"description": "x", "files": {"sub/a.nix": "2"}}}},
+            )
+        )
+        result = diff_templates(old, new)
+        assert result.content_changed[0].modified_files == ("sub/a.nix",)
+
+    def test_unchanged_template_no_content_change(self, tmp_path: Path) -> None:
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {"clan": {"d": {"description": "x", "files": {"a": "1", "b": "2"}}}},
+            )
+        )
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {"clan": {"d": {"description": "x", "files": {"b": "2", "a": "1"}}}},
+            )
+        )
+        result = diff_templates(old, new)
+        assert not result.has_changes
+
+    def test_results_sorted(self, tmp_path: Path) -> None:
+        old = load_templates(
+            _write_templates(
+                tmp_path / "old",
+                {"clan": {"z": {"files": {"a": "1"}}, "a": {"files": {"a": "1"}}}},
+            )
+        )
+        new = load_templates(
+            _write_templates(
+                tmp_path / "new",
+                {"clan": {"m": {"files": {"a": "1"}}, "a": {"files": {"a": "1"}}}},
+            )
+        )
+        result = diff_templates(old, new)
+        assert result.added == ("clan/m",)
+        assert result.removed == ("clan/z",)
+
+
+class TestFormatTemplateDiff:
+    def test_no_changes(self) -> None:
+        text = format_template_diff(TemplateDiff(old_label="25.11", new_label="main"))
+        assert "No template changes" in text
+        assert "25.11" in text
+        assert "main" in text
+
+    def test_with_changes(self) -> None:
+        result = TemplateDiff(
+            old_label="25.11",
+            new_label="main",
+            added=("clan/new",),
+            removed=("disko/old",),
+            description_changed=(
+                DescriptionChange(template="clan/default", old="a", new="b"),
+            ),
+            content_changed=(
+                TemplateContentChange(
+                    template="machine/new-machine",
+                    added_files=("added.nix",),
+                    removed_files=("removed.nix",),
+                    modified_files=("flake.nix",),
+                ),
+            ),
+        )
+        text = format_template_diff(result)
+        assert "Templates diff: 25.11 -> main" in text
+        assert "Summary: +1 -1 desc~1 content~1" in text
+        assert _section_items(text, "Added") == ["clan/new"]
+        assert _section_items(text, "Removed") == ["disko/old"]
+        assert _section_items(text, "Description changed") == ["clan/default: a -> b"]
+        assert "machine/new-machine:" in text
+        assert "+added.nix" in text
+        assert "~flake.nix" in text
+        assert "-removed.nix" in text
+
+    def test_summary_before_sections(self) -> None:
+        result = TemplateDiff(old_label="a", new_label="b", added=("clan/x",))
+        text = format_template_diff(result)
+        assert text.index("Summary:") < text.index("Added")
+
+
+class TestDiffLayersTemplates:
+    def test_templates_via_layers(self, tmp_path: Path) -> None:
+        old = _write_templates(
+            tmp_path / "old",
+            {"clan": {"default": {"description": "d", "files": {"a": "1"}}}},
+        )
+        new = _write_templates(
+            tmp_path / "new",
+            {"clan": {"default": {"description": "d", "files": {"a": "2"}}}},
+        )
+        result = diff_layers(
+            LayerPaths(label="a", templates_json=old),
+            LayerPaths(label="b", templates_json=new),
+        )
+        assert result.templates is not None
+        assert result.templates.content_changed[0].template == "clan/default"
+        assert result.clan is None
+
+    def test_templates_none_without_manifest(self, tmp_path: Path) -> None:
+        old_clan = _write_json(tmp_path / "old.json", {"a": OPTION_A})
+        new_clan = _write_json(tmp_path / "new.json", {"a": OPTION_A})
+        result = diff_layers(
+            LayerPaths(label="a", clan_options=old_clan),
+            LayerPaths(label="b", clan_options=new_clan),
+        )
+        assert result.templates is None
+
+    def test_rejects_asymmetric_templates(self, tmp_path: Path) -> None:
+        old = _write_templates(tmp_path / "old", {})
+        with pytest.raises(ValueError, match=r"templates.*old.*provided.*new.*missing"):
+            diff_layers(
+                LayerPaths(label="old", templates_json=old),
+                LayerPaths(label="new"),
+            )
+
+    def test_templates_section_rendered(self) -> None:
+        diff = MultiLayerDiff(
+            templates=TemplateDiff(
+                old_label="25.11",
+                new_label="main",
+                added=("clan/new",),
+            )
+        )
+        text = format_multi_layer_diff(diff)
+        assert "## Templates" in text
+        assert "clan/new" in text
+
+    def test_templates_section_after_options(self) -> None:
+        clan_result = DiffResult(
+            old_label="a",
+            new_label="b",
+            added=(OptionDiff(name="clan.x", kind=ChangeKind.ADDED),),
+        )
+        templates = TemplateDiff(old_label="a", new_label="b", added=("clan/new",))
+        text = format_multi_layer_diff(
+            MultiLayerDiff(clan=clan_result, templates=templates)
+        )
+        assert text.index("## Clan") < text.index("## Templates")

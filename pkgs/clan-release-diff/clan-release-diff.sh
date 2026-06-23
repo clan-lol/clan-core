@@ -46,11 +46,15 @@ echo "Building options JSON for ${old_branch}..." >&2
 old_clan=$(nix build "${old_ref}#legacyPackages.x86_64-linux.clan-options" --no-link --print-out-paths)
 old_nixos=$(nix build "${old_ref}#legacyPackages.x86_64-linux.jsonDocs.clanCore" --no-link --print-out-paths)
 old_services=$(nix build "${old_ref}#legacyPackages.x86_64-linux.clanModulesViaService" --no-link --print-out-paths)
+old_templates=$(mktemp)
+nix eval --json "${old_ref}#clan.templates" >"$old_templates"
 
 echo "Building options JSON for ${new_label}..." >&2
 new_clan=$(nix build "${new_ref}#legacyPackages.x86_64-linux.clan-options" --no-link --print-out-paths)
 new_nixos=$(nix build "${new_ref}#legacyPackages.x86_64-linux.jsonDocs.clanCore" --no-link --print-out-paths)
 new_services=$(nix build "${new_ref}#legacyPackages.x86_64-linux.clanModulesViaService" --no-link --print-out-paths)
+new_templates=$(mktemp)
+nix eval --json "${new_ref}#clan.templates" >"$new_templates"
 
 json="share/doc/nixos/options.json"
 
@@ -61,4 +65,6 @@ exec @diff@ layers \
     --old-nixos "$old_nixos/$json" \
     --new-nixos "$new_nixos/$json" \
     --old-services "$old_services" \
-    --new-services "$new_services"
+    --new-services "$new_services" \
+    --old-templates "$old_templates" \
+    --new-templates "$new_templates"
