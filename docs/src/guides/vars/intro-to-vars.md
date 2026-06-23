@@ -182,7 +182,7 @@ No prompts are needed; the keys are generated automatically.
 
 ## Regenerating Vars
 
-If you need to change a passwrd or regenerate keys:
+If you need to change a password or regenerate keys:
 
 ```bash
 # Regenerate a specific generator
@@ -200,7 +200,7 @@ clan machines update test-machine
 
 ## How Vars Connect to Services
 
-Services defne what vars they need. For example, the `users` service defines:
+Services define what vars they need. For example, the `users` service defines:
 
 - A prompt for the password
 - A script that hashes the password

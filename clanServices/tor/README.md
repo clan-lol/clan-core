@@ -4,7 +4,7 @@ This service is experimental and will change in the future.
 :::
 ---
 
-This module is part of Clan's [networking interface](https://clan.lol/docs/unstable/guides/networking/networking).
+This module is part of Clan's [networking interface](/docs/guides/networking/networking).
 
 Clan's networking module automatically manages connections across available network transports and falls back intelligently. When you run `clan ssh` or `clan machines update`, Clan attempts each configured network in priority order until a connection succeeds.
 

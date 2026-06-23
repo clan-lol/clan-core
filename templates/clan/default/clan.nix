@@ -5,31 +5,12 @@
 
   inventory.machines = {
     # Define machines here.
-    # server = { };
-    installer-machine = {
-      tags = [ "installer-tag" ];
-    };
+    # test-machine = { };
   };
 
-  # Docs: See https://clan.lol/docs/unstable/services/definition
   inventory.instances = {
 
-    # Docs: https://clan.lol/docs/unstable/services/official/installer
-    # Adds required packages for remote installation to all machines with the 'installer-tag'
-    installer-module = {
-      module = {
-        name = "installer";
-      };
-      roles.iso.tags = [ "installer-tag" ];
-    };
-
-    # Docs: https://clan.lol/docs/unstable/services/official/p2p-ssh-iroh
-    # Firewall-traversing SSH access via encrypted QUIC streams
-    p2p-ssh-iroh = {
-      roles.server.tags = [ "nixos" ];
-    };
-
-    # Docs: https://clan.lol/docs/unstable/services/official/sshd
+    # Docs: https://clan.lol/docs/services/official/sshd
     # SSH service for secure remote access to machines.
     # Generates persistent host keys and configures authorized keys.
     sshd = {
@@ -55,13 +36,19 @@
       };
     };
 
+    # Docs: https://clan.lol/docs/unstable/services/official/p2p-ssh-iroh
+    # Status experimental
+    # Firewall-traversing SSH access via encrypted QUIC streams
+    # p2p-ssh-iroh = {
+    #   roles.server.tags = [ "nixos" ];
+    # };
   };
 
   # Additional NixOS configuration can be added here.
   # machines/server/configuration.nix will be automatically imported.
   # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
   machines = {
-    # server = { config, ... }: {
+    # test-machine = { config, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];
     # };
   };

@@ -60,13 +60,12 @@ Next create a machine configuration, which adds a description of a machine to yo
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it. (You will add the IP address later in this guide.)
+Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it:
 
 ```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
+        tags = [ "test" ];
     };
 ```
 
@@ -176,7 +175,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/sdb bs=4M status=progress co
 You now have an installer USB that you can remove and plug into the target computer and boot to the USB drive.
 
 :::admonition[Tip]{type=tip}
-You might need to disable secure boot. Follow our [secure boot instructions](https://clan.lol/docs/{{ version }}/guides/secure-boot).
+You might need to disable secure boot. Follow our [secure boot instructions](/docs/guides/secure-boot).
 :::
 
 Once booted, you will see a QR code and text similar to this:
@@ -193,11 +192,7 @@ Once booted, you will see a QR code and text similar to this:
 │ Press 'Ctrl-C' for console access
 ```
 
-Take note of the IP address displayed above, either for wireless or lan, depending on how you connected. Then return to the setup machine and update this line that you added to the `clan.nix` file earlier; add in the actual IP address:
-
-```nix
-deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS;
-```
+Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure in step 12.
 
 :::admonition[Important]{type=note}
 If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
@@ -225,43 +220,65 @@ You should now be online. You can test it by:
 ping www.clan.lol
 ```
 
-Press **Ctrl+D** to return to the installer app, and note the IP address, and add it to the `clan.nix` file as described earlier.
+Press **Ctrl+D** to return to the installer app, and note the installer IP address for the `--target-host` steps below.
 
-## 8. Get Hardware Configuration
+## 8. Configure SSH access
+
+Copy your public key to the installer so the following `clan` commands can connect over SSH. When prompted, enter the root password shown on the installer screen:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<INSTALLER-IP>
+```
+
+Confirm that you can log in:
+
+```bash
+ssh root@<INSTALLER-IP>
+```
+
+You should see the installer prompt:
+
+```console
+[root@nixos-installer:~]#
+```
+
+This authorizes your key for the running installer session only. It is not written to the USB drive, so repeat this step if you reboot the installer.
+
+## 9. Get Hardware Configuration
 
 Now gather the hardware configuration from the target machine:
 
 ```bash
-clan machines init-hardware-config test-machine --target-host root@<IP-ADDRESS>
+clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
-Replace `<IP-ADDRESS>` with the IP address of your target machine.
+Replace `<INSTALLER-IP>` with the installer IP address noted above.
 
 You will be asked to enter "y" to proceed.
 
-## 9. Add a disk configuration
+## 10. Add a disk configuration
 
 Next, configure a disk for the target machine. You'll run this command in two steps; first, type it like so:
 
 ```bash
-clan templates apply disk single-disk test-machine --set mainDisk ""
+clan templates apply disk ext4-single-disk test-machine --set mainDisk ""
 ```
 
 This will generate an error; note the disk ID it prints out (typically starting with /dev/disk/by-id), and add it inside the quotes, e.g.:
 
 ```bash
-clan templates apply disk single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
+clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/disk/by-id/..."
 ```
 
-## 10. Install
+## 11. Install
 
 Install NixOS on the target machine by typing:
 
 ```bash
-clan machines install test-machine --target-host root@<IP-ADDRESS>
+clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
-Replace `<IP-ADDRESS>` with the target machine's IP address as before.
+Replace `<INSTALLER-IP>` with the installer IP address as before.
 
 You will be asked whether you want to install; type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on) and a root password (you can either create one or let Clan assign a random one).
 
@@ -276,14 +293,29 @@ clan vars generate test-machine --no-sandbox
 You may need to re-enter the WiFi credentials and root password. Then run the install again:
 
 ```bash
-clan machines install test-machine --target-host <USER>@<IP-ADDRESS>
+clan machines install test-machine --target-host <USER>@<INSTALLER-IP>
 ```
 
 After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
-## 11. Test Connection
+## 12. Configure Access and Connect
 
-Now you can try connecting to the remote machine:
+After installation the machine reboots into the installed system and gets a **new IP address** — the installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in at the machine's console and run `ip -4 addr`), then tell Clan how to reach the machine.
+
+Find the `inventory.instances` line in `clan.nix` and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
 
 ```bash
 clan ssh test-machine
@@ -292,7 +324,7 @@ clan ssh test-machine
 You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
 
 ```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
 ```
 
 Then try again:
@@ -366,7 +398,9 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
-## Add a New User (no sudo access)
+## Practice: Configuring Users
+
+### Add a New User (no sudo access)
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
@@ -404,7 +438,7 @@ clan machines update test-machine
 
 Once complete, you can log in as alice with the password on the target machine.
 
-## Give that user sudo access
+### Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
@@ -436,7 +470,7 @@ sudo echo "hello"
 
 You will be prompted for the password and should see "hello" printed.
 
-## Revoke the sudo access
+### Revoke the sudo access
 
 To revoke alice's sudo access, simply remove the line you added:
 

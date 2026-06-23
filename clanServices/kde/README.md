@@ -7,8 +7,8 @@ supports only this default desktop configuration. Any additional
 customisation can be done via the `extraModules` option. Furthermore, if you
 want to use a different desktop environment or compositor (e.g. Gnome or
 sway), we encourage you to to build your own
-[Clan Service](https://clan.lol/docs/unstable/guides/services/intro-to-services-revised) or have a
-look at the [Community Services](https://clan.lol/docs/unstable/services/community).
+[Clan Service](/docs/guides/services/intro-to-services-revised) or have a
+look at the [Community Services](/docs/services/community).
 
 :::
 

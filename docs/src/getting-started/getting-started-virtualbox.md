@@ -16,17 +16,19 @@ Your setup machine needs the following:
 For your setup machine, we recommend Linux (preferably NixOS) for your setup machine. We cannot recommend Windows with WSL for the setup system; it is significantly slower, and the install command may freeze during package downloads.
 :::
 
-## If you are on X86_64 architecture
+## Step 1. Download the ISO
+
+### If you are on X86_64 architecture
 
 Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-x86_64-linux.iso).
 
-## If you are on AArch64 architecture
+### If you are on AArch64 architecture
 
 Download the installer's [ISO image by clicking here](https://github.com/nix-community/nixos-images/releases/download/nixos-26.05/nixos-installer-aarch64-linux.iso).
 
-## 2. Install the ISO and run it
+## Step 2. Create the Virtual Machine
 
-## Setup the VirtualBox Machine
+### Setup the VirtualBox Machine
 
 In VirtualBox, click **New**.
 
@@ -36,25 +38,27 @@ Leave **Folder** the default.
 
 Click the dropdown to the right of ISO Image. Choose **Other**. Navigate to the location of your download. Choose either `nixos-installer-x86_64-linux.iso` or `nixos-installer-aarch64-linux.iso`, depending on which one you downloaded. Click **Open**.
 
-For **Type**, select **Linux**.
+For the following step, what you see in the Virtual Box UI depends on the version. You'll either see **Type** and **Version** dropdowns; or you'll see **OS**, **OS Distribution**, and **OS Version dropdowns**.
 
-For **Version**, scroll near the top, and select **Linux 2.6 / 3.x / 4.x / 5.x (64-bit)**.
+* If you see **Type**: For **Type**, select **Linux**. For **Version**, scroll near the top, and select **Linux 2.6 / 3.x / 4.x / 5.x (64-bit)**.
 
-Click **Next**. Now choose the amount of memory and CPU cores. If you have enough memory and CPU installed, you will want to type **8192** into the box to the right of **Base Memory**, and at least **3** to the right of **Processors**. Keep **Enable EFI (special OSes only)** *unchecked*. Click Next.
+* If you see **OS Distribution**: For **OS**, select **Linux**. For **OS Distribution**, select **Other Linux**. For **OS Version**, select **Other Linux (64-bit)**.
 
-For **Virtual Hard Disk**, choose **Create a Virtual Hard Disk Now**, and in the box to the right, type **20**. (Remember, this is just practice, and we don't expect you will want to keep this installation going after you create it. So 20GB should be plenty.)
+Click **Next** or expand the **Specify virtual hardware** option, depending on which you see. Now choose the amount of memory and CPU cores. If you have enough memory and CPU installed, you will want to type **8192** into the box to the right of **Base Memory**, and at least **3** to the right of **Processors**. Keep **Enable EFI (special OSes only)** *unchecked*. Click Next.
 
-Click **Next**.
+For **Virtual Hard Disk** (or expand the **Specify virtual hard disk**, depending on which you see), choose **Create a Virtual Hard Disk Now**, and in the box to the right, type **20**. (Remember, this is just practice, and we don't expect you will want to keep this installation going after you create it. So 20GB should be plenty.)
+
+Click **Next** (if present).
 
 Click **Finish**.
 
 *Do not run the machine yet!* You still have another item to configure. Right click on your new **NixOS Installer** machine, and choose **Settings**. In the left side, choose **Network**. Under the **Adapter 1** tab, click the **Attached to** dropdown, and choose **Bridged Adapter**. Leave **Name** as is. Click **OK**.
 
-## Run the VirtualBox Machine
+### Run the VirtualBox Machine
 
-Make sure **NixOS Installer** is selected (it will have a blue background).
+Click on the Virtual Machine you just created. (It will have a blue background).
 
-In the upper right, click **Start**.
+In the upper panel, click **Start**.
 
 You will see the NixOS loader start; simply wait. You will see text scroll and finally a screen will open that starts with a QR code, followed by:
 
@@ -64,7 +68,7 @@ You will see the NixOS loader start; simply wait. You will see text scroll and f
 
 * **Remote Access**. A hostname has been added to your local DNS; you can use it instead of the IP address, but it will no longer work after NixOS is installed. Make note of the IP address instead.
 
-## 3. Run the Clan setup
+## Step 3. Run the Clan setup
 
 Start by creating a new clan:
 
@@ -100,13 +104,12 @@ Next, create a machine configuration, which adds a description of a machine to y
 clan machines create test-machine
 ```
 
-Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it; replace the IP address with the IP address shown in your virtual machine:
+Open `clan.nix`, and find the `inventory.machines` line; add the following immediately after it:
 
 ```nix [clan.nix] {2,3,4,5}
 inventory.machines = { # FIND THIS LINE, ADD THE FOLLOWING
     test-machine = {
-        deploy.targetHost = "root@<IP-ADDRESS>"; # REPLACE WITH YOUR MACHINE'S IP ADDRESS; keep "root@"
-        tags = [ ];
+        tags = [ "test" ];
     };
 ```
 
@@ -138,17 +141,27 @@ Verify that your configuration is valid:
 clan show
 ```
 
+Copy your public key to the installer so `clan` can connect over SSH. Replace `<INSTALLER-IP>` with the IP address shown on the installer screen (for example `10.0.0.18`), and when prompted enter the root password displayed under the QR code:
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub root@<INSTALLER-IP>
+```
+
+Confirm that you can log in:
+
+```bash
+ssh root@<INSTALLER-IP>
+```
+
 Now gather the hardware configuration from the target machine:
 
 ```bash
-clan machines init-hardware-config test-machine
+clan machines init-hardware-config test-machine --target-host root@<INSTALLER-IP>
 ```
 
 You will be asked to enter "y" to proceed.
 
-When prompted for password, use the password displayed under the QR code.
-
-## 7. Add a Disk Configuration.
+## Step 4. Add a Disk Configuration.
 
 Next, configure a disk for the target machine. You will run this command in two steps; first, type it like so:
 
@@ -165,16 +178,14 @@ clan templates apply disk ext4-single-disk test-machine --set mainDisk "/dev/dis
 Install NixOS on the target machine by typing:
 
 ```bash
-clan machines install test-machine
+clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
-
-Replace `<IP-ADDRESS>` with the target machine's IP address as before.
 
 You will be asked whether you want to install; type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
 
 You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
 
-## If you get an error about Sandboxing
+### If you get an error about Sandboxing
 
 If you get an error regarding sandboxing not being available, type the following to disable sandboxing, and then run the above command again:
 
@@ -182,7 +193,11 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-## 9. Unmount the ISO and Reboot
+:::admonition[Tip]{type=tip}
+If you get an error regarding a secret not existing, simply run the **vars generate** command again.
+:::
+
+## Step 5. Unmount the ISO and Reboot
 
 Shut down the virtual machine by clicking the close ("X") button. In the popup that appears, choose **Send the shutdown signal.** Then click **OK**. (If **Send the shutdown signal** is not available, choose **Power off the machine**.)
 
@@ -200,7 +215,26 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-Now you can try connecting to the remote machine:
+The installed system gets a **new IP address** — the installer IP is no longer valid. At the `test-machine login:` prompt, log in as `root` (using the password you set during install) and run:
+
+```bash
+ip addr
+```
+
+Note the IP address, then tell Clan how to reach the machine. In `clan.nix`, find the `inventory.instances` line and add:
+
+```nix [clan.nix] {2-8}
+  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
+    internet = {
+      roles.default.machines."test-machine" = {
+        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
+        settings.user = "root";
+      };
+    };
+
+```
+
+`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
 
 ```bash
 clan ssh test-machine
@@ -209,7 +243,7 @@ clan ssh test-machine
 You will quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line shown, which will look similar to this:
 
 ```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<IP-ADDRESS>'
+ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
 ```
 
 Then try again:
@@ -283,7 +317,9 @@ which: no tldr in (/run/wrappers/bin:/root/.nix-profile/bin:/nix/profile/bin:/ro
 
 When you need to add a new user, you can do so right from within the clan.nix file, and then update the system.
 
-## Add a New User (no sudo access)
+## Practice: Configuring Users
+
+### Add a New User (no sudo access)
 
 Let's add a user called Alice. Open clan.nix, and under inventory.instances, add the following:
 
@@ -321,7 +357,7 @@ clan machines update test-machine
 
 Once complete, you can log in as alice with the password inside the virtual machine.
 
-## Give that user sudo access
+### Give that user sudo access
 
 After you trust Alice, you can grant her sudo access. To do so, update the clan.nix file by adding her to the wheel group:
 
@@ -353,15 +389,15 @@ sudo echo "hello"
 
 You will be prompted for the password and should see "hello" printed.
 
-## Revoke the sudo access
+### Revoke the sudo access
 
 To revoke alice's sudo access, simply remove the line you added:
 
-```text {.nix title="clan.nix" hl_lines="7"}
+```nix [clan.nix] {7}
     user-alice = {
       module.name = "users";
       roles.default.machines."test-machine" = {};
-      roles.default.tags.all = {};
+      roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "alice";
         groups = [ "wheel" ];  # Remove this to revoke sudo // [!code --]
