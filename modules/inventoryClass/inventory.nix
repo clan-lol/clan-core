@@ -37,6 +37,12 @@ let
   };
 in
 {
+  imports = [
+    (lib.mkRemovedOptionModule [ "services" ] ''
+      The `inventory.services` option has been removed. Use `inventory.instances` instead.
+      See: https://clan.lol/docs/guides/migrations/migrate-inventory-services
+    '')
+  ];
   options = {
     # Internal things
     _inventoryFile = lib.mkOption {

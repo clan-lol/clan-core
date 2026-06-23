@@ -72,7 +72,16 @@ in
     inventorySerialization = mkOption {
       type = types.raw;
       readOnly = true;
-      default = filteredInventory;
+      default =
+        let
+          failedAssertions = builtins.filter (a: !a.assertion) config.inventory.assertions;
+          assertionCheck =
+            if failedAssertions == [ ] then
+              null
+            else
+              throw (lib.concatMapStrings (a: "${a.message}\n") failedAssertions);
+        in
+        builtins.seq assertionCheck filteredInventory;
     };
     directory = mkOption {
       type = types.path;
