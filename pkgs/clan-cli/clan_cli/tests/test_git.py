@@ -26,6 +26,32 @@ def test_commit_file(git_repo: Path) -> None:
     )
 
 
+def test_commit_file_no_commit_intent_to_add(
+    git_repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # make an initial commit so HEAD exists
+    (git_repo / "init.txt").touch()
+    subprocess.run(["git", "add", "."], cwd=git_repo, check=True)
+    subprocess.run(["git", "commit", "-m", "init"], cwd=git_repo, check=True)
+    head_before = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=git_repo)
+    # with CLAN_NO_COMMIT set, the file is registered with intent-to-add so it
+    # is visible to git/Nix, but its content is neither staged nor committed.
+    monkeypatch.setenv("CLAN_NO_COMMIT", "1")
+    (git_repo / "test.txt").write_text("content")
+    git.commit_file((git_repo / "test.txt"), git_repo, "test commit")
+    # the file is in git's tracked set (so Nix flakes can see it)
+    tracked = subprocess.check_output(["git", "ls-files"], cwd=git_repo).decode("utf-8")
+    assert "test.txt" in tracked
+    # but its content is NOT staged
+    staged = subprocess.check_output(
+        ["git", "diff", "--cached", "--name-only"], cwd=git_repo
+    ).decode("utf-8")
+    assert "test.txt" not in staged
+    # and no new commit was created
+    head_after = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=git_repo)
+    assert head_before == head_after
+
+
 def test_commit_file_outside_git_raises_error(git_repo: Path) -> None:
     # create a file outside the git (a temporary file)
     with tempfile.NamedTemporaryFile() as tmp, pytest.raises(ClanError):

@@ -31,8 +31,6 @@ def commit_files(
     flake_dir: Path,
     commit_message: str | None = None,
 ) -> None:
-    if os.environ.get("CLAN_NO_COMMIT", None):
-        return
     if not file_paths:
         return
     # check that the file is in the git repository
@@ -76,12 +74,17 @@ def _commit_file_to_git(
         real_git_dir = flake_dir / actual_git_dir[len("gitdir: ") :]
 
     with locked_open(real_git_dir / "clan.lock", "w+"):
+        no_commit = bool(os.environ.get("CLAN_NO_COMMIT"))
         for file_path in file_paths:
-            cmd = nix_shell(
-                ["git"],
-                ["git", "-C", str(flake_dir), "add", "--", str(file_path)],
-            )
-            # add the file to the git index
+            # With CLAN_NO_COMMIT we only register new files with
+            # `git add --intent-to-add`: the path joins git's tracked set so
+            # Nix flakes can see it, but its content is neither staged nor
+            # committed. Otherwise we stage the content normally to commit it.
+            add_cmd = ["git", "-C", str(flake_dir), "add"]
+            if no_commit:
+                add_cmd.append("--intent-to-add")
+            add_cmd += ["--", str(file_path)]
+            cmd = nix_shell(["git"], add_cmd)
 
             run(
                 cmd,
@@ -93,6 +96,11 @@ def _commit_file_to_git(
 
             relative_path = file_path.relative_to(flake_dir)
             log.debug(f"Adding {relative_path} to git")
+
+        # With CLAN_NO_COMMIT the files were registered with intent-to-add
+        # above so flakes can see them; skip staging content and committing.
+        if no_commit:
+            return
 
         # check if there is a diff
         cmd = nix_shell(
