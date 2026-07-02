@@ -220,7 +220,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          python -m pytest -m "not service_runner and not impure and not with_core" -n "$jobs" \
+          python -m pytest -m "not impure and not with_core" -n "$jobs" \
             ./clan_cli  \
             ./clan_lib
 
@@ -319,7 +319,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
             # Run all tests with core marker
-            python -m pytest -m "not service_runner and not impure and with_core ${marker}" -n "$jobs" \
+            python -m pytest -m "not impure and with_core ${marker}" -n "$jobs" \
               ./clan_cli  \
               ./clan_lib
 
