@@ -160,13 +160,6 @@ def machine_state(system: str, machine: str) -> str:
     return f'{prefix}.{system}."{machine}".config.clan.core.state'
 
 
-# Requires the monitoring/telegraf module to be enabled
-# @machine_selector
-def machine_telegraf_cert_path(system: str, machine: str) -> str:
-    prefix = get_machine_prefix()
-    return f'{prefix}.{system}."{machine}".config.clan.core.vars.generators.telegraf-certs.files.crt.path'
-
-
 @machine_selector
 def machine_networking_target_host(system: str, machine: str) -> str:
     prefix = get_machine_prefix()
