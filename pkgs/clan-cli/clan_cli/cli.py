@@ -14,7 +14,6 @@ from . import (
     backups,
     secrets,
     select,
-    state,
     templates,
 )
 from . import init as init_cli
@@ -437,37 +436,6 @@ Examples:
         formatter_class=HelpFormatter,
     )
     network_cli.register_parser(parser_network)
-
-    parser_state = subparsers.add_parser(
-        "state",
-        aliases=["st"],
-        help="Query state information about machines",
-        description="Query state information about machines",
-        epilog=(
-            """
-This subcommand provides an interface to the state managed by Clan.
-
-State can be folders and databases that modules depend on managed by Clan.
-
-State directories can be added to on a per machine basis:
-```
-  config.clan.core.state.[SERVICE_NAME].folders = [
-    "/home"
-    "/root"
-  ];
-```
-Here [SERVICE_NAME] can be set freely, if the user sets them extra `userdata`
-can be a good choice.
-
-Examples:
-
-  $ clan state list [MACHINE]
-  List state of the machines managed by Clan.
-        """
-        ),
-        formatter_class=HelpFormatter,
-    )
-    state.register_parser(parser_state)
 
     register_common_flags(parser)
 
