@@ -24,7 +24,6 @@ exclude = ["clan_lib.runtime-deps*", "result"]
 [tool.setuptools.package-data]
 clan_cli = [
     "py.typed",
-    "vms/mimetypes/**/*",
     "webui/assets/**/*",
     "flash/*.sh",
 ]

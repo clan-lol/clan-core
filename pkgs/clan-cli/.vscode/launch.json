@@ -11,14 +11,6 @@
       "module": "clan_cli.webui",
       "justMyCode": false,
       "args": ["--reload", "--no-open", "--log-level", "debug"]
-    },
-    {
-      "name": "Clan Cli VMs",
-      "type": "python",
-      "request": "launch",
-      "module": "clan_cli",
-      "justMyCode": false,
-      "args": ["vms"]
     }
   ]
 }
