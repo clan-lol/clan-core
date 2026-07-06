@@ -35,8 +35,8 @@ let
       InventoryInstances = "Instances";
       InstanceRoleTagsFrom = "InstanceRoleTagList";
       InstanceRoleTagsTo = "InstanceRoleTagDict";
-      InstanceRoleTagsItem = "EmptyDict";
-      InstanceRoleTagDictItem = "EmptyDict";
+      InstanceRoleTagsItem = "InstanceRoleTag";
+      InstanceRoleTagDictItem = "InstanceRoleTag";
       ClanOutputs = "Outputs";
       ClanSecrets = "Secrets";
       InstancesItem = "Instance";

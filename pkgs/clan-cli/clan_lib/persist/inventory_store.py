@@ -124,6 +124,7 @@ class InventoryStore:
             _allowed_path_transforms = [
                 "instances.*.roles.*.settings",
                 "instances.*.roles.*.machines.*.settings",
+                "instances.*.roles.*.tags.*.settings",
             ]
         self._allowed_path_transforms = _allowed_path_transforms
 

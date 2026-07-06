@@ -4,32 +4,39 @@
 }:
 { lib, clanLib, ... }:
 let
-  inherit (lib)
-    types
-    ;
+  inherit (lib) types;
+  nestedSettings =
+    if nestedSettingsOption != null then
+      nestedSettingsOption
+    else
+      lib.mkOption {
+        default = { };
+        type = clanLib.types.uniqueDeferredSerializableModule;
+      };
 in
+
 {
   options = {
-    # TODO: deduplicate
+    # machines and tags both use nestedSettings
+
     machines = lib.mkOption {
       type = types.attrsOf (
         types.submodule {
-          options.settings =
-            if nestedSettingsOption != null then
-              nestedSettingsOption
-            else
-              lib.mkOption {
-                default = { };
-                type = clanLib.types.uniqueDeferredSerializableModule;
-              };
+          options.settings = nestedSettings;
+
         }
       );
       default = { };
     };
     tags = lib.mkOption {
       type = types.coercedTo (types.listOf types.str) (t: lib.genAttrs t (_: { })) (
-        types.attrsOf (types.submodule { })
+        types.attrsOf (
+          types.submodule {
+            options.settings = nestedSettings;
+          }
+        )
       );
+
       default = { };
     };
     settings =
