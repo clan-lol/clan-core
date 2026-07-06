@@ -62,20 +62,17 @@ let
             machineName:
             let
               machineSettings = instance.roles.${roleName}.machines.${machineName}.settings or { };
+              machineTags = inventory.machines.${machineName}.tags or [ ];
+              settingsViaTags = lib.filterAttrs (
+                tagName: _: builtins.elem tagName machineTags
+              ) instance.roles.${roleName}.tags;
             in
-            # TODO: tag settings
-            # Wait for this feature until option introspection for 'settings' is done.
-            # This might get too complex to handle otherwise.
-            # settingsViaTags = lib.filterAttrs (
-            #   tagName: _: machineHasTag machineName tagName
-            # ) instance.roles.${roleName}.tags;
             {
-              # TODO: Do we want to wrap settings with
-              # setDefaultModuleLocation "inventory.instances.${instanceName}.roles.${roleName}.tags.${tagName}";
               settings = {
                 imports = [
                   machineSettings
-                ]; # ++ lib.attrValues (lib.mapAttrs (_tagName: v: v.settings) settingsViaTags);
+                ]
+                ++ lib.mapAttrsToList (_tagName: tagCfg: tagCfg.settings) settingsViaTags;
               };
             }
           );

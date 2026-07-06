@@ -56,14 +56,6 @@ An attribute set of exported modules.
 """
 
 
-class EmptyDictInput(TypedDict):
-    pass
-
-
-class EmptyDictOutput(TypedDict):
-    pass
-
-
 class InstanceModuleInput(TypedDict):
     input: NotRequired[str | None]
     """
@@ -172,16 +164,18 @@ type InstanceRoleMachinesInput = dict[str, InstanceRoleMachineInput]
 type InstanceRoleMachinesOutput = dict[str, InstanceRoleMachineOutput]
 
 
-type InstanceRoleTagDictInput = dict[str, EmptyDictInput]
+class InstanceRoleTagInput(TypedDict):
+    settings: NotRequired[AnyJson]
 
 
 type InstanceRoleTagListInput = list[str]
 
 
-type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
+class InstanceRoleTagOutput(TypedDict):
+    settings: ReadOnly[AnyJson]
 
 
-type InstanceRoleTagsOutput = dict[str, EmptyDictOutput]
+type InstanceRoleTagsOutput = dict[str, InstanceRoleTagOutput]
 
 
 class InventoryMetaInput(TypedDict):
@@ -757,13 +751,6 @@ class TemplatesOutput(TypedDict):
     machine: ReadOnly[TemplatesMachineOutput]
 
 
-class InstanceRoleInput(TypedDict):
-    extraModules: NotRequired[InstanceRoleExtraModulesInput]
-    machines: NotRequired[InstanceRoleMachinesInput]
-    settings: NotRequired[AnyJson]
-    tags: NotRequired[InstanceRoleTagsInput]
-
-
 class InstanceRoleOutput(TypedDict):
     extraModules: ReadOnly[InstanceRoleExtraModulesOutput]
     machines: ReadOnly[InstanceRoleMachinesOutput]
@@ -771,7 +758,10 @@ class InstanceRoleOutput(TypedDict):
     tags: ReadOnly[InstanceRoleTagsOutput]
 
 
-type InstanceRolesInput = dict[str, InstanceRoleInput]
+type InstanceRoleTagDictInput = dict[str, InstanceRoleTagInput]
+
+
+type InstanceRoleTagsInput = InstanceRoleTagListInput | InstanceRoleTagDictInput
 
 
 type InstanceRolesOutput = dict[str, InstanceRoleOutput]
@@ -888,41 +878,25 @@ class TemplatesInput(TypedDict):
     machine: NotRequired[TemplatesMachineInput]
 
 
-class InstanceInput(TypedDict):
-    module: NotRequired[InstanceModuleInput]
-    roles: NotRequired[InstanceRolesInput]
-
-
 class InstanceOutput(TypedDict):
     module: ReadOnly[InstanceModuleOutput]
     roles: ReadOnly[InstanceRolesOutput]
 
 
-type InstancesInput = dict[str, InstanceInput]
-"""
-Multi host service module instances
-"""
+class InstanceRoleInput(TypedDict):
+    extraModules: NotRequired[InstanceRoleExtraModulesInput]
+    machines: NotRequired[InstanceRoleMachinesInput]
+    settings: NotRequired[AnyJson]
+    tags: NotRequired[InstanceRoleTagsInput]
+
+
+type InstanceRolesInput = dict[str, InstanceRoleInput]
 
 
 type InstancesOutput = dict[str, InstanceOutput]
 """
 Multi host service module instances
 """
-
-
-class InventoryInput(TypedDict):
-    """
-    The `Inventory` submodule.
-
-    For details see the [Inventory](/reference/options/clan_inventory) documentation.
-
-    """
-
-    instances: NotRequired[InstancesInput]
-    machines: NotRequired[MachinesInput]
-    meta: InventoryMetaInput
-    modules: NotRequired[InventoryModulesInput]
-    tags: NotRequired[InventoryTagsInput]
 
 
 class InventoryOutput(TypedDict):
@@ -938,35 +912,6 @@ class InventoryOutput(TypedDict):
     meta: ReadOnly[InventoryMetaOutput]
     modules: ReadOnly[InventoryModulesOutput]
     tags: ReadOnly[InventoryTagsOutput]
-
-
-class ClanInput(TypedDict):
-    directory: NotRequired[AnyJson]
-    """
-    The directory containing the clan.
-
-    A typical directory structure could look like this:
-
-    ```
-    .
-    ├── flake.nix
-    ├── assets
-    ├── machines
-    ├── modules
-    └── sops
-    ```
-
-    """
-    inventory: NotRequired[InventoryInput]
-    machines: NotRequired[ClanMachinesInput]
-    meta: NotRequired[AnyJson]
-    """
-    Global information about the clan.
-
-    """
-    modules: NotRequired[ClanModulesInput]
-    secrets: NotRequired[SecretsInput]
-    templates: NotRequired[TemplatesInput]
 
 
 class ClanOutput(TypedDict):
@@ -996,3 +941,58 @@ class ClanOutput(TypedDict):
     modules: ReadOnly[ClanModulesOutput]
     secrets: ReadOnly[SecretsOutput]
     templates: ReadOnly[TemplatesOutput]
+
+
+class InstanceInput(TypedDict):
+    module: NotRequired[InstanceModuleInput]
+    roles: NotRequired[InstanceRolesInput]
+
+
+type InstancesInput = dict[str, InstanceInput]
+"""
+Multi host service module instances
+"""
+
+
+class InventoryInput(TypedDict):
+    """
+    The `Inventory` submodule.
+
+    For details see the [Inventory](/reference/options/clan_inventory) documentation.
+
+    """
+
+    instances: NotRequired[InstancesInput]
+    machines: NotRequired[MachinesInput]
+    meta: InventoryMetaInput
+    modules: NotRequired[InventoryModulesInput]
+    tags: NotRequired[InventoryTagsInput]
+
+
+class ClanInput(TypedDict):
+    directory: NotRequired[AnyJson]
+    """
+    The directory containing the clan.
+
+    A typical directory structure could look like this:
+
+    ```
+    .
+    ├── flake.nix
+    ├── assets
+    ├── machines
+    ├── modules
+    └── sops
+    ```
+
+    """
+    inventory: NotRequired[InventoryInput]
+    machines: NotRequired[ClanMachinesInput]
+    meta: NotRequired[AnyJson]
+    """
+    Global information about the clan.
+
+    """
+    modules: NotRequired[ClanModulesInput]
+    secrets: NotRequired[SecretsInput]
+    templates: NotRequired[TemplatesInput]

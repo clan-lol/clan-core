@@ -232,10 +232,6 @@ in
                               };
                             };
 
-                            # instances.{instanceName}.roles.{roleName}.settings
-                            # options._settings = mkOption { };
-                            # options._settingsViaTags = mkOption { };
-                            # A deferred module that combines _settingsViaTags with _settings
                             options.settings = mkOption {
                               type = types.raw;
                               description = "Settings of 'role': ${name}";
