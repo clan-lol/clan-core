@@ -18,6 +18,21 @@ let
       };
       machines.bam = {
         nixpkgs.hostPlatform = "x86_64-linux";
+
+        clan.core.zerotier.networks.zerotier.settings = {
+          # dummy values to prevent generators to be evaluated
+          id = lib.mkForce "123";
+          uwid = lib.mkForce "123";
+
+          # custom dns settings
+          dns = {
+            "domain" = ".sometld";
+            "servers" = [ "ipv6....::00" ];
+          };
+          routes = [
+            { target = "2000::"; }
+          ];
+        };
       };
 
       modules.zerotier = module;
