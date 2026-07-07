@@ -30,7 +30,14 @@ def generate_key() -> sops.SopsKey:
     Before calling this function if you dont want to generate a new key.
     """
     path = default_admin_private_key_path()
-    _, pub_key = generate_private_key(out_file=path)
+    # Generate in memory to avoid overwriting the existing key file.
+    private_key, pub_key = generate_private_key()
+    # Append the new key to the identity file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not path.exists():
+        path.touch(mode=0o600)
+    with path.open("a") as f:
+        f.write(f"# public key: {pub_key}\n{private_key}\n")
     log.info(
         f"Generated age private key at '{path}' for your user.\nPlease back it up on a secure location or you will lose access to your secrets.",
     )
@@ -45,12 +52,23 @@ def generate_key() -> sops.SopsKey:
 def generate_command(args: argparse.Namespace) -> None:
     pub_keys = sops.maybe_get_admin_public_keys()
     if not pub_keys or args.new:
-        key = generate_key()
-        pub_keys = [key]
+        pub_keys = [generate_key()]
+        generated = True
+    else:
+        generated = False
 
     for key in pub_keys:
         key_type = key.key_type.name.lower()
-        print(f"{key.key_type.name} key {key.pubkey} is already set", file=sys.stderr)
+        if generated:
+            print(
+                f"Generated new {key.key_type.name} key {key.pubkey}",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                f"{key.key_type.name} key {key.pubkey} is already set",
+                file=sys.stderr,
+            )
         print(
             f"Add your {key_type} public key to the repository with:",
             file=sys.stderr,
@@ -107,7 +125,7 @@ def register_key_parser(parser: argparse.ArgumentParser) -> None:
         "--new",
         help=(
             "Generate a new key, without checking if a key already exists. "
-            " This will not overwrite an existing key."
+            "Appends a new key to the existing key file"
         ),
         action="store_true",
     )

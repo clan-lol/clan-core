@@ -1112,3 +1112,51 @@ def test_secrets_users_add_age_plugin_error(
     assert "plugin identifiers, not recipient keys" in error_msg
     assert "corresponding age1 public key instead" in error_msg
     assert "AGE-PLUGIN-YUBIKEY-18P5XCQVZ5FE4WKCW3NJWP" in error_msg
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_secrets_key_generate_new_appends(
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
+    monkeypatch: pytest.MonkeyPatch,
+    age_keys: list["KeyPair"],
+) -> None:
+    """Test that 'clan secrets key generate --new' appends instead of overwriting."""
+    key_file = test_flake_with_core.path / ".." / "age.key"
+    monkeypatch.setenv("SOPS_AGE_KEY_FILE", str(key_file))
+
+    # Pre-write an existing key to the file
+    key_file.write_text(
+        "# created: 2025-01-01T00:00:00+00:00\n"
+        f"# public key: {age_keys[0].pubkey}\n"
+        f"{age_keys[0].privkey}\n"
+    )
+
+    # Run generate --new
+    cli.run(
+        [
+            "secrets",
+            "key",
+            "generate",
+            "--new",
+            "--flake",
+            str(test_flake_with_core.path),
+        ],
+    )
+
+    # Verify both keys are in the file
+    content = key_file.read_text()
+    assert age_keys[0].pubkey in content, "Original key was overwritten"
+    assert age_keys[0].privkey in content, "Original private key was overwritten"
+
+    # key show must return BOTH keys: the original and the newly appended one.
+    # This distinguishes append (2 keys) from overwrite (1 new key) and no-op (1 old key).
+    with capture_output as output:
+        cli.run(["secrets", "key", "show", "--flake", str(test_flake_with_core.path)])
+    shown = json.loads(output.out)
+    pubkeys = {k["publickey"] for k in shown}
+    assert age_keys[0].pubkey in pubkeys, "Original key missing after --new"
+    assert len(pubkeys) == 2, (
+        f"Expected original + 1 new key, got {len(pubkeys)}: {pubkeys}"
+    )
