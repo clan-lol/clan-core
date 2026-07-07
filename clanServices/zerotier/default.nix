@@ -256,50 +256,65 @@
                   ;
               })
             ];
+            options = {
+              clan.core.zerotier.networks.${instanceName}.settings = lib.mkOption {
+                # Needs to be json serializable
+                # because it is written to disk and read by the zerotier controller
+                type = lib.types.json;
+                description = ''
+                  Extra network settings for the ZeroTier controller.
+                  These will be written to /var/lib/zerotier-one/controller.d/network/${networkId}.json
+                  and can be used to configure the network, e.g. to set routes or IP ranges.
+                '';
+              };
+            };
+
             config = {
+              clan.core.zerotier.networks.${instanceName}.settings = {
+                authTokens = [ null ];
+                authorizationEndpoint = "";
+                capabilities = [ ];
+                clientId = "";
+                dns = { };
+                enableBroadcast = true;
+                id = networkId;
+                ipAssignmentPools = [ ];
+                mtu = 2800;
+                multicastLimit = 32;
+                name = instanceName;
+                uwid = networkId;
+                objtype = "network";
+                private = !settings.public;
+                remoteTraceLevel = 0;
+                remoteTraceTarget = null;
+                revision = 1;
+                routes = [ ];
+                rules = [
+                  {
+                    not = false;
+                    "or" = false;
+                    type = "ACTION_ACCEPT";
+                  }
+                ];
+                rulesSource = "";
+                ssoEnabled = false;
+                tags = [ ];
+                v4AssignMode = {
+                  zt = false;
+                };
+                v6AssignMode = {
+                  "6plane" = false;
+                  rfc4193 = true;
+                  zt = false;
+                };
+              };
+
               systemd.services.zerotierone.serviceConfig.ExecStartPre = [
                 "+${pkgs.writeShellScript "init-zerotier-controller-${instanceName}" ''
                   mkdir -p /var/lib/zerotier-one/controller.d/network
                   ln -sfT ${
                     pkgs.writeText "net.json" (
-                      builtins.toJSON {
-                        authTokens = [ null ];
-                        authorizationEndpoint = "";
-                        capabilities = [ ];
-                        clientId = "";
-                        dns = { };
-                        enableBroadcast = true;
-                        id = networkId;
-                        ipAssignmentPools = [ ];
-                        mtu = 2800;
-                        multicastLimit = 32;
-                        name = instanceName;
-                        uwid = networkId;
-                        objtype = "network";
-                        private = !settings.public;
-                        remoteTraceLevel = 0;
-                        remoteTraceTarget = null;
-                        revision = 1;
-                        routes = [ ];
-                        rules = [
-                          {
-                            not = false;
-                            "or" = false;
-                            type = "ACTION_ACCEPT";
-                          }
-                        ];
-                        rulesSource = "";
-                        ssoEnabled = false;
-                        tags = [ ];
-                        v4AssignMode = {
-                          zt = false;
-                        };
-                        v6AssignMode = {
-                          "6plane" = false;
-                          rfc4193 = true;
-                          zt = false;
-                        };
-                      }
+                      builtins.toJSON config.clan.core.zerotier.networks.${instanceName}.settings
                     )
                   } /var/lib/zerotier-one/controller.d/network/${networkId}.json
                 ''}"

@@ -110,3 +110,22 @@ roles.controller.machines."<controller>".settings.allowedIds = [
 ## Problems
 
 In case of any problems reach us on [matrix](https://matrix.to/#/#clan:clan.lol)
+
+## Migrate `clan.core.networking.zerotier.settings`
+
+Assume you previously used custom settings such as `dns`
+
+Migrate:
+
+```diff
+-clan.core.networking.zerotier.settings = {
++clan.core.zerotier.networks."<instance>".settings = {
+  dns = {
+    "domain" = ".app";
+    "servers" = [ "$SERVER_IP" ];
+  };
+  routes = [
+    { target = "2000::"; }
+  ];
+};
+```
