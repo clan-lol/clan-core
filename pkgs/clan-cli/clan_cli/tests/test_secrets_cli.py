@@ -1160,3 +1160,36 @@ def test_secrets_key_generate_new_appends(
     assert len(pubkeys) == 2, (
         f"Expected original + 1 new key, got {len(pubkeys)}: {pubkeys}"
     )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_secrets_key_generate_reports_registered_user(
+    test_flake_with_core: FlakeForTest,
+    capture_output: CaptureOutput,
+    monkeypatch: pytest.MonkeyPatch,
+    age_keys: list["KeyPair"],
+) -> None:
+    """Generate must not tell the user to add a key that is already registered."""
+    # Register a user whose key we then present as the local admin identity.
+    cli.run(
+        [
+            "secrets",
+            "users",
+            "add",
+            "--flake",
+            str(test_flake_with_core.path),
+            "alice",
+            age_keys[0].pubkey,
+        ],
+    )
+    monkeypatch.setenv("SOPS_AGE_KEY", age_keys[0].privkey)
+
+    with capture_output as output:
+        cli.run(
+            ["secrets", "key", "generate", "--flake", str(test_flake_with_core.path)],
+        )
+
+    # The already-registered key is reported as such, with no add instructions.
+    assert "is already set and registered as user 'alice'" in output.err
+    assert "clan secrets users add" not in output.err
