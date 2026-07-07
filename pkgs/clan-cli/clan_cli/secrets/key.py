@@ -49,19 +49,46 @@ def generate_key() -> sops.SopsKey:
     )
 
 
+def _print_add_instructions(key: sops.SopsKey) -> None:
+    """Tell the user how to register a public key with their clan."""
+    key_type = key.key_type.name.lower()
+    print(
+        f"Add your {key_type} public key to the repository with:",
+        file=sys.stderr,
+    )
+    print(
+        f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
+        file=sys.stderr,
+    )
+
+
 def generate_command(args: argparse.Namespace) -> None:
+    flake: Flake | None = args.flake
     pub_keys = sops.maybe_get_admin_public_keys()
     if not pub_keys or args.new:
-        pub_keys = [generate_key()]
-        generated = True
-    else:
-        generated = False
+        # A freshly generated key is never registered yet, so always guide the
+        # user to add it. generate_key() creates exactly one key.
+        key = generate_key()
+        print(
+            f"Generated new {key.key_type.name} key {key.pubkey}",
+            file=sys.stderr,
+        )
+        _print_add_instructions(key)
+        return
 
+    # Keys already exist on this machine. When we can resolve the clan, report
+    # which keys are already registered and only guide adding the rest.
+    clan_dir = get_clan_dir(flake) if flake is not None else None
     for key in pub_keys:
-        key_type = key.key_type.name.lower()
-        if generated:
+        registered_user = None
+        if clan_dir is not None:
+            matched = sops.maybe_get_user(clan_dir, {key})
+            if matched:
+                registered_user = next(iter(matched)).username
+        if registered_user is not None:
             print(
-                f"Generated new {key.key_type.name} key {key.pubkey}",
+                f"{key.key_type.name} key {key.pubkey} is already set "
+                f"and registered as user '{registered_user}'",
                 file=sys.stderr,
             )
         else:
@@ -69,14 +96,7 @@ def generate_command(args: argparse.Namespace) -> None:
                 f"{key.key_type.name} key {key.pubkey} is already set",
                 file=sys.stderr,
             )
-        print(
-            f"Add your {key_type} public key to the repository with:",
-            file=sys.stderr,
-        )
-        print(
-            f"clan secrets users add <username> --{key_type}-key {key.pubkey}",
-            file=sys.stderr,
-        )
+            _print_add_instructions(key)
 
 
 def show_command(_args: argparse.Namespace) -> None:
