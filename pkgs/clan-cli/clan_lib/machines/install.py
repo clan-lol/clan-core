@@ -1,6 +1,5 @@
 import logging
 from dataclasses import dataclass
-from enum import StrEnum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import time
@@ -8,7 +7,7 @@ from typing import Literal
 
 from clan_cli.machines.hardware import HardwareConfig
 
-from clan_lib.api import API, message_queue
+from clan_lib.api import API
 from clan_lib.cmd import Log, RunOpts, run
 from clan_lib.git import commit_file
 from clan_lib.machines.machines import Machine
@@ -43,27 +42,6 @@ log = logging.getLogger(__name__)
 
 
 BuildOn = Literal["auto", "local", "remote"]
-
-
-class Step(StrEnum):
-    GENERATORS = "generators"
-    UPLOAD_SECRETS = "upload-secrets"
-    NIXOS_ANYWHERE = "nixos-anywhere"
-    FORMATTING = "formatting"
-    REBOOTING = "rebooting"
-    INSTALLING = "installing"
-
-
-def notify_install_step(current: Step) -> None:
-    print(f"NOTIFY STEP: {current}")
-    message_queue.put(
-        {
-            "topic": current,
-            "data": None,
-            # MUST be set the to api function name, while technically you can set any origin, this is a bad idea.
-            "origin": "run_machine_install",
-        },
-    )
 
 
 @dataclass
@@ -112,7 +90,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
     )
 
     # Notify the UI about what we are doing
-    notify_install_step(Step.GENERATORS)
+    # TODO: rework notify_install_step(Step.GENERATORS)
     run_generators([machine], generators=None, full_closure=False)
 
     with (
@@ -125,7 +103,7 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         activation_secrets = base_directory / "activation_secrets"
 
         # Notify the UI about what we are doing
-        notify_install_step(Step.UPLOAD_SECRETS)
+        # TODO: rework notify_install_step(Step.UPLOAD_SECRETS)
 
         # Get upload directory, falling back if backend doesn't support remote install
         secrets_target_dir = machine.secret_vars_store.get_upload_directory(
@@ -224,17 +202,10 @@ def run_machine_install(opts: InstallOptions, target_host: Remote) -> None:
         cmd = add_target(cmd, target_host)
         cmd = wrap_nix_shell(cmd, target_host)
 
-        install_steps = {
-            "kexec": Step.NIXOS_ANYWHERE,
-            "disko": Step.FORMATTING,
-            "install": Step.INSTALLING,
-            "reboot": Step.REBOOTING,
-        }
-
         def run_phase(phase: str) -> None:
-            notification = install_steps.get(phase, Step.NIXOS_ANYWHERE)
-            notify_install_step(notification)
-            # breakpoint()
+
+            # notification = install_steps.get(phase, Step.NIXOS_ANYWHERE)
+            # TODO: rework notify_install_step(notification)
             run(
                 [*cmd, "--phases", phase],
                 RunOpts(
