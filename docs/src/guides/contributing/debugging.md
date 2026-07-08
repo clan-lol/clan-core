@@ -127,7 +127,6 @@ git+file:///home/lhebendanz/Projects/clan-core
 │       ├───clan-cli omitted (use '--all-systems' to show)
 │       ├───clan-cli-docs omitted (use '--all-systems' to show)
 │       ├───clan-ts-api omitted (use '--all-systems' to show)
-│       ├───clan-app omitted (use '--all-systems' to show)
 │       ├───default omitted (use '--all-systems' to show)
 │       ├───docs omitted (use '--all-systems' to show)
 │       ├───editor omitted (use '--all-systems' to show)

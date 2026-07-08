@@ -54,7 +54,7 @@ message_queue: Queue[ProcessMessage] = Queue()
 A global message queue for sending messages to the UI
 This can be used to send notifications or messages to the UI. Before returning a response.
 
-The clan-app imports the queue as clan_lib.api.message_queue and subscribes to it.
+The consumer imports the queue as clan_lib.api.message_queue and subscribes to it.
 """
 
 
@@ -119,7 +119,7 @@ def get_system_file(file_request: FileRequest) -> str | None:
     # and so on.
     pass
 
-# At runtime the clan-app must override platform specific functions
+# At runtime the consumer must override platform specific functions
 API.register(get_system_file)
 ---
                 """
