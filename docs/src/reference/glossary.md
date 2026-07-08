@@ -4,10 +4,6 @@
 
 Collection of machines interconnected in a network.
 
-## clan-app
-
-Graphical interface for managing clans. Simpler to use than the `clan-cli`.
-
 ## clan-cli
 
 Command-line tool for managing clans.
@@ -24,7 +20,6 @@ Service defined and managed through a Clan configuration.
 ## clanURL
 
 Flake URL-like syntax used to link to clans.
-Required to connect the `url-open` application to the `clan-app`.
 
 ## facts *(deprecated)*
 

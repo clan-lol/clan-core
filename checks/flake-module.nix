@@ -174,8 +174,6 @@ in
             # import our test
             nixos-test-secrets = import ./secrets nixosTestArgs;
             nixos-test-container = import ./container nixosTestArgs;
-            # Clan app tests
-            nixos-test-app-ocr = self.clanLib.test.baseTest ./app-ocr nixosTestArgs;
           };
       };
     };

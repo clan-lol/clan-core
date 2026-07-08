@@ -10,7 +10,6 @@
     }:
     let
       sizelintExcludes = [
-        "pkgs/clan-app/ui/package-lock.json"
         "pkgs/clan-site/pnpm-lock.yaml"
       ];
     in
@@ -166,11 +165,6 @@
             "--config-file"
             "pyproject.toml"
           ];
-        };
-        "clan-app" = {
-          directory = "pkgs/ui/clan-app";
-          extraPythonPackages = (self'.packages.clan-app.devshellPyDeps pkgs.python3Packages);
-          extraPythonPaths = [ "../../clan-cli" ];
         };
       };
       treefmt.programs.ruff.check = true;
