@@ -240,8 +240,8 @@
             ) [ ] machines;
             allHostIPs = settings.allowedIps ++ networkIps;
 
-            zerotier-members = pkgs.callPackage ../../pkgs/zerotier-tools { };
-            zerotierone = pkgs.callPackage ../../pkgs/zerotierone { };
+            zerotier-members = pkgs.callPackage ./pkgs/zerotier-tools { };
+            zerotierone = pkgs.callPackage ./pkgs/zerotierone { };
           in
           {
             imports = [
@@ -383,7 +383,7 @@
         let
           isController = builtins.elem "controller" machine.roles;
 
-          zerotier-tools = pkgs.callPackage ../../pkgs/zerotier-tools { };
+          zerotier-tools = pkgs.callPackage ./pkgs/zerotier-tools { };
 
           identity-secret =
             config.clan.core.vars.generators."zerotier-identity-${machine.name}".files.identity-secret;
@@ -457,7 +457,7 @@
             # Override license so that we can build zerotierone without
             # having to re-import nixpkgs.
             services.zerotierone.package = lib.mkDefault (
-              pkgs.callPackage ../../pkgs/zerotierone {
+              pkgs.callPackage ./pkgs/zerotierone {
                 includeController = isController;
               }
             );

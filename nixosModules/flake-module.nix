@@ -21,8 +21,8 @@ let
       ];
       config = {
         clan.core.clanPkgs = lib.mkDefault {
-          zerotier-members = pkgs.callPackage (self + "/pkgs/zerotier-tools") { };
-          zerotierone = pkgs.callPackage (self + "/pkgs/zerotierone") { };
+          zerotier-members = pkgs.callPackage (self + "clanServices/zerotier/pkgs/zerotier-tools") { };
+          zerotierone = pkgs.callPackage (self + "clanServices/zerotier/pkgs/zerotierone") { };
         };
       };
     };

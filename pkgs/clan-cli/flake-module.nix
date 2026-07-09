@@ -26,7 +26,7 @@
             "clanServices"
             # needed by clan_lib/docs_test.py to validate CLI documentation links
             "docs/src"
-            "pkgs/zerotierone"
+            "clanServices/zerotier/pkgs/zerotierone"
             # needed for test_generate_test_vars.py
             "checks/service-dummy-test"
             "checks/flake-module.nix"

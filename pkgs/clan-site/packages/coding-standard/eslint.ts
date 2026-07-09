@@ -54,11 +54,11 @@ export function base({
         "no-fallthrough": ["error", { reportUnusedFallthroughComment: true }],
         "no-inline-comments": ["error", { ignorePattern: "@vite-ignore" }],
         "no-promise-executor-return": "error",
-        // Err on the side of causion.  Use ESLint disable comment when needed
+        // Err on the side of caution.  Use ESLint disable comment when needed
         "no-template-curly-in-string": "error",
-        // Err on the side of causion.  Use ESLint disable comment when needed
+        // Err on the side of caution.  Use ESLint disable comment when needed
         "no-unmodified-loop-condition": "error",
-        // Err on the side of causion.  Use ESLint disable comment when needed
+        // Err on the side of caution.  Use ESLint disable comment when needed
         "no-unreachable-loop": "error",
         "no-unsafe-negation": ["error", { enforceForOrderingRelations: true }],
         "no-unsafe-optional-chaining": [

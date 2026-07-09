@@ -276,9 +276,9 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.passage
                 zerotierone
                 # needed by vars generate tests
-                (pkgs.callPackage ../../pkgs/zerotierone { includeController = true; })
+                (pkgs.callPackage ../../clanServices/zerotier/pkgs/zerotierone { includeController = true; })
                 nix-select
-                (pkgs.callPackage ../../pkgs/zerotier-tools { })
+                (pkgs.callPackage ../../clanServices/zerotier/pkgs/zerotier-tools { })
 
                 # Pre-built VMs for impure tests
                 pkgs.stdenv.drvPath
