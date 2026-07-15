@@ -8,7 +8,11 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.update import _build_darwin_rebuild_cmd
 
-from clan_cli.machines.update import get_machines_for_update, run_update_with_network
+from clan_cli.machines.update import (
+    _remote_from_cli_override,
+    get_machines_for_update,
+    run_update_with_network,
+)
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.helpers import cli
 
@@ -177,6 +181,36 @@ def test_update_command_no_flake(
 
     with pytest.raises(ClanError):
         cli.run(["machines", "update", "machine1"])
+
+
+@pytest.mark.parametrize("forward_agent", [False, True])
+def test_remote_from_cli_override_forwards_agent(forward_agent: bool) -> None:
+    machine = MagicMock()
+    machine.name = "test-machine"
+    machine.get_forward_agent.return_value = forward_agent
+    remote = MagicMock()
+    overridden_remote = MagicMock()
+    remote.override.return_value = overridden_remote
+
+    with patch(
+        "clan_cli.machines.update.Remote.from_ssh_uri",
+        return_value=remote,
+    ) as from_ssh_uri:
+        result = _remote_from_cli_override(
+            machine=machine,
+            address="root@build-host",
+            host_key_check="strict",
+        )
+
+    from_ssh_uri.assert_called_once_with(
+        machine_name="test-machine",
+        address="root@build-host",
+    )
+    remote.override.assert_called_once_with(
+        host_key_check="strict",
+        forward_agent=forward_agent,
+    )
+    assert result is overridden_remote
 
 
 def test_darwin_rebuild_cmd_no_literal_quotes() -> None:

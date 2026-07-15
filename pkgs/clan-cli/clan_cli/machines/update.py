@@ -41,6 +41,20 @@ if TYPE_CHECKING:
 log = logging.getLogger(__name__)
 
 
+def _remote_from_cli_override(
+    machine: Machine,
+    address: str,
+    host_key_check: HostKeyCheck,
+) -> Remote:
+    return Remote.from_ssh_uri(
+        machine_name=machine.name,
+        address=address,
+    ).override(
+        host_key_check=host_key_check,
+        forward_agent=machine.get_forward_agent(),
+    )
+
+
 def run_update_with_network(
     machine: Machine,
     build_host: Remote | LocalHost | None,
@@ -60,10 +74,11 @@ def run_update_with_network(
 
     if target_host_override:
         # Direct connection without network context
-        target_host = Remote.from_ssh_uri(
-            machine_name=machine.name,
+        target_host = _remote_from_cli_override(
+            machine=machine,
             address=target_host_override,
-        ).override(host_key_check=host_key_check)
+            host_key_check=host_key_check,
+        )
         run_machine_update(
             machine=machine,
             target_host=target_host,
@@ -202,10 +217,11 @@ def update_command(args: argparse.Namespace) -> None:
                     if args.build_host == "localhost":
                         build_host = LocalHost()
                     else:
-                        build_host = Remote.from_ssh_uri(
-                            machine_name=machine.name,
+                        build_host = _remote_from_cli_override(
+                            machine=machine,
                             address=args.build_host,
-                        ).override(host_key_check=args.host_key_check)
+                            host_key_check=args.host_key_check,
+                        )
                 else:
                     build_host = machine.build_host()
 
