@@ -20,7 +20,3 @@ def guides_url(page: str) -> str:
 
 def reference_url(page: str) -> str:
     return f"{_docs_root()}/reference/{page.strip('/')}"
-
-
-def service_url(name: str) -> str:
-    return f"{_docs_root()}/services/official/{name.strip('/')}"

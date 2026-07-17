@@ -1,18 +1,14 @@
 import ast
-import json
 from pathlib import Path
 
 import pytest
 
-from clan_lib.cmd import run
 from clan_lib.docs import (
     DOCS_BASE_URL,
     DOCS_VERSION,
     guides_url,
     reference_url,
-    service_url,
 )
-from clan_lib.nix import nix_eval
 
 # clan_lib/ -> pkgs/clan-cli/
 _CLI_ROOT = Path(__file__).parent.parent
@@ -101,45 +97,3 @@ def test_guides_url_pages_exist(clan_core: Path) -> None:
 
 def test_reference_url() -> None:
     assert reference_url("cli") == f"{DOCS_BASE_URL}/{DOCS_VERSION}/reference/cli"
-
-
-def test_service_url() -> None:
-    assert service_url("borgbackup") == (
-        f"{DOCS_BASE_URL}/{DOCS_VERSION}/services/official/borgbackup"
-    )
-
-
-def _active_service_modules(clan_core: Path) -> set[str]:
-    """Evaluate the slugs of every clan service that gets a generated docs page.
-
-    Pages at `services/official/<name>` are generated from `clan.modules`
-    minus `clan.deprecatedModules`, matching `docs/../get-module-docs.nix`.
-    """
-    apply = (
-        "clan: builtins.attrNames "
-        "(builtins.removeAttrs clan.modules (clan.deprecatedModules or []))"
-    )
-    proc = run(nix_eval([f"{clan_core}#clan", "--apply", apply]))
-    return set(json.loads(proc.stdout))
-
-
-@pytest.mark.with_core
-def test_service_urls_exists(clan_core: Path) -> None:
-    """Every `service_url()` call in the CLI must reference an existing clan service."""
-    known_services = _active_service_modules(clan_core)
-    assert known_services, "no clan services evaluated - clan.modules is empty"
-
-    calls = _collect_function_calls("service_url")
-    assert calls, "no service_url() calls found - the AST collector is broken"
-
-    missing: list[str] = []
-    for py_file, lineno, name in calls:
-        service = name.split("#", 1)[0].strip("/")
-        if service in known_services:
-            continue
-        rel = py_file.relative_to(_CLI_ROOT)
-        missing.append(f"{rel}:{lineno} -> service '{service}'")
-
-    assert not missing, "service_url() points at unknown clan services:\n  " + (
-        "\n  ".join(missing)
-    )
