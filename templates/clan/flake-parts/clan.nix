@@ -48,7 +48,7 @@
   # machines/server/configuration.nix will be automatically imported.
   # See: https://clan.lol/docs/unstable/guides/inventory/autoincludes
   machines = {
-    # test-machine = { config, ... }: {
+    # test-machine = { config, pkgs, ... }: {
     #   environment.systemPackages = [ pkgs.asciinema ];
     # };
   };
