@@ -39,7 +39,7 @@
     font-weight: 700;
     font-size: 20px;
     text-decoration: none;
-    font-variation-settings: "wdth" 112.5;
+    font-variation-settings: "width" 112.5;
   }
 
   .search {

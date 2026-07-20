@@ -10,7 +10,6 @@
     ./network-status/flake-module.nix
     ./docs-from-code/flake-module.nix
     ./testing/flake-module.nix
-    ./zerotier-tools/flake-module.nix
     ./clan-release-diff/flake-module.nix
   ];
 
@@ -24,10 +23,8 @@
     {
       packages = {
         tea-create-pr = pkgs.callPackage ./tea-create-pr { };
-        zerotier-tools = pkgs.callPackage ./zerotier-tools { };
         merge-after-ci = pkgs.callPackage ./merge-after-ci { inherit (config.packages) tea-create-pr; };
         pending-reviews = pkgs.callPackage ./pending-reviews { };
-        zerotierone = pkgs.callPackage ./zerotierone { };
         datamodel-code-generator = pkgs.python3Packages.toPythonApplication (
           pkgs.python3Packages.callPackage ./datamodel-code-generator { }
         );

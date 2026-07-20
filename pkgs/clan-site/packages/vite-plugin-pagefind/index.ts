@@ -1,7 +1,7 @@
 // There is an existing pagefind plugin for vite:
 // https://github.com/Hugos68/vite-plugin-pagefind
 //
-// It's not used becuase:
+// It's not used because:
 // 1. It manually run the package manager's build command. This mean it needs to
 //    detech which package manager is actually used, where it could have simply
 //    run the pagefind's node API at vite build time and asks the user to run

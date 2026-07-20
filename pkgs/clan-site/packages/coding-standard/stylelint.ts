@@ -22,7 +22,7 @@ export default {
     "declaration-no-important": true,
     // This rule doesn't work well for nested rules
     "no-descending-specificity": null,
-    // An empty line before a comment might artifically create visual groups
+    // An empty line before a comment might artificially create visual groups
     "comment-empty-line-before": null,
     "csstools/use-logical": true,
     // Re-enable this once false positives are fixed
