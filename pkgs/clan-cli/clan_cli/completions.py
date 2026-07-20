@@ -168,49 +168,6 @@ def complete_backup_providers_for_machine(
     return dict.fromkeys(providers, "provider")
 
 
-def complete_state_services_for_machine(
-    prefix: str,  # noqa: ARG001
-    parsed_args: argparse.Namespace,
-    **_kwargs: Any,
-) -> Iterable[str]:
-    """Provides completion functionality for machine state providers."""
-    providers: list[str] = []
-    machine: str = parsed_args.machine
-
-    def run_cmd() -> None:
-        try:
-            if (
-                clan_dir_result := clan_dir(getattr(parsed_args, "flake", None))
-            ) is not None:
-                flake = clan_dir_result
-            else:
-                flake = "."
-            providers_result = json.loads(
-                run(
-                    nix_eval(
-                        flags=[
-                            f"{flake}#nixosConfigurations.{machine}.config.clan.core.state",
-                            "--apply",
-                            "builtins.attrNames",
-                        ],
-                    ),
-                ).stdout.strip(),
-            )
-
-            providers.extend(providers_result)
-        except subprocess.CalledProcessError:
-            pass
-
-    thread = threading.Thread(target=run_cmd, daemon=True)
-    thread.start()
-    thread.join(timeout=COMPLETION_TIMEOUT)
-
-    if thread.is_alive():
-        return iter([])
-
-    return dict.fromkeys(providers, "service")
-
-
 def complete_secrets(
     prefix: str,  # noqa: ARG001
     parsed_args: argparse.Namespace,
@@ -305,27 +262,6 @@ def complete_templates_clan(
     if clan_template_list:
         clan_templates = list(clan_template_list)
         return dict.fromkeys(clan_templates, "clan")
-    return []
-
-
-def complete_templates_machine(
-    prefix: str,  # noqa: ARG001
-    parsed_args: argparse.Namespace,
-    **_kwargs: Any,
-) -> Iterable[str]:
-    """Provides completion functionality for machine templates"""
-    flake = (
-        clan_dir_result
-        if (clan_dir_result := clan_dir(getattr(parsed_args, "flake", None)))
-        is not None
-        else "."
-    )
-
-    list_all_templates = list_templates(Flake(flake))
-    machine_template_list = list_all_templates.builtins.get("machine")
-    if machine_template_list:
-        machine_templates = list(machine_template_list)
-        return dict.fromkeys(machine_templates, "machine")
     return []
 
 

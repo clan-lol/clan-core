@@ -59,8 +59,6 @@ let
   testRuntimeDependenciesMap = generateRuntimeDependenciesMap allDependencies;
   # Filter out packages that are not needed for tests and pull in many dependencies
   testExcludedPackages = {
-    virt-viewer = true; # pulls in libvirt and other graphics libraries
-    waypipe = true; # wayland forwarding not needed in tests
     zenity = true; # GUI dialogs not needed in tests
   };
   testRuntimeDependencies = lib.filter (pkg: !(testExcludedPackages.${pkg.pname or ""} or false)) (
@@ -222,7 +220,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           # limit build cores to 16
           jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
-          python -m pytest -m "not service_runner and not impure and not with_core" -n "$jobs" \
+          python -m pytest -m "not impure and not with_core" -n "$jobs" \
             ./clan_cli  \
             ./clan_lib
 
@@ -280,7 +278,7 @@ pythonRuntime.pkgs.buildPythonApplication {
                 nix-select
                 (pkgs.callPackage ../../pkgs/zerotier-tools { })
 
-                # Pre-built VMs for impure tests
+                # Build dependencies for impure tests
                 pkgs.stdenv.drvPath
                 pkgs.bash.drvPath
                 pkgs.buildPackages.lndir
@@ -321,7 +319,7 @@ pythonRuntime.pkgs.buildPythonApplication {
             jobs="$((NIX_BUILD_CORES>16 ? 16 : NIX_BUILD_CORES))"
 
             # Run all tests with core marker
-            python -m pytest -m "not service_runner and not impure and with_core ${marker}" -n "$jobs" \
+            python -m pytest -m "not impure and with_core ${marker}" -n "$jobs" \
               ./clan_cli  \
               ./clan_lib
 

@@ -24,7 +24,6 @@
   "openssh",
   "pass",
   "passage",
-  "qemu",
   "qrencode",
   "rsync",
   "shellcheck-minimal",
@@ -33,9 +32,6 @@
   "tor",
   "torsocks",
   "util-linux",
-  "virt-viewer",
-  "virtiofsd",
-  "waypipe",
   "zbar",
   "zenity"
 ]

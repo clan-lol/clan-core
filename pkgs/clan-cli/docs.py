@@ -9,7 +9,7 @@ from clan_cli.cli import create_parser
 # Constants for command line argument validation
 EXPECTED_ARGC = 2  # Expected number of command line arguments
 
-hidden_subcommands = ["machine", "b", "f", "m", "se", "st", "va", "net", "network"]
+hidden_subcommands = ["machine", "b", "f", "m", "se", "va", "net", "network"]
 
 
 @dataclass

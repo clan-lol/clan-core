@@ -11,7 +11,6 @@
     ./networking.nix
     ./nix-settings.nix
     ./options.nix
-    ./outputs.nix
     ./sops.nix
     ./vars
   ]
