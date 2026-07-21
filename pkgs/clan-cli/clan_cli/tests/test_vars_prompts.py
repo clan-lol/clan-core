@@ -524,3 +524,55 @@ def test_get_generator_prompt_previous_values(
                 ),
             ],
         )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_persisted_prompt_reused_not_reasked(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Regression (clan-core issue #5617): a persisted prompt whose value is
+    already stored must be reused, not re-prompted, when ``run_generators`` runs
+    with its defaults - the path ``clan machines update`` takes.
+
+    ``run_generators`` used to default ``auto_accept_prompts=False``, so the
+    deploy/build/install/flash callers re-prompted for values already set (e.g.
+    via ``clan vars set``), blocking non-interactive deploys.
+    """
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    my_generator = config["clan"]["core"]["vars"]["generators"]["my_generator"]
+    my_generator["prompts"]["prompt1"]["type"] = "line"
+    my_generator["prompts"]["prompt1"]["persist"] = True
+    my_generator["files"]["prompt1"]["secret"] = False
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    key = GeneratorId(name="my_generator", placement=PerMachine("my_machine"))
+
+    # Store the value once (mirrors `clan vars set` / the first generation).
+    run_generators(
+        machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+        generators=["my_generator"],
+        prompt_values={"my_generator": {"prompt1": "stored-value"}},
+    )
+    store = in_repo.VarsStore(Flake(str(flake.path)))
+    assert store.get(key, "prompt1").decode() == "stored-value"
+
+    # Re-generate the way a deploy does: run_generators with its defaults and no
+    # prompt_values. If the persisted value were re-prompted, this mock answer
+    # would be consumed and overwrite the stored value.
+    monkeypatch.setattr(
+        "clan_lib.vars.prompt.MOCK_PROMPT_RESPONSE",
+        iter(["MUST-NOT-BE-ASKED"]),
+    )
+    with caplog.at_level(logging.INFO):
+        run_generators(
+            machines=[Machine(name="my_machine", flake=Flake(str(flake.path)))],
+            generators=["my_generator"],
+        )
+
+    # The stored value is reused and no prompt was shown.
+    assert store.get(key, "prompt1").decode() == "stored-value"
+    assert "Prompting value for my_generator/prompt1" not in caplog.text

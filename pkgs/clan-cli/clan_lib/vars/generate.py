@@ -268,7 +268,7 @@ def run_generators(
     full_closure: bool = False,
     prompt_values: dict[str, dict[str, str]] | PromptFunc | None = None,
     no_sandbox: bool = False,
-    auto_accept_prompts: bool = False,
+    auto_accept_prompts: bool = True,
 ) -> None:
     """Run the specified generators for machines.
 
@@ -282,9 +282,11 @@ def run_generators(
             or a function that returns prompt values for a generator.
             If None, uses the default prompt function.
         no_sandbox: Whether to disable sandboxing when executing the generator.
-        auto_accept_prompts: If True, automatically use previous prompt values when
-            available instead of asking interactively. Only applies when prompt_values
-            is None (using default prompt function).
+        auto_accept_prompts: If True (default), reuse a prompt's previously
+            stored value when one exists instead of asking again; prompts with
+            no stored value are still asked. Set False (e.g. `--regenerate`) to
+            re-ask even when a value exists. Only applies when prompt_values is
+            None (using the default prompt function).
 
     Raises:
         ClanError: If the machine or generator is not found, or if there are issues with
