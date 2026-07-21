@@ -36,7 +36,7 @@ Create a new Nix file `root-password.nix` with the following content and import 
     # don't store the prompted password itself
     prompts.password-input.persist = false;
     # define an output file for storing the hash
-    files.password-hash.secret = false;
+    files.password-hash.secret = true;
     # define the logic for generating the hash
     script = ''
       cat $prompts/password-input | mkpasswd > $out/password-hash
