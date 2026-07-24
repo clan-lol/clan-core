@@ -116,7 +116,12 @@ export const docsNav: DocsNavItems = [
         label: "Networking",
         children: [
           "guides/networking/networking",
-          "guides/networking/mesh-vpn",
+          "guides/networking/internet",
+          "guides/networking/mycelium",
+          "guides/networking/p2p-ssh-iroh",
+          "guides/networking/tor",
+          "guides/networking/wireguard",
+          "guides/networking/zerotier",
         ],
       },
       "guides/nixpkgs-flake-input",
