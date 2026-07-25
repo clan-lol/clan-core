@@ -5,7 +5,7 @@ import re
 import shlex
 import uuid
 from contextlib import ExitStack
-from typing import TYPE_CHECKING, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from clan_cli.hyperlink import hyperlink_same_text_and_url
 from clan_cli.vars.upload import upload_secret_vars
@@ -177,6 +177,22 @@ def _check_ssh_auth_error(
             )
 
 
+def _flake_store_path(flake_url: str, flake_data: dict[str, Any] | None = None) -> str:
+    """Return the store path of the flake's top-level source.
+
+    ``nix flake metadata`` reports it as ``path`` for clients that copy the
+    flake into the store on evaluation. Clients evaluating with lazy trees
+    (e.g. Determinate Nix) omit the key; fall back to ``nix flake prefetch``,
+    which materializes the source in the store.
+    """
+    if flake_data is None:
+        flake_data = nix_metadata(flake_url)
+    if "path" in flake_data:
+        return flake_data["path"]
+    proc = run(nix_command(["flake", "prefetch", "--json", str(flake_url)]))
+    return json.loads(proc.stdout)["storePath"]
+
+
 def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str:
     """Upload the flake sources to a remote build host.
 
@@ -208,7 +224,7 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
 
     if not has_path_inputs and not upload_inputs:
         # Just copy the flake to the remote machine, we can substitute other inputs there.
-        path = flake_data["path"]
+        path = _flake_store_path(flake_url, flake_data)
         remote_url = _remote_url("ssh-ng")
         cmd = nix_command(
             [
@@ -596,7 +612,7 @@ def run_machine_update(
             flake_store_path = upload_sources(machine, _build_host, upload_inputs)
         else:
             flake_url = machine.flake.identifier
-            flake_store_path = nix_metadata(flake_url)["path"]
+            flake_store_path = _flake_store_path(flake_url)
 
         if machine._class_ == "nixos":
             _update_nixos(

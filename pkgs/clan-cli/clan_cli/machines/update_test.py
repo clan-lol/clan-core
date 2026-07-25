@@ -8,6 +8,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.update import (
     _build_darwin_rebuild_cmd,
+    _flake_store_path,
     upload_sources,
 )
 
@@ -609,3 +610,31 @@ def test_nixos_activate_omits_nixos_no_check_when_unset() -> None:
         assert "NIXOS_NO_CHECK" not in cmd_str, (
             f"NIXOS_NO_CHECK should not appear when unset: {call.args[0]}"
         )
+
+
+def test_flake_store_path_uses_metadata_path() -> None:
+    """When flake metadata reports a store path, use it without further commands."""
+    with patch("clan_lib.machines.update.run") as mock_run:
+        result = _flake_store_path("/some/flake", {"path": _FAKE_FLAKE_PATH})
+
+    assert result == _FAKE_FLAKE_PATH
+    mock_run.assert_not_called()
+
+
+def test_flake_store_path_falls_back_to_prefetch() -> None:
+    """Lazy-trees clients omit `path` from flake metadata.
+
+    In that case the source must be materialized via `nix flake prefetch`
+    and its `storePath` returned.
+    """
+    proc = MagicMock()
+    proc.stdout = f'{{"storePath": "{_FAKE_FLAKE_PATH}"}}'
+
+    with patch("clan_lib.machines.update.run", return_value=proc) as mock_run:
+        result = _flake_store_path("/some/flake", {"locks": {"nodes": {}}})
+
+    assert result == _FAKE_FLAKE_PATH
+    cmd: list[str] = mock_run.call_args.args[0]
+    prefetch_idx = cmd.index("flake")
+    assert cmd[prefetch_idx : prefetch_idx + 3] == ["flake", "prefetch", "--json"]
+    assert cmd[-1] == "/some/flake"
