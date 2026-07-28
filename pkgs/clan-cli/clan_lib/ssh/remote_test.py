@@ -87,8 +87,8 @@ parse_deployment_address_test_cases = (
 
 @pytest.mark.parametrize(
     argnames=ParseTestCase._fields,
-    argvalues=(case for _, case in parse_deployment_address_test_cases),
-    ids=(name for name, _ in parse_deployment_address_test_cases),
+    argvalues=[case for _, case in parse_deployment_address_test_cases],
+    ids=[name for name, _ in parse_deployment_address_test_cases],
 )
 def test_parse_deployment_address(
     test_addr: str,
