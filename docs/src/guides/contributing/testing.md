@@ -202,13 +202,12 @@ nix.settings.system-features = [ "uid-range" ];
 
 **Technical details:**
 
-- Container tests set `requiredSystemFeatures = [ "uid-range" ];` in their derivation (see `lib/test/container-test-driver/driver-module.nix:98`)
+- Container tests set `requiredSystemFeatures = [ "uid-range" ];` in their derivation (via the upstream nixpkgs nspawn test driver)
 - Without this feature, containers cannot properly manage user namespaces and will fail to start
 
 #### Limitations
 
 - Cannot run in interactive mode, however while the container test runs, it logs a nsenter command that can be used to log into each of the containers.
-- Early implementation and limited by features.
 
 #### Where to find examples for NixOS container tests
 

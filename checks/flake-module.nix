@@ -172,7 +172,7 @@ in
           lib.optionalAttrs (pkgs.stdenv.isLinux) {
             # import our test
             nixos-test-secrets = import ./secrets nixosTestArgs;
-            nixos-test-container = import ./container nixosTestArgs;
+            nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;
           };
       };
     };

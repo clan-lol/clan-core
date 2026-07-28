@@ -18,7 +18,12 @@ in
   # A function that returns an extension to runTest
   # TODO: remove this from clanLib, add to legacyPackages, simplify signature
   flake.modules.nixosTest.clanTest =
-    { config, hostPkgs, ... }:
+    {
+      config,
+      options,
+      hostPkgs,
+      ...
+    }:
     let
       testName = config.name;
 
@@ -163,10 +168,6 @@ in
           '';
     in
     {
-      imports = [
-        ../test/container-test-driver/driver-module.nix
-
-      ];
       options = {
         clanSettings = mkOption {
           default = { };
@@ -276,10 +277,67 @@ in
         # Service modules pass this to getPublicValue which checks it before `directory`.
         clan.varsDirectory = mergedTestDir;
 
+        # Hard-fail if a test mixes `useContainers = true` (default) with user
+        # `nodes.<name> = {...}` definitions. Those user defs would land on a
+        # bare (non-clan) QEMU node submodule; the `defaults` block below would
+        # then fault trying to evaluate `config.clan.core.vars.generators` on
+        # a node that never imported the clan module -- surfacing as
+        # `attribute 'generators' missing` from lib/test/age.nix.
+        # Inspect each definition's raw attrNames; lazyAttrsOf means we get
+        # names without forcing submodule evaluation, so the diagnostic fires
+        # before the confusing downstream error.
+        _module.check =
+          let
+            # Collect all attribute names contributed across all definitions of
+            # `options.nodes`. Each definition.value is an attrset of
+            # node-name -> submodule; `attrNames` on it doesn't force the
+            # submodule bodies.
+            allNodeNames = lib.concatMap builtins.attrNames options.nodes.definitions;
+          in
+          lib.throwIf (config.clan.test.useContainers && allNodeNames != [ ]) ''
+            clan.test.useContainers = true: clan machines live on `containers.<name>`,
+            not `nodes.<name>`.
+
+            Rename every `nodes.<name> = {...}` to `containers.<name> = {...}` in this
+            test, and update any `config.nodes.*` references in testScript to
+            `config.containers.*`.
+
+            Offending node name(s): ${lib.concatStringsSep ", " allNodeNames}
+          '' true;
+
         # Inherit all nodes from the clan
         # i.e. nodes.jon <- clan.machines.jon
         # clanInternals.nixosModules contains nixosModules per node
-        nodes = machineModules;
+        nodes = lib.mkIf (!config.clan.test.useContainers) machineModules;
+        containers = lib.mkIf config.clan.test.useContainers machineModules;
+
+        # When using containers, upstream nodesCompat is empty because
+        # config.nodes is empty. testScript.nix uses nodesCompat to build
+        # the { nodes, ... } arg passed to testScript functions and checks
+        # v.virtualisation.useNixStoreImage (QEMU-only). Wrap container
+        # configs with the missing attr so test scripts that reference
+        # nodes.X.config.path still work.
+        nodesCompat = lib.mkIf config.clan.test.useContainers (
+          lib.mapAttrs (
+            _: v:
+            v
+            // {
+              virtualisation = v.virtualisation // {
+                useNixStoreImage = false;
+              };
+            }
+          ) config.containers
+        );
+
+        # Upstream requires the `devnet` system feature (`/dev/net` in the build
+        # sandbox) when a test has both VMs and containers, to let them talk over
+        # the network. clan tests are homogeneous -- every machine is a container
+        # (useContainers = true) or every machine is a VM -- so that VM<->container
+        # path never exists. But nodesCompat above intentionally mirrors the
+        # containers into `nodes` so testScript `nodes.<name>` references resolve,
+        # which trips the heuristic into demanding devnet. Force it off; container
+        # <->container traffic uses the veth bridge, not /dev/net.
+        requiredFeatures.devnet = lib.mkForce false;
 
         # !WARNING: Write a detailed comment if adding new options here
         # We should be very careful about adding new options here because it affects all tests
@@ -318,6 +376,37 @@ in
             environment.etc."clan-vars-check".source = vars-check;
           }
         );
+
+        # Sandbox workarounds for nspawn containers not covered by upstream.
+        # Upstream baseNspawnOS handles UsePAM, useDHCP, info docs, and PAM login,
+        # but these settings are needed because clan tests run inside the nix build
+        # sandbox where additional operations are restricted.
+        containerDefaults = {
+          # SCHED_BATCH requires CAP_SYS_NICE, unavailable in the sandbox
+          systemd.services.nix-daemon.serviceConfig.CPUSchedulingPolicy = lib.mkForce "";
+          # ioprio_set() calls require CAP_SYS_ADMIN which isn't necessarily
+          # granted inside nspawn+sandbox. Clear both class and priority so
+          # systemd doesn't attempt the call and fail the unit at fork time.
+          systemd.services.nix-daemon.serviceConfig.IOSchedulingClass = lib.mkForce "";
+          systemd.services.nix-daemon.serviceConfig.IOSchedulingPriority = lib.mkForce "";
+          # Surface daemon stderr into the test log so nix-daemon failures on
+          # first connect are visible.
+          systemd.services.nix-daemon.serviceConfig.StandardError = lib.mkForce "journal+console";
+          # Sandboxed builds need unshare()/mount() inside the nspawn
+          # container; nspawn's capability set + seccomp interact badly with
+          # nix's sandbox setup. Disable nix's sandbox for nested builds.
+          nix.settings.sandbox = lib.mkForce false;
+          # SUID wrappers need filesystem setuid bits, impossible in the sandbox
+          systemd.services.suid-sgid-wrappers.enable = false;
+          # resolvconf sets POSIX ACLs unsupported in the sandbox
+          systemd.services.resolvconf.enable = false;
+          # systemd-ssh-proxy Include directives point at store paths owned by
+          # nobody:nogroup in the sandbox; OpenSSH refuses wrong-ownership configs
+          programs.ssh.systemd-ssh-proxy.enable = false;
+          # upstream container-config.nix defaults useHostResolvConf to true,
+          # which conflicts with systemd-resolved (used by useNetworkd)
+          networking.useHostResolvConf = lib.mkForce false;
+        };
 
         extraPythonPackages = _p: [
           clan-core.legacyPackages.${hostPkgs.stdenv.hostPlatform.system}.nixosTestLib
