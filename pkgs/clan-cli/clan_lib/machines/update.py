@@ -187,9 +187,7 @@ def upload_sources(machine: Machine, remote: Remote, upload_inputs: bool) -> str
     """
     env = remote.nix_ssh_env(os.environ.copy())
 
-    flake_url = (
-        str(machine.flake.path) if machine.flake.is_local else machine.flake.identifier
-    )
+    flake_url = machine.flake.identifier
     flake_data = nix_metadata(flake_url)
     has_path_inputs = any(
         is_local_input(node) for node in flake_data["locks"]["nodes"].values()
@@ -605,11 +603,7 @@ def run_machine_update(
         if isinstance(_build_host, Remote):
             flake_store_path = upload_sources(machine, _build_host, upload_inputs)
         else:
-            flake_url = (
-                str(machine.flake.path)
-                if machine.flake.is_local
-                else machine.flake.identifier
-            )
+            flake_url = machine.flake.identifier
             flake_store_path = nix_metadata(flake_url)["path"]
 
         if machine._class_ == "nixos":
