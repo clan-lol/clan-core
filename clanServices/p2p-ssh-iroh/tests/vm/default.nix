@@ -25,7 +25,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     server = { };
     client = { };
   };

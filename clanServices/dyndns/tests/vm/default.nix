@@ -39,7 +39,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     server = {
       # Disable firewall for testing
       networking.firewall.enable = false;

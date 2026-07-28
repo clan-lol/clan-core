@@ -64,7 +64,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     server.networking.hosts."10.0.0.1" = [ "server.test" ];
     client.networking.hosts."10.0.0.1" = [ "server.test" ];
   };

@@ -27,7 +27,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     alice = {
       environment.systemPackages = [ pkgs.curl ];
       networking.extraHosts = ''
