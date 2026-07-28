@@ -37,6 +37,15 @@
   # we don't have permission to set cpu scheduler in our container
   systemd.services.nix-daemon.serviceConfig.CPUSchedulingPolicy = lib.mkForce "";
 
+  # The store is bind-mounted read-only by default and nix-daemon undoes this
+  # by remounting it writable in its own mount namespace. That remount is not
+  # permitted inside our unprivileged containers, killing the daemon on every
+  # connection, so keep the store mount writable from the start.
+  boot.nixStoreMountOpts = lib.mkForce [
+    "nodev"
+    "nosuid"
+  ];
+
   # Disable suid-sgid-wrappers.service as it fails in the nix sandbox
   systemd.services.suid-sgid-wrappers.enable = false;
 

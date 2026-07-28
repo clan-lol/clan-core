@@ -65,6 +65,13 @@ def init_test_environment() -> None:
         text=True,
     )
 
+    # Make bridged inter-container frames bypass the host firewall: when
+    # br_netfilter is loaded they are pushed through it, silently dropping IPv6.
+    for family in ("ip6tables", "iptables", "arptables"):
+        knob = Path(f"/proc/sys/net/bridge/bridge-nf-call-{family}")
+        if knob.exists():  # only present once br_netfilter is loaded
+            knob.write_text("0")
+
     # Set up minimal passwd file for unprivileged operations
     # Using Nix's convention: UID 1000 for nixbld user, GID 100 for nixbld group
     passwd_content = """root:x:0:0:Root:/root:/bin/sh
