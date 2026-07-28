@@ -5,7 +5,7 @@
 
     extraPythonPackages = ps: [ ps.numpy ];
 
-    nodes.machine =
+    containers.machine =
       { ... }:
       {
         networking.hostName = "machine";

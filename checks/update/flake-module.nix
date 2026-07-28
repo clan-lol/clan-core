@@ -24,8 +24,8 @@
                   closureInfo = pkgs.closureInfo {
                     rootPaths = [
                       self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full
-                      config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel.drvPath
-                      config.nodes.test-update-machine.system.build.toplevel.drvPath
+                      config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.machine.config.system.build.toplevel.drvPath
+                      config.containers.machine.system.build.toplevel.drvPath
                       pkgs.stdenv.drvPath
                       pkgs.buildPackages.lndir
                       pkgs.bubblewrap
@@ -102,7 +102,7 @@
                           )
 
                           # Update the machine configuration to add a new file
-                          machine_config_path = os.path.join(flake_dir, "machines", "test-update-machine", "configuration.nix")
+                          machine_config_path = os.path.join(flake_dir, "machines", "machine", "configuration.nix")
                           os.makedirs(os.path.dirname(machine_config_path), exist_ok=True)
 
                           # Note: update command doesn't accept -i flag, SSH key must be in ssh-agent
@@ -203,7 +203,7 @@
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
                               "--build-host", "localhost",
-                              "test-update-machine",
+                              "machine",
                               "--target-host", "root@localhost",
                           ], check=True)
 
@@ -237,7 +237,7 @@
                               "--flake", str(flake_dir),
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
-                              "test-update-machine",
+                              "machine",
                               "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                           ]
                           print("Running command:", " ".join(cmd))
@@ -266,7 +266,7 @@
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
                               "--build-host", f"root@192.168.1.1:{ssh_conn.host_port}",
-                              "test-update-machine",
+                              "machine",
                               "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                           ], check=True)
 
@@ -295,7 +295,7 @@
                               "--flake", str(flake_dir),
                               "--host-key-check", "none",
                               "--upload-inputs",
-                              "test-update-machine",
+                              "machine",
                               "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                           ], capture_output=True, text=True)
                           assert result.returncode != 0, (
@@ -330,7 +330,7 @@
                                   "--flake", str(flake_dir),
                                   "--host-key-check", "none",
                                   "--upload-inputs",
-                                  "test-update-machine",
+                                  "machine",
                                   "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
                               ], check=True)
                           finally:

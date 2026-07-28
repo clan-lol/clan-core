@@ -1,7 +1,7 @@
 {
   name = "user-firewall-nftables";
 
-  nodes = {
+  containers = {
     router = {
       imports = [ ./router.nix ];
     };

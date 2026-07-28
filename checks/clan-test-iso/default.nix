@@ -55,7 +55,7 @@ nixosLib.runTest (
     clan.test.fromFlake = ./.;
 
     # No framework-managed nodes; the ISO VM is created dynamically
-    nodes = lib.mkForce { };
+    containers = lib.mkForce { };
 
     testScript = ''
       import os

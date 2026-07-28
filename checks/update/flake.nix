@@ -18,19 +18,19 @@
       clan = clan-core.lib.clan {
         inherit self;
 
-        machines.test-update-machine =
+        machines.machine =
           {
             lib,
+            options,
             modulesPath,
             ...
           }:
           {
             imports = [
-              ./test-update-machine/configuration.nix
+              ./machine/configuration.nix
               (modulesPath + "/testing/test-instrumentation.nix")
               (modulesPath + "/profiles/qemu-guest.nix")
               clan-core.clanLib.test.minifyModule
-              (clan-core + "/lib/test/container-test-driver/nixos-module.nix")
             ];
             nixpkgs.hostPlatform = lib.head (import systems);
 
@@ -50,7 +50,7 @@
               })
             ];
 
-            networking.hostName = "update-machine";
+            networking.hostName = "machine";
 
             environment.etc."install-successful".text = "ok";
 
@@ -90,6 +90,27 @@
             boot.kernelParams = [ "boot.shell_on_fail" ];
 
             boot.isContainer = true;
+
+            # Container sandbox workarounds. These are also applied by the test
+            # framework's containerDefaults at boot, but must be baked into the
+            # machine's own config so the system that `clan machines update`
+            # rebuilds and switches to keeps working inside the nspawn sandbox.
+            console.enable = true;
+            system.build.initialRamdisk = "";
+            virtualisation = lib.optionalAttrs (options ? virtualisation.sharedDirectories) {
+              sharedDirectories = lib.mkForce { };
+            };
+            networking.useDHCP = false;
+            services.openssh.settings.UsePAM = false;
+            networking.useNetworkd = true;
+            networking.useHostResolvConf = false;
+            services.resolved.enable = false;
+            systemd.services.backdoor.enable = false;
+            systemd.services.nix-daemon.serviceConfig.CPUSchedulingPolicy = lib.mkForce "";
+            systemd.services.suid-sgid-wrappers.enable = false;
+            systemd.services.resolvconf.enable = false;
+            programs.ssh.systemd-ssh-proxy.enable = false;
+
             # Preserve the IP addresses assigned by the test framework
             # (based on virtualisation.vlans = [1] and node number 1)
             networking.interfaces.eth1 = {
@@ -150,7 +171,7 @@
           {
             meta.name = "foo";
             meta.domain = "foo";
-            machines.test-update-machine = { };
+            machines.machine = { };
           };
       };
     in
