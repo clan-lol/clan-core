@@ -93,16 +93,18 @@ in
       # settings.directory → mergedTestDir → config.nodes → cycle.
       # clanInternals.machines are evaluated independently from the clan module,
       # not from config.nodes, so there's no cycle.
-      # Always use x86_64-linux machines: generators produce platform-independent
-      # output (keys, configs) and the IFD must build on the evaluating system.
+      # Build generators for the evaluating system: the vars IFD must build
+      # locally, so pinning a single arch breaks checks on other hosts. Generator
+      # output is platform-independent text (keys, configs).
+      hostSystem = hostPkgs.stdenv.hostPlatform.system;
+
       clanNodes = lib.mapAttrs (
         _name: system: system.config
-      ) clanFlakeResult.clanInternals.machines.x86_64-linux;
+      ) clanFlakeResult.clanInternals.machines.${hostSystem};
 
-      # Pkgs for IFD derivations — always x86_64-linux so the derivation can
-      # build on the evaluating system without requiring a remote builder.
-      # Generator output is platform-independent text (keys, configs).
-      ifdPkgs = clan-core.inputs.nixpkgs.legacyPackages.x86_64-linux;
+      # Pkgs for IFD derivations — the evaluating system so the derivation can
+      # build locally without requiring a remote builder or emulation.
+      ifdPkgs = clan-core.inputs.nixpkgs.legacyPackages.${hostSystem};
 
       # Run generators and produce age-encrypted secrets + plaintext vars
       generatedVarsDir = varsExecutor.generateVarsDerivation ifdPkgs clanNodes testAgePublicKey;
