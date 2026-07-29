@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__name__)
 
+# File name under a generator's directory holding its invalidation hash.
+VALIDATION_HASH_NAME = ".validation-hash"
+
 
 @dataclass(frozen=True)
 class PerExport:
@@ -364,7 +367,7 @@ class StoreBase(ABC):
         """Return the invalidation hash that indicates if a generator needs to be re-run
         due to a change in its definition
         """
-        hash_file = self.directory(generator, ".validation-hash")
+        hash_file = self.directory(generator, VALIDATION_HASH_NAME)
         if not hash_file.exists():
             return None
         return hash_file.read_text().strip()
@@ -384,7 +387,7 @@ class StoreBase(ABC):
             pathlib.Path: The path to the hash file
 
         """
-        hash_file = self.directory(generator, ".validation-hash")
+        hash_file = self.directory(generator, VALIDATION_HASH_NAME)
         hash_file.parent.mkdir(parents=True, exist_ok=True)
         if hash_str is None:
             if hash_file.exists():
