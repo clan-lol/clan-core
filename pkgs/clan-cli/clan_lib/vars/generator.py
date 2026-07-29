@@ -456,6 +456,29 @@ class Generator:
             self.key, self.validation()
         ) and self._public_store.hash_is_valid(self.key, self.validation())
 
+    def stored_validation(self) -> str | None:
+        """Return the validation hash recorded on disk, or None if there is none."""
+        if self._public_store is None or self._secret_store is None:
+            msg = "Stores must be set to read the validation hash"
+            raise ClanError(msg)
+        return self._secret_store.get_validation(
+            self.key
+        ) or self._public_store.get_validation(self.key)
+
+    def store_validation(self, hash_str: str | None) -> list[Path]:
+        """Record `hash_str` as the validation hash in both stores.
+
+        Mirrors what :meth:`execute` does after generating, so that vars
+        restored by other means are not considered outdated.
+        """
+        if self._public_store is None or self._secret_store is None:
+            msg = "Stores must be set to write the validation hash"
+            raise ClanError(msg)
+        return [
+            *self._public_store.set_validation(self.key, hash_str),
+            *self._secret_store.set_validation(self.key, hash_str),
+        ]
+
     def get_previous_value(
         self,
         prompt: Prompt,

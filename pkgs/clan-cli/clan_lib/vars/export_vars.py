@@ -4,6 +4,7 @@ from pathlib import Path
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.actions import list_machines
+from clan_lib.vars._types import VALIDATION_HASH_NAME
 from clan_lib.vars.generator import get_machine_generators
 
 log = logging.getLogger(__name__)
@@ -29,9 +30,9 @@ def export_vars(flake: Flake, output_dir: Path) -> None:
     Layout::
 
         <output_dir>/
-          per-machine/<machine>/<generator>/<file>
-          shared/<generator>/<file>
-          per-export/<exports_key>/<generator>/<file>
+          per-machine/<machine>/<generator>/{<file>,.validation-hash}
+          shared/<generator>/{<file>,.validation-hash}
+          per-export/<exports_key>/<generator>/{<file>,.validation-hash}
 
     The structure mirrors :meth:`Placement.rel_prefix` so it stays in sync
     with the on-disk vars layout and is naturally extensible to flake-level
@@ -64,5 +65,14 @@ def export_vars(flake: Flake, output_dir: Path) -> None:
             var_path.touch(mode=FILE_MODE, exist_ok=False)
             var_path.write_bytes(var.value)
             exported += 1
+
+        # Carry the invalidation hash along, otherwise the next
+        # 'clan vars generate' after an import regenerates everything and
+        # overwrites the restored values.
+        validation = generator.stored_validation()
+        if validation is not None:
+            hash_path = _private_dir(output_dir, gen_rel) / VALIDATION_HASH_NAME
+            hash_path.touch(mode=FILE_MODE, exist_ok=False)
+            hash_path.write_text(validation)
 
     log.info(f"Exported {exported} vars ({skipped} skipped)")

@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -883,17 +884,22 @@ def _setup_machines_with_backend(
         shared_gen["share"] = True
         shared_gen["files"]["shared_secret"]["secret"] = True
         shared_gen["files"]["shared_public"]["secret"] = False
+        # A non-null 'validation' makes nix emit a validationHash, so the
+        # generator counts as outdated unless the hash is on disk.
+        shared_gen["validation"] = "v1"
+        # $RANDOM: a regenerated var must be distinguishable from a restored one
         shared_gen["script"] = (
-            'echo -n "shared_secret_val" > "$out"/shared_secret; '
-            'echo -n "shared_public_val" > "$out"/shared_public'
+            'echo -n "shared_secret_$RANDOM" > "$out"/shared_secret; '
+            'echo -n "shared_public_$RANDOM" > "$out"/shared_public'
         )
 
         per_machine_gen = clan_vars["generators"]["per_machine_generator"]
         per_machine_gen["files"]["machine_secret"]["secret"] = True
         per_machine_gen["files"]["machine_public"]["secret"] = False
+        per_machine_gen["validation"] = "v1"
         per_machine_gen["script"] = (
-            'echo -n "machine_secret_val" > "$out"/machine_secret; '
-            'echo -n "machine_public_val" > "$out"/machine_public'
+            'echo -n "machine_secret_$RANDOM" > "$out"/machine_secret; '
+            'echo -n "machine_public_$RANDOM" > "$out"/machine_public'
         )
 
 
@@ -1040,3 +1046,43 @@ def test_export_age_import_sops(
         assert imported_values[key] == expected, (
             f"Value mismatch for {key}: expected {expected!r}, got {imported_values[key]!r}"
         )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_import_survives_generate(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+    tmp_path: Path,
+) -> None:
+    """Restoring a dump into a clan without vars state must survive 'vars generate'.
+
+    The dump carries each generator's validation hash; without it every
+    generator counts as outdated and regeneration overwrites the import.
+    """
+    flake = flake_with_sops
+    _setup_machines_with_backend(flake, "sops")
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    original_values = _collect_var_values(flake.path)
+    assert len(original_values) > 0, "Expected some vars to be generated"
+
+    dump_dir = tmp_path / "dump"
+    export_vars(Flake(str(flake.path)), dump_dir)
+
+    # Simulate a restore into a checkout that has no vars state at all
+    shutil.rmtree(flake.path / "vars")
+    subprocess.run(["git", "add", "-A"], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "drop all vars"],
+        cwd=flake.path,
+        check=True,
+    )
+    assert _collect_var_values(flake.path) == {}
+
+    import_vars(Flake(str(flake.path)), dump_dir)
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+
+    assert _collect_var_values(flake.path) == original_values
