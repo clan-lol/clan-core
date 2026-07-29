@@ -909,6 +909,16 @@ def _collect_var_values(flake_path: Path) -> dict[str, bytes]:
     return result
 
 
+def _assert_dump_is_private(dump_dir: Path) -> None:
+    """The dump holds decrypted secrets: nothing may be group/world readable."""
+    assert dump_dir.stat().st_mode & 0o777 == 0o700
+    for path in dump_dir.rglob("*"):
+        expected = 0o700 if path.is_dir() else 0o600
+        assert path.stat().st_mode & 0o777 == expected, (
+            f"{path} has mode {oct(path.stat().st_mode & 0o777)}, expected {oct(expected)}"
+        )
+
+
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
 def test_export_sops_import_age(
@@ -934,6 +944,7 @@ def test_export_sops_import_age(
     # Export
     dump_dir = tmp_path / "dump"
     export_vars(Flake(str(flake.path)), dump_dir)
+    _assert_dump_is_private(dump_dir)
 
     # Phase 2: switch to age backend
     _setup_machines_with_backend(flake, "age")
