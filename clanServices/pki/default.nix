@@ -170,6 +170,9 @@
                     -key $out/ca.key \
                     -sha256 -days 3650 \
                     -subj "/CN=Clan Root CA" \
+                    -addext "basicConstraints=critical,CA:TRUE" \
+                    -addext "keyUsage=critical,keyCertSign,cRLSign" \
+                    -addext "subjectKeyIdentifier=hash" \
                     -out $out/ca.crt
                 '';
               };
