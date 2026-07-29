@@ -138,6 +138,11 @@
               config.clan.core.vars.generators."pki-root-ca".files."ca.crt".path
             ];
 
+            environment.sessionVariables = {
+              SSL_CERT_FILE = lib.mkDefault config.security.pki.caBundle;
+              REQUESTS_CA_BUNDLE = lib.mkDefault config.security.pki.caBundle;
+            };
+
             users.users = lib.mkMerge [
               (lib.mkIf config.services.caddy.enable {
                 caddy.extraGroups = [ "clan-pki" ];
