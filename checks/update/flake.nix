@@ -21,7 +21,6 @@
         machines.machine =
           {
             lib,
-            options,
             modulesPath,
             ...
           }:
@@ -30,6 +29,7 @@
               ./machine/configuration.nix
               (modulesPath + "/testing/test-instrumentation.nix")
               (modulesPath + "/profiles/qemu-guest.nix")
+              (modulesPath + "/virtualisation/qemu-vm.nix")
               clan-core.clanLib.test.minifyModule
             ];
             nixpkgs.hostPlatform = lib.head (import systems);
@@ -60,6 +60,18 @@
 
             # Enable SSH and add authorized key for testing
             services.openssh.enable = true;
+
+            services.openssh.ports = [
+              22
+              2222
+            ];
+            virtualisation.forwardPorts = [
+              {
+                from = "host";
+                host.port = 2222;
+                guest.port = 2222;
+              }
+            ];
             services.openssh.settings.PasswordAuthentication = false;
             users.users.root.openssh.authorizedKeys.keys = [
               (builtins.readFile (clan-core + "/checks/assets/ssh/pubkey"))
@@ -89,27 +101,10 @@
             boot.consoleLogLevel = lib.mkForce 100;
             boot.kernelParams = [ "boot.shell_on_fail" ];
 
-            boot.isContainer = true;
+            boot.loader.grub.enable = false;
 
-            # Container sandbox workarounds. These are also applied by the test
-            # framework's containerDefaults at boot, but must be baked into the
-            # machine's own config so the system that `clan machines update`
-            # rebuilds and switches to keeps working inside the nspawn sandbox.
-            console.enable = true;
-            system.build.initialRamdisk = "";
-            virtualisation = lib.optionalAttrs (options ? virtualisation.sharedDirectories) {
-              sharedDirectories = lib.mkForce { };
-            };
-            networking.useDHCP = false;
-            services.openssh.settings.UsePAM = false;
-            networking.useNetworkd = true;
-            networking.useHostResolvConf = false;
-            services.resolved.enable = false;
-            systemd.services.backdoor.enable = false;
-            systemd.services.nix-daemon.serviceConfig.CPUSchedulingPolicy = lib.mkForce "";
-            systemd.services.suid-sgid-wrappers.enable = false;
-            systemd.services.resolvconf.enable = false;
-            programs.ssh.systemd-ssh-proxy.enable = false;
+            virtualisation.memorySize = 4096;
+            virtualisation.cores = 2;
 
             # Preserve the IP addresses assigned by the test framework
             # (based on virtualisation.vlans = [1] and node number 1)
@@ -138,31 +133,6 @@
               ];
               # Disable substituters to speed up tests
               substituters = lib.mkForce [ ];
-            };
-
-            # Define the mounts that exist in the container to prevent them from being stopped
-            fileSystems = {
-              "/" = {
-                device = "/dev/disk/by-label/nixos";
-                fsType = "ext4";
-                options = [ "x-initrd.mount" ];
-              };
-              "/nix/.rw-store" = {
-                device = "tmpfs";
-                fsType = "tmpfs";
-                options = [
-                  "mode=0755"
-                ];
-              };
-              "/nix/store" = {
-                device = "overlay";
-                fsType = "overlay";
-                options = [
-                  "lowerdir=/nix/.ro-store"
-                  "upperdir=/nix/.rw-store/upper"
-                  "workdir=/nix/.rw-store/work"
-                ];
-              };
             };
           };
 
