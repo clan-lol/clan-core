@@ -744,30 +744,36 @@ in
     expected = [ ];
   };
 
+  # `rel_dir` ends up in two places with different escaping rules: verbatim in
+  # the sops source path, and sanitized in the store name of `sopsFile`.
   testSpecialCharactersInNames =
     let
       mapFn = mkMapGeneratorsToSopsSecrets (_: true);
       generators = mkGenerator {
         name = "gen-with-dash";
-        share = true;
-        files."secret_with_underscore" = mkFile { };
+        share = false;
+        files."secret_with_underscore" = mkFile {
+          rel_dir = "per-machine/machine-1/gen-with-dash";
+        };
       };
       result = mapFn {
         directory = "/test";
         class = "nixos";
         inherit generators;
       };
+      key = "vars/per-machine/machine-1/gen-with-dash/secret_with_underscore";
     in
     {
       expr = {
-        hasSecret = builtins.hasAttr "vars/<placeholder>/secret_with_underscore" result;
-        pathCorrect =
-          result."vars/<placeholder>/secret_with_underscore".sopsFile.path
-          == "/test/vars/<placeholder>/secret_with_underscore/secret";
+        hasSecret = builtins.hasAttr key result;
+        path = result.${key}.sopsFile.path;
+        storeName = result.${key}.sopsFile.name;
       };
       expected = {
         hasSecret = true;
-        pathCorrect = true;
+        path = "/test/vars/per-machine/machine-1/gen-with-dash/secret_with_underscore/secret";
+        # `/` is illegal in a store name and collapses to `-`; `-` and `_` survive.
+        storeName = "per-machine-machine-1-gen-with-dash_secret_with_underscore";
       };
     };
 
