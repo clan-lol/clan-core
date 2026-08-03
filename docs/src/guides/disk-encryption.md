@@ -130,8 +130,11 @@ while ! timeout --foreground 10 ssh -p 7172 "root@$HOST" true; do
   sleep 1
 done
 
-# Ensure that /run/partitioning-secrets/zfs/key only ever exists with the full key
-clan vars get "$MACHINE" zfs/key | ssh -p 7172 "root@${HOST}" "mkdir -p /run/partitioning-secrets/zfs && cat > /run/partitioning-secrets/zfs/key.tmp && mv /run/partitioning-secrets/zfs/key.tmp /run/partitioning-secrets/zfs/key"
+# Vars secrets are laid out by placement; the zfs generator is per-machine,
+# so its partitioning key lands under per-machine/$MACHINE/zfs/key.
+KEY_DIR="/run/partitioning-secrets/per-machine/$MACHINE/zfs"
+# Ensure that $KEY_DIR/key only ever exists with the full key
+clan vars get "$MACHINE" zfs/key | ssh -p 7172 "root@${HOST}" "mkdir -p $KEY_DIR && cat > $KEY_DIR/key.tmp && mv $KEY_DIR/key.tmp $KEY_DIR/key"
 ```
 
 1. Replace with your machine's IP address

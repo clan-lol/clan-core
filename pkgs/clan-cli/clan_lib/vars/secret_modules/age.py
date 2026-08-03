@@ -611,10 +611,15 @@ class SecretStore(StoreBase):
                         )
                         if phase == "activation":
                             target_path = (
-                                output_dir / "activation" / generator.name / file.name
+                                output_dir
+                                / "activation"
+                                / generator.key.rel_dir()
+                                / file.name
                             )
                         else:
-                            target_path = output_dir / generator.name / file.name
+                            target_path = (
+                                output_dir / generator.key.rel_dir() / file.name
+                            )
                         target_path.parent.mkdir(parents=True, exist_ok=True)
                         target_path.touch(mode=0o600)
                         target_path.write_bytes(plaintext)

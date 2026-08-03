@@ -1,6 +1,7 @@
 {
   self,
   lib,
+  config,
   ...
 }@flakeModule:
 let
@@ -29,6 +30,72 @@ let
   testFlake = importFlake ./.;
 in
 {
+  # The purpose of this test is to ensure `clan machines install` works
+  # for machines that don't have a hardware config yet.
+
+  # If this test starts failing it could be due to the `facter.json` being out of date
+  # you can get a new one by adding
+  # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
+  # to the installation test.
+  # Age recipients for the age installation test.
+  # Uses the same key pair as pkgs/clan-cli/clan_cli/tests/age_keys.py
+  clan.vars.settings.recipients.hosts.test-install-machine-without-system-with-age = [
+    "age1dhwqzkah943xzc34tc3dlmfayyevcmdmxzjezdgdy33euxwf59vsp3vk3c"
+  ];
+
+  clan.machines = {
+    test-install-machine-without-system-with-password-store =
+      { lib, ... }:
+      {
+        clan.core.vars.settings.secretStore = lib.mkForce "password-store";
+        # Temporary Hack!!
+        # Disable the consistency check between clan-core and this machine.
+        # Since clan-core is a clan which uses sops, we need to disable assertions.
+        clan.core.vars.enableConsistencyCheck = false;
+
+        imports = [
+          ./installation-machine.nix
+        ];
+      };
+    test-install-machine-without-system = ./installation-machine.nix;
+    test-install-machine-without-system-with-age =
+      { lib, ... }:
+      {
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        # Disable the consistency check between clan-core and this machine.
+        # Since clan-core is a clan which uses sops, we need to disable assertions.
+        clan.core.vars.enableConsistencyCheck = false;
+
+        imports = [
+          ./installation-machine.nix
+        ];
+      };
+  }
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-${system}" {
+        # !!! Important do not add any configuration here
+        # This is one of ~10 shallow abstractions over
+        # flake.nixosModules.test-install-machine-without-system
+        hardware.facter.reportPath = import ./facter-report.nix system;
+        imports = [ ./installation-machine.nix ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ))
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-age-${system}" {
+        # Variant with age backend, used only for closureInfo to ensure
+        # age-specific packages (decrypt-age-secrets, etc.) are in the store.
+        hardware.facter.reportPath = import ./facter-report.nix system;
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        clan.core.vars.enableConsistencyCheck = false;
+        imports = [ ./installation-machine.nix ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ));
   perSystem =
     {
       pkgs,

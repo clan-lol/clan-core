@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, name, ... }:
 let
   inherit (lib) mkOption;
   inherit (lib.types)
@@ -8,18 +8,24 @@ let
     raw
     str
     ;
-  exportsFileModule = {
-    options.deploy = mkOption {
-      description = ''
-        Whether the file should be deployed to the target machine.
 
-        Disable this if the generated file is only used as an input to other generators.
-      '';
-      type = listOf str;
-      # Deploy nowhere by default
-      default = [ ];
+  exportName = name;
+
+  exportsFileModule =
+    { config, ... }:
+    {
+      options.deploy = mkOption {
+        description = ''
+          Whether the file should be deployed to the target machine.
+
+          Disable this if the generated file is only used as an input to other generators.
+        '';
+        type = listOf str;
+        # Deploy nowhere by default
+        default = [ ];
+      };
+      config.rel_dir = "per-export/${exportName}/${config.generatorName}";
     };
-  };
 in
 {
   options.generators = mkOption {

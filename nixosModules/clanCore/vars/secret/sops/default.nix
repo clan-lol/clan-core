@@ -29,19 +29,17 @@ in
       (file: {
         path = lib.mkIf file.config.secret (
           if file.config.neededFor == "partitioning" then
-            "/run/partitioning-secrets/${file.config.generatorName}/${file.config.name}"
+            "/run/partitioning-secrets/${file.config.rel_dir}/${file.config.name}"
           else if file.config.neededFor == "activation" then
-            "${config.clan.core.vars.sops.secretUploadDirectory}/activation/${file.config.generatorName}/${file.config.name}"
+            "${config.clan.core.vars.sops.secretUploadDirectory}/activation/${file.config.rel_dir}/${file.config.name}"
           else
-            config.sops.secrets.${"vars/${file.config.generatorName}/${file.config.name}"}.path
-              or "/no-such-path"
+            config.sops.secrets.${"vars/${file.config.rel_dir}/${file.config.name}"}.path or "/no-such-path"
         );
       });
 
   config.sops = lib.mkIf (config.clan.core.vars.settings.secretStore == "sops") {
     #
     secrets = mapGeneratorsToSopsSecrets {
-      inherit machineName;
       directory = config.clan.core.settings.directory;
       class = _class;
       generators = config.clan.core.vars.generators;

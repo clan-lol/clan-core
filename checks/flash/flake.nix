@@ -30,8 +30,8 @@
 
           clan.core.networking.targetHost = "test-flash-machine";
 
-          # We don't want our system to define any `vars` generators as these can't
-          # be generated as the flake is inside `/nix/store`.
+          # The flash child flake is stored in /nix/store, so we can't run
+          # generators at eval time.
           clan.core.settings.state-version.enable = false;
           clan.core.vars.generators.test-partitioning = lib.mkForce { };
           disko.devices.disk.main.preCreateHook = lib.mkForce "";

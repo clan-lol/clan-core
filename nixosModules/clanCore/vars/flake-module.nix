@@ -32,6 +32,8 @@ in
       legacyPackages.evalTests-generators-to-sops = import ./secret/sops/generators-to-sops-test.nix {
         inherit lib;
       };
+      legacyPackages.evalTests-age-source-path = import ./eval-tests/age-source-path.nix { };
+
       # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-module-clan-vars
       legacyPackages.evalCheck-eval-module-clan-vars = self.clanLib.test.mkEvalCheck {
         inherit pkgs system inputOverrides;
@@ -47,6 +49,11 @@ in
         inherit pkgs system inputOverrides;
         name = "eval-generators-to-sops";
         flakeAttr = "${varsFileset}#legacyPackages.${system}.evalTests-generators-to-sops";
+      };
+      legacyPackages.evalCheck-eval-age-source-path = self.clanLib.test.mkEvalCheck {
+        inherit pkgs system inputOverrides;
+        name = "eval-age-source-path";
+        flakeAttr = "${varsFileset}#legacyPackages.${system}.evalTests-age-source-path";
       };
     };
 }

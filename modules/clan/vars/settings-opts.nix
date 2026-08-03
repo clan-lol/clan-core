@@ -23,6 +23,27 @@ let
         default = file.config._module.args.name;
         defaultText = "Name of the file";
       };
+      rel_dir = mkOption {
+        type = str;
+        description = ''
+          Subdirectory of the generator.
+
+          Example: 'per-machine/jon/zerotier-gen'
+
+          The Generator submodule is responsible to set this depending on context.
+
+          Needs to match behavior on the python side for
+
+          Placement:
+
+          - perMachine
+          - shared
+          - perExport
+        '';
+        internal = true;
+        visible = false;
+      };
+
       generatorName = mkOption {
         type = str;
         description = ''
@@ -55,7 +76,7 @@ let
         type = str;
         defaultText = ''
           builtins.path {
-            name = "$${file.config.generatorName}_$${file.config.name}";
+            name = "$${file.config.rel_dir}_$${file.config.name}";
             path = file.config.flakePath;
           }
         '';
@@ -63,10 +84,14 @@ let
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
           else if !builtins.pathExists file.config.flakePath then
-            throw "File '${file.config.name}' of generator '${file.config.generatorName}' does not exist. Try running 'clan vars generate' first."
+            throw "File '${file.config.name}' at '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
-              name = "${file.config.generatorName}_${file.config.name}";
+              # We need to sanitzize the name
+              # Every name should be unique (concat ID + name)
+              # ID contains "/" and potentially other invalid store identifiers.
+              # Use 'sanitizeDerivationName' to sanitize invalid characters.
+              name = lib.strings.sanitizeDerivationName "${file.config.rel_dir}_${file.config.name}";
               path = file.config.flakePath;
             };
       };
