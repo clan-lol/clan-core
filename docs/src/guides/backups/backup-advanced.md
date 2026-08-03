@@ -399,7 +399,7 @@ Create a new clan, replace the entire `clan.nix` file with the one below, and fi
       roles.client.machines."postgres-server" = {
         settings.destinations."storagebox" = {
           repo = "<BOX-USERID>@<BOX-USERID>.your-storagebox.de:/./borgbackup"; # REPLACE WITH USERNAME FROM STORAGE BOX DETAILS PAGE
-          rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/borgbackup/borgbackup.ssh";
+          rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/per-machine/postgres-server/borgbackup/borgbackup.ssh";
         };
       };
     };
@@ -470,7 +470,7 @@ clan vars get postgres-server borgbackup/borgbackup.ssh.pub | ssh -p23 <BOX-USER
 Here's a breakdown of the `rsh` attribute:
 
 ```nix
-rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/borgbackup/borgbackup.ssh";
+rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/per-machine/postgres-server/borgbackup/borgbackup.ssh";
 ```
 
 - **`rsh`**: stands for "remote shell." This borgbackup setting defines the command used to connect to the remote repository.
@@ -480,7 +480,7 @@ rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/borgbac
     - `yes` (default) would require the host key to already be in `known_hosts`, otherwise refuse
     - `no` would blindly accept anything (insecure)
     - `accept-new` is the sweet spot — accepts new hosts on first connection automatically, but rejects if the key changes later (protecting against man-in-the-middle attacks)
-- **`-i /run/secrets/vars/borgbackup/borgbackup.ssh`**: the Clan-generated borgbackup private key, deployed to postgres-server under `/run/secrets/` (a RAM-only directory, so the key never touches disk). This is the private half of the public key you uploaded to Hetzner.
+- **`-i /run/secrets/vars/per-machine/postgres-server/borgbackup/borgbackup.ssh`**: the Clan-generated borgbackup private key, deployed to postgres-server under `/run/secrets/` (a RAM-only directory, so the key never touches disk). Secrets are laid out by placement, so a per-machine generator lands under `per-machine/<machine>/<generator>/`. This is the private half of the public key you uploaded to Hetzner.
 
 In plain English: "Connect via SSH on port 23, auto-trust new hosts but reject changed ones, and authenticate with the borgbackup private key from secrets."
 
@@ -514,7 +514,7 @@ A single client can back up to multiple destinations simultaneously. The followi
         settings.destinations."storagebox" = {
           # Destination #1
           repo = "<HETZNER-USER>@<HETZNER-USER>.your-storagebox.de:/./borgbackup"; # REPLACE <HETZNER-USER> with your Hetzner storage box username
-          rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/borgbackup/borgbackup.ssh";
+          rsh = "ssh -p 23 -oStrictHostKeyChecking=accept-new -i /run/secrets/vars/per-machine/postgres-server/borgbackup/borgbackup.ssh";
         };
       };
       roles.server.machines."backup-server" = {
