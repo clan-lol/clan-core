@@ -37,11 +37,10 @@ let
       group ? "root",
       mode ? "0400",
       restartUnits ? [ ],
-      # In production, rel_dir is derived from the generator placement
-      # (shared/<g>, per-machine/<m>/<g>, per-export/<e>/<g>) by
-      # interface.nix and export-modules/generators.nix. Tests that don't
-      # care about the placement to ppath mapping pass the default placeholder.
-      # tests that do pass a real value.
+      # In production rel_dir comes from the generator placement.
+      # interface.nix and export-modules/generators.nix set it.
+      # Tests about path mapping pass a real value.
+      # The rest keep the placeholder.
       rel_dir ? "<placeholder>",
     }:
     {
@@ -113,7 +112,7 @@ in
         };
       in
       result."vars/shared/gen1/secret1".sopsFile.name;
-    # `/` is illegal in store names; sanitizeDerivationName collapses it to `-`.
+    # `/` is illegal in a store name and collapses to `-`.
     expected = "shared-gen1_secret1";
   };
 
@@ -744,8 +743,9 @@ in
     expected = [ ];
   };
 
-  # `rel_dir` ends up in two places with different escaping rules: verbatim in
-  # the sops source path, and sanitized in the store name of `sopsFile`.
+  # `rel_dir` is escaped differently in each field.
+  # `sopsFile.path` keeps it verbatim.
+  # `sopsFile.name` sanitizes it.
   testSpecialCharactersInNames =
     let
       mapFn = mkMapGeneratorsToSopsSecrets (_: true);
@@ -772,7 +772,7 @@ in
       expected = {
         hasSecret = true;
         path = "/test/vars/per-machine/machine-1/gen-with-dash/secret_with_underscore/secret";
-        # `/` is illegal in a store name and collapses to `-`; `-` and `_` survive.
+        # `/` collapses to `-`. `-` and `_` survive.
         storeName = "per-machine-machine-1-gen-with-dash_secret_with_underscore";
       };
     };

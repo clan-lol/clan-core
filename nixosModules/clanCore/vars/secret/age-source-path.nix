@@ -1,17 +1,10 @@
-# Compute the on-disk path of an age-encrypted vars secret produced by
-# clan_lib/vars/secret_modules/age.py:secret_path.
+# On-disk path of an age-encrypted vars secret.
+# Mirrors clan_lib/vars/secret_modules/age.py:secret_path.
+# Pinned by eval-tests/age-source-path.nix against real fixtures.
 #
-# Both sides MUST stay in lockstep. The contract is pinned by
-# eval-tests/age-source-path.nix, which evaluates this function against
-# real on-disk fixtures and asserts every fixture is reachable.
+# {clanDir}/secrets/clan-vars/{rel_dir}/{name}/{name}.age
 #
-# Layout:
-#   per-machine: {clanDir}/secrets/clan-vars/per-machine/{machine}/{generator}/{name}/{name}.age
-#   shared:      {clanDir}/secrets/clan-vars/shared/{generator}/{name}/{name}.age
-#   per-export:  {clanDir}/secrets/clan-vars/per-export/{export}/{generator}/{name}/{name}.age
-#
-# The trailing `{name}/{name}.age` shape is intentional: the directory
-# `{name}/` mirrors the per-file output directory used by every backend
-# (sops `secret`, in_repo `value`, age `{name}.age`).
+# rel_dir is per-machine/{machine}/{gen}, shared/{gen}, or per-export/{export}/{gen}.
+# The `{name}/` directory matches the other backends.
 clanDir: rel_dir: fileName:
 clanDir + "/secrets/clan-vars/${rel_dir}/${fileName}/${fileName}.age"

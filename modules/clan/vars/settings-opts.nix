@@ -26,19 +26,16 @@ let
       rel_dir = mkOption {
         type = str;
         description = ''
-          Subdirectory of the generator.
+          Subdirectory of this generator under `vars/`.
 
-          Example: 'per-machine/jon/zerotier-gen'
+          One of:
 
-          The Generator submodule is responsible to set this depending on context.
+          - `per-machine/{machine}/{generator}`
+          - `shared/{generator}`
+          - `per-export/{export}/{generator}`
 
-          Needs to match behavior on the python side for
-
-          Placement:
-
-          - perMachine
-          - shared
-          - perExport
+          Set by the enclosing generator submodule.
+          Must match `GeneratorId.rel_dir` in `clan_lib/vars/_types.py`.
         '';
         internal = true;
         visible = false;
@@ -87,10 +84,8 @@ let
             throw "File '${file.config.name}' at '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
-              # We need to sanitzize the name
-              # Every name should be unique (concat ID + name)
-              # ID contains "/" and potentially other invalid store identifiers.
-              # Use 'sanitizeDerivationName' to sanitize invalid characters.
+              # rel_dir + name is unique.
+              # rel_dir contains "/", which is illegal in a store name.
               name = lib.strings.sanitizeDerivationName "${file.config.rel_dir}_${file.config.name}";
               path = file.config.flakePath;
             };

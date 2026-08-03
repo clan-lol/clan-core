@@ -72,10 +72,7 @@ in
             generator:
             (lib.modules.importApply ../../../modules/clan/export-modules/generic-generator.nix {
               fileContextModule = {
-                # rel_dir is the canonical subpath under vars/ for this
-                # file. Python computes the same string from the generator's
-                # placement (see clan_lib/vars/_types.py); both sides must
-                # stay in lockstep.
+                # Must match GeneratorId.rel_dir in clan_lib/vars/_types.py.
                 config.rel_dir =
                   if generator.config.share then
                     "shared/${generator.config.name}"

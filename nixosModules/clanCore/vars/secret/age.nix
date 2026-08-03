@@ -12,8 +12,7 @@ let
   isNixOS = _class == "nixos";
   isDarwin = _class == "darwin";
 
-  # See ./age-source-path.nix for the path layout (kept in lockstep with
-  # clan_lib/vars/secret_modules/age.py:secret_path).
+  # Path layout: ./age-source-path.nix.
   encryptedSourcePath = import ./age-source-path.nix;
   encryptedSecretSource =
     rel_dir: fileName:

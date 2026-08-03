@@ -30,8 +30,8 @@
 
           clan.core.networking.targetHost = "test-flash-machine";
 
-          # The flash child flake is stored in /nix/store, so we can't run
-          # generators at eval time.
+          # This child flake lives in /nix/store.
+          # Generators cannot run at eval time.
           clan.core.settings.state-version.enable = false;
           clan.core.vars.generators.test-partitioning = lib.mkForce { };
           disko.devices.disk.main.preCreateHook = lib.mkForce "";
