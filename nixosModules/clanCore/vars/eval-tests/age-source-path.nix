@@ -1,29 +1,21 @@
 # Pins the on-disk layout for age-encrypted vars secrets.
+# ../secret/age.nix and age.py:secret_path must agree on it.
 #
-# Why this test exists:
-#   The Nix age backend (../secret/age.nix) and the Python age backend
-#   (clan_lib/vars/secret_modules/age.py:secret_path) must agree on where
-#   encrypted secrets live on disk. A divergence is silent: the Nix side
-#   skips secrets whose `pathExists` returns false, the activation script
-#   becomes empty, and consumers like users.users.<u>.hashedPasswordFile
-#   fail at boot with "password file does not exist".
+# Divergence is silent.
+# age.nix skips secrets whose `pathExists` is false.
+# The activation script becomes empty.
+# Boot then fails on hashedPasswordFile: "password file does not exist".
 #
-#   This test asserts that ../secret/age-source-path.nix produces paths
-#   that match the on-disk fixtures under ../tests/secrets/clan-vars,
-#   which are written using the same layout as the Python writer.
-#
-#   Update fixtures and Python writer together; this test then enforces
-#   the Nix side stays aligned.
+# Fixtures live in ../tests/secrets/clan-vars and come from the Python writer.
+# Change them and the writer together.
 { ... }:
 let
   encryptedSourcePath = import ../secret/age-source-path.nix;
 
   fixturesRoot = ../tests;
 
-  # The fixtures committed under nixosModules/clanCore/vars/tests/secrets
-  # were produced by the Python writer. Each entry must resolve to a real
-  # file via encryptedSourcePath; if any layout change drops a path
-  # segment, the assertion below trips.
+  # Every fixture must resolve to a real file.
+  # A dropped path segment trips the assertion below.
   fixtures = [
     {
       rel_dir = "shared/shared-generator";
@@ -53,25 +45,21 @@ let
   }) fixtures;
 in
 {
-  # Every fixture must be reachable through encryptedSourcePath. If any
-  # entry returns false, either the fixture moved or the helper dropped
-  # a segment — both are layout-breaking changes and require a matching
-  # Python update.
+  # False means the fixture moved or the helper dropped a segment.
+  # Both are layout breaks and need a matching Python change.
   test_all_fixtures_reachable = {
     expr = map (r: builtins.pathExists r.path) resolved;
     expected = builtins.genList (_: true) (builtins.length fixtures);
   };
 
-  # Pin the literal path shape for a representative per-machine secret.
-  # Catches accidental refactors that compute a different string even
-  # when the fixture happens to also exist at the new location.
+  # Pin the literal string, not just reachability.
+  # A refactor could compute a different path that also exists.
   test_per_machine_layout = {
     expr = encryptedSourcePath "/clan" "per-machine/jon/zerotier" "identity";
     expected = "/clan/secrets/clan-vars/per-machine/jon/zerotier/identity/identity.age";
   };
 
-  # Pin the literal shape for shared and per-export scopes too — these
-  # placement classes flow through the same helper.
+  # The other two placements use the same helper.
   test_shared_layout = {
     expr = encryptedSourcePath "/clan" "shared/wifi" "psk";
     expected = "/clan/secrets/clan-vars/shared/wifi/psk/psk.age";

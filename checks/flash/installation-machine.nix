@@ -65,9 +65,8 @@
       echo "almöhi" > "$out"/test
     '';
   };
-  # an activation script that requires the activation secret to be present.
-  # Reference `.files.<f>.path` instead of hardcoding the backend computes
-  # the canonical path (rel_dir + name) and we don't want to drift from it.
+  # Activation script that requires the activation secret.
+  # Use `.files.<f>.path`. The backend computes the canonical path.
   system.activationScripts.test-vars-activation.text = ''
     test -e ${config.clan.core.vars.generators.test-activation.files.test.path} || {
       echo "\nTEST ERROR: Activation secret not found!\n" >&2
