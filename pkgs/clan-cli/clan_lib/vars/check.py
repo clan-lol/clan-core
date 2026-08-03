@@ -49,7 +49,7 @@ class VarStatus:
 def vars_status(
     machine_name: str,
     flake: Flake,
-    generator_name: None | str = None,
+    generator_name: str | None = None,
 ) -> VarStatus:
     from .generator import get_machine_generators  # noqa: PLC0415
 
@@ -144,7 +144,7 @@ def vars_status(
 def check_vars(
     machine_name: str,
     flake: Flake,
-    generator_name: None | str = None,
+    generator_name: str | None = None,
 ) -> bool:
     status = vars_status(machine_name, flake, generator_name=generator_name)
     log.info(f"Check results for machine '{machine_name}': \n{status.text()}")

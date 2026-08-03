@@ -204,13 +204,15 @@ class Remote:
             prompt_command = [
                 "osascript",
                 "-e",
-                'tell application "System Events"\n'
-                "  activate\n"
-                '  set r to text returned of (display dialog "%title%" '
-                'default answer "" with hidden answer '
-                'with title "clan" with icon caution)\n'
-                "end tell\n"
-                "return r",
+                (
+                    'tell application "System Events"\n'
+                    "  activate\n"
+                    '  set r to text returned of (display dialog "%title%" '
+                    'default answer "" with hidden answer '
+                    'with title "clan" with icon caution)\n'
+                    "end tell\n"
+                    "return r"
+                ),
             ]
         elif os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
             prompt_command = nix_shell(

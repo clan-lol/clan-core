@@ -25,11 +25,11 @@
             ];
           }
           ''
-            install -D -m755 ${./generate}/__init__.py $out/bin/render-options
-            patchShebangs --build $out/bin/render-options
+            install -D -m644 ${./generate}/__init__.py $out/bin/render-options
+            install -m644 ${../../pyproject.toml} pyproject.toml
 
-            ruff format --check --diff $out/bin/render-options
-            ruff check --line-length 88 $out/bin/render-options
+            ruff format --check --diff --config pyproject.toml $out/bin/render-options
+            ruff check --config pyproject.toml $out/bin/render-options
             mypy --strict $out/bin/render-options
           '';
 

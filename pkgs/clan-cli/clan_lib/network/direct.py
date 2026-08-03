@@ -20,7 +20,7 @@ class NetworkTechnology(NetworkTechnologyBase):
         """Direct connections are always 'running' as they don't require a daemon"""
         return True
 
-    def ping(self, remote: Remote) -> None | float:
+    def ping(self, remote: Remote) -> float | None:
         if self.is_running():
             try:
                 # Parse the peer's host address to create a Remote object, use peer here since we don't have the machine_name here

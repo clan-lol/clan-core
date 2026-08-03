@@ -612,7 +612,7 @@ class LogManager:
 
         # Return the newest log file if any found
         if log_files:
-            return sorted(log_files)[0]  # LogFile.__lt__ sorts newest first
+            return min(log_files)  # LogFile.__lt__ sorts newest first
 
         return None
 
