@@ -131,7 +131,7 @@ class NetworkTechnologyBase(ABC):
         pass
 
     @abstractmethod
-    def ping(self, remote: "Remote") -> None | float:
+    def ping(self, remote: "Remote") -> float | None:
         pass
 
     @contextmanager

@@ -18,7 +18,7 @@ class NetworkTechnology(NetworkTechnologyBase):
     def is_running(self) -> bool:
         return check_zerotier_running()
 
-    def ping(self, remote: Remote) -> None | float:
+    def ping(self, remote: Remote) -> float | None:
         if self.is_running():
             try:
                 # Use the existing SSH reachability check

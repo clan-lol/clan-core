@@ -444,7 +444,7 @@ It can be set via the `inventory` attribute of the [`clan`](../../reference/opti
 
         clan_root_option = options_to_tree(options)
         # Find the inventory options
-        inventory_opt: None | Option = None
+        inventory_opt: Option | None = None
         for opt in clan_root_option.suboptions:
             if opt.name == "inventory":
                 inventory_opt = opt
