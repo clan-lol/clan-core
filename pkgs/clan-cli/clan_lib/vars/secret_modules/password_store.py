@@ -168,8 +168,12 @@ class SecretStore(StoreBase):
         if not git_hash:
             return b""
 
+        # Must mirror the entry names produced by `populate_dir`: the hash is
+        # the deployment fingerprint, so it has to change whenever the on-target
+        # layout changes. Keying on `generator.name` alone would collide across
+        # placements (per-machine/shared/per-export) and miss placement moves.
         manifest = [
-            f"{generator.name}/{file.name}".encode()
+            f"{generator.key.rel_dir()}/{file.name}".encode()
             for generator in generators
             for file in generator.files
         ]
