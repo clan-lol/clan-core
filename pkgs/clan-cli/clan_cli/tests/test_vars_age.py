@@ -14,6 +14,7 @@ from clan_cli.vars.generate import generate_command
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
+from clan_lib.nix import nix_shell
 from clan_lib.vars._types import GeneratorId, PerMachine, Shared, StoreRequest
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.list import stringify_all_vars
@@ -491,6 +492,44 @@ def test_age_ensure_machine_key(
     pubkey_before = pubkey
     store.ensure_machine_key("my_machine")
     assert store.get_machine_pubkey("my_machine") == pubkey_before
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+@pytest.mark.usefixtures("clear_nix_cache", "mock_nix_in_sandbox")
+def test_age_ensure_machine_key_provisions_age_keygen(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """age-keygen must be provisioned through nix_shell.
+
+    A bare ["age-keygen"] invocation only works when the binary happens to be
+    on PATH already, so machine keypair generation fails outside a devshell.
+    """
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+    store = age.SecretStore(flake=flake_obj)
+
+    class KeygenReachedError(Exception):
+        """Abort ensure_machine_key once the keygen command is known."""
+
+    recorded: list[list[str]] = []
+
+    def record_cmd(cmd: list[str], _opts: object = None) -> None:
+        recorded.append(cmd)
+        raise KeygenReachedError
+
+    monkeypatch.setattr(age, "cmd_run", record_cmd)
+    # nix_shell is a passthrough inside the sandbox, which would hide the bug
+    monkeypatch.delenv("IN_NIX_SANDBOX", raising=False)
+    monkeypatch.delenv("CLAN_PROVIDED_PACKAGES", raising=False)
+
+    with pytest.raises(KeygenReachedError):
+        store.ensure_machine_key("my_machine")
+
+    expected = nix_shell(["age"], ["age-keygen"])
+    assert expected != ["age-keygen"], "nix_shell did not wrap the command"
+    assert recorded == [expected]
 
 
 @pytest.mark.broken_on_darwin
