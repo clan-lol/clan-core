@@ -96,7 +96,7 @@ in
             networking.networkmanager.enable = true;
 
             networking.networkmanager.ensureProfiles.environmentFiles = [
-              "/run/secrets/NetworkManager/wifi-secrets"
+              "/run/secrets/NetworkManager/wifi-secrets-${instanceName}"
             ];
 
             networking.networkmanager.ensureProfiles.profiles = flip mapAttrs settings.networks (
@@ -126,8 +126,8 @@ in
                 ExecStart = pkgs.writeShellScript "wifi-secrets" ''
                   set -euo pipefail
 
-                  env_file=/run/secrets/NetworkManager/wifi-secrets
-                  mkdir -p $(dirname "$env_file")
+                  env_file=/run/secrets/NetworkManager/wifi-secrets-${instanceName}
+                  mkdir -p "$(dirname "$env_file")"
                   : > "$env_file"
 
                   # Generate the secrets file
@@ -135,10 +135,10 @@ in
                   ${flip (concatMapAttrsStringSep "\n") settings.networks (
                     name: networkCfg:
                     ''
-                      echo "ssid_${name}=\"$(cat "${ssid_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
+                      echo "ssid_${name}=\"$(cat "${ssid_path name}")\"" >> "$env_file"
                     ''
                     + lib.optionalString (networkCfg.keyMgmt != "none") ''
-                      echo "pw_${name}=\"$(cat "${password_path name}")\"" >> /run/secrets/NetworkManager/wifi-secrets
+                      echo "pw_${name}=\"$(cat "${password_path name}")\"" >> "$env_file"
                     ''
                   )}
                 '';
