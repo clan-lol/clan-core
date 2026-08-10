@@ -124,6 +124,14 @@
       peer2.wait_until_succeeds("ip link show | grep -E 'ygg'", 30)
       outsider.wait_until_succeeds("ip link show | grep -E 'ygg'", 30)
 
+      # Default settings must enable multicast discovery (regression)
+      peer1.wait_until_succeeds("yggdrasilctl getmulticastinterfaces | grep -E 'eth'", 30)
+      peer2.wait_until_succeeds("yggdrasilctl getmulticastinterfaces | grep -E 'eth'", 30)
+
+      # Multicast must establish a link-local peering on the shared LAN
+      peer1.wait_until_succeeds("yggdrasilctl getpeers | grep -i fe80", 60)
+      peer2.wait_until_succeeds("yggdrasilctl getpeers | grep -i fe80", 60)
+
       # Get yggdrasil IPv6 addresses from all machines
       peer1_ygg_ip = peer1.succeed("yggdrasilctl -json getself | jq -r '.address'").strip()
       peer2_ygg_ip = peer2.succeed("yggdrasilctl -json getself | jq -r '.address'").strip()

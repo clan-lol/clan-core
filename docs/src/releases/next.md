@@ -23,3 +23,12 @@ unaffected.
 Following the earlier removal of the `vms` subcommand, the remaining dead VM
 support code has been dropped, including the `waypipe` NixOS module and the
 `system.clan.vm.create` output in `clanCore`.
+
+## Fixes
+
+### yggdrasil: multicast peer discovery now actually on by default
+
+The empty `multicastInterfaces` default silently disabled multicast peer
+discovery. It is now enabled on all interfaces by default, with direct
+local links preferred over overlay interfaces and static peers. Set
+`settings.multicastInterfaces = [ ]` to opt out.

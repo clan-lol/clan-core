@@ -33,11 +33,26 @@
       {
         options.multicastInterfaces = lib.mkOption {
           type = lib.types.listOf lib.types.attrs;
-          default = [ ];
+          default = [
+            {
+              # Degrade overlay/VPN interfaces so direct links win.
+              Regex = "(zt|wg|tailscale|mycelium|tinc|tun|tap|ygg).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 10;
+            }
+            {
+              Regex = ".*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+            }
+          ];
           description = ''
-            Interfaces to use for Yggdrasil multicast peer discovery.
-            By default, multicast is enabled on all interfaces (empty list).
-            To restrict multicast to specific interfaces, add them to this list.
+            Interfaces for Yggdrasil multicast peer discovery; enabled on
+            all interfaces by default, `[ ]` disables. Listener ports are
+            opened in the firewall automatically.
             See https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
           '';
           example = [
@@ -55,7 +70,7 @@
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1024;
+              Priority = 100;
             }
             {
               # Or restrict to wifi interfaces
@@ -63,7 +78,7 @@
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1025;
+              Priority = 101;
             }
           ];
         };
@@ -183,7 +198,10 @@
                 # Filter out empty IPs
                 filteredHosts = lib.filter (ip: ip != "") hosts;
 
-                # Helper to create peer URLs for a given IP
+                # Static peers get a worse (higher) priority than
+                # multicast-discovered links, so local peerings carry the
+                # traffic and static routes act as fallback.
+                staticPeerParams = "?priority=20";
                 mkPeerUrlsForIp =
                   ip:
                   if (lib.hasSuffix ".onion" ip) then
@@ -191,15 +209,19 @@
                     # socks:// = TCP (port 6443)
                     # sockstls:// = TLS (port 6446)
                     [
-                      "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}"
-                      "sockstls://127.0.0.1:9050/${ip}:${toString settings.ports.tls}"
+                      "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}${staticPeerParams}"
+                      "sockstls://127.0.0.1:9050/${ip}:${toString settings.ports.tls}${staticPeerParams}"
                     ]
                   else if (lib.hasInfix ":" ip) then
                     # We need to add [ ] for IPv6 addresses
-                    lib.mapAttrsToList (protocol: port: "${protocol}://[${ip}]:${toString port}") settings.ports
+                    lib.mapAttrsToList (
+                      protocol: port: "${protocol}://[${ip}]:${toString port}${staticPeerParams}"
+                    ) settings.ports
                   else
                     # No [ ] for IPv4 addresses
-                    lib.mapAttrsToList (protocol: port: "${protocol}://${ip}:${toString port}") settings.ports;
+                    lib.mapAttrsToList (
+                      protocol: port: "${protocol}://${ip}:${toString port}${staticPeerParams}"
+                    ) settings.ports;
               in
               lib.concatMap mkPeerUrlsForIp filteredHosts;
 
@@ -340,14 +362,19 @@
             };
             networking.firewall = with settings.ports; {
               allowedUDPPorts = [
-                5400 # Multicast
                 quic # QUIC
               ];
               allowedTCPPorts = [
                 tcp
                 ws # WebSocket
                 tls # TLS
-              ];
+              ]
+              # Link-local TCP listener ports for multicast peer discovery
+              ++ lib.unique (
+                lib.concatMap (
+                  mi: lib.optional ((mi.Listen or false) && (mi.Port or 0) != 0) mi.Port
+                ) settings.multicastInterfaces
+              );
 
               # Restrict ygg interface to only allow traffic from clan members
               # (iptables)
