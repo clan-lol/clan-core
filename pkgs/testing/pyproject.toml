@@ -44,4 +44,5 @@ ignore = [
     "T201", # print statements
     "S603", # subprocess-without-shell-equals-true
     "S607", # start-process-with-partial-path
+    "CPY001", # copyright notice
 ]

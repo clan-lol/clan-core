@@ -148,7 +148,7 @@ nixosLib.runTest (
 
           # Verify the test-generator secret is available with the expected value
           result = subprocess.run(
-              ssh_cmd + ["cat /run/secrets/vars/test-generator/test-secret"],
+              ssh_cmd + ["cat /run/secrets/vars/per-machine/peer1/test-generator/test-secret"],
               check=True,
               capture_output=True,
               text=True,

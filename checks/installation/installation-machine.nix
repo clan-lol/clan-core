@@ -1,6 +1,11 @@
 # test-install-machine-without-system
 { clan-core }:
-{ lib, modulesPath, ... }:
+{
+  lib,
+  modulesPath,
+  config,
+  ...
+}:
 {
   imports = [
     (modulesPath + "/testing/test-instrumentation.nix") # we need these 2 modules always to be able to run the tests
@@ -60,9 +65,10 @@
       echo "almöhi" > "$out"/test
     '';
   };
-  # an activation script that requires the activation secret to be present
+  # Activation script that requires the activation secret.
+  # Use `.files.<f>.path`. The backend computes the canonical path.
   system.activationScripts.test-vars-activation.text = ''
-    test -e /var/lib/sops-nix/activation/test-activation/test || {
+    test -e ${config.clan.core.vars.generators.test-activation.files.test.path} || {
       echo "\nTEST ERROR: Activation secret not found!\n" >&2
       exit 1
     }
@@ -74,7 +80,7 @@
         device = "/dev/vda";
 
         preCreateHook = ''
-          test -e /run/partitioning-secrets/test-partitioning/test
+          test -e ${config.clan.core.vars.generators.test-partitioning.files.test.path}
         '';
 
         content = {

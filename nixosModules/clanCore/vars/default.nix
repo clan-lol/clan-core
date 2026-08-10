@@ -8,6 +8,8 @@
 }:
 let
   inherit (lib.types) submodule;
+
+  machineName = config.clan.core.settings.machine.name;
 in
 {
   imports = [
@@ -63,7 +65,7 @@ in
       imports = [
         ./interface.nix
         {
-          inherit pkgs;
+          inherit pkgs machineName;
           globalSettings = lib.mkIf options.clanConfig.isDefined config.clanConfig.vars.settings;
         }
         {

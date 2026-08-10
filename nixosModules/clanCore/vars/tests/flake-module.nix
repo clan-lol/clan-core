@@ -40,9 +40,9 @@
                   mkdir -p /var/lib/secret-vars
                   cp ${
                     pkgs.runCommand "mock-secrets-tarball" { } ''
-                      mkdir -p test-secret
-                      echo "test-secret-content" > test-secret/secret1
-                      tar czf $out test-secret
+                      mkdir -p per-machine/machine/test-secret
+                      echo "test-secret-content" > per-machine/machine/test-secret/secret1
+                      tar czf $out per-machine
                     ''
                   } /var/lib/secret-vars/secrets.tar.gz
                   chmod 644 /var/lib/secret-vars/secrets.tar.gz
@@ -80,9 +80,9 @@
 
           def create_new_tarball(machine, content):
               """Create a new secrets tarball with the given content"""
-              machine.succeed("mkdir -p /tmp/new-secrets/test-secret")
-              machine.succeed(f"echo '{content}' > /tmp/new-secrets/test-secret/secret1")
-              machine.succeed("tar czf /var/lib/secret-vars/secrets.tar.gz -C /tmp/new-secrets test-secret")
+              machine.succeed("mkdir -p /tmp/new-secrets/per-machine/machine/test-secret")
+              machine.succeed(f"echo '{content}' > /tmp/new-secrets/per-machine/machine/test-secret/secret1")
+              machine.succeed("tar czf /var/lib/secret-vars/secrets.tar.gz -C /tmp/new-secrets per-machine")
               machine.succeed("rm -rf /tmp/new-secrets")
 
           start_all()
@@ -90,8 +90,8 @@
 
           # Check that secrets are mounted and accessible
           machine.succeed("mountpoint -q /run/secrets")
-          machine.succeed("test -f /run/secrets/test-secret/secret1")
-          machine.succeed("grep -q 'test-secret-content' /run/secrets/test-secret/secret1")
+          machine.succeed("test -f /run/secrets/per-machine/machine/test-secret/secret1")
+          machine.succeed("grep -q 'test-secret-content' /run/secrets/per-machine/machine/test-secret/secret1")
 
           # Get initial mount count
           initial_mounts = get_mount_stack_depth(machine, "/run/secrets")
@@ -117,10 +117,10 @@
               )
 
               # Check secrets are still accessible
-              machine.succeed("test -f /run/secrets/test-secret/secret1")
+              machine.succeed("test -f /run/secrets/per-machine/machine/test-secret/secret1")
 
               # Verify the NEW content is deployed
-              actual_content = machine.succeed("cat /run/secrets/test-secret/secret1").strip()
+              actual_content = machine.succeed("cat /run/secrets/per-machine/machine/test-secret/secret1").strip()
               if actual_content != new_content:
                   raise Exception(
                       f"Secret content not updated! "

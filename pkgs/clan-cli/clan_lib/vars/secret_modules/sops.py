@@ -263,11 +263,11 @@ class SecretStore(StoreBase):
             for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "activation":
-                        # PROBLEM!
-                        # generator.name is not unique
-                        # It may collide with generator name from perExport
                         target_path = (
-                            output_dir / "activation" / generator.name / file.name
+                            output_dir
+                            / "activation"
+                            / generator.key.rel_dir()
+                            / file.name
                         )
                         target_path.parent.mkdir(
                             parents=True,
@@ -282,8 +282,7 @@ class SecretStore(StoreBase):
             for generator in generators:
                 for file in generator.files:
                     if file.needed_for == "partitioning":
-                        # TODO: generator with name "activation" would disable all activation secrets
-                        target_path = output_dir / generator.name / file.name
+                        target_path = output_dir / generator.key.rel_dir() / file.name
                         target_path.parent.mkdir(
                             parents=True,
                             exist_ok=True,

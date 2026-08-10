@@ -25,7 +25,7 @@ class NetworkTechnology(NetworkTechnologyBase):
         """Check if Tor is running by sending HTTP request to SOCKS port."""
         return is_tor_running(self.proxy)
 
-    def ping(self, remote: Remote) -> None | float:
+    def ping(self, remote: Remote) -> float | None:
         if self.is_running():
             try:
                 # Use the existing SSH reachability check

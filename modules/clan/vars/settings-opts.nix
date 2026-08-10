@@ -23,6 +23,24 @@ let
         default = file.config._module.args.name;
         defaultText = "Name of the file";
       };
+      rel_dir = mkOption {
+        type = str;
+        description = ''
+          Subdirectory of this generator under `vars/`.
+
+          One of:
+
+          - `per-machine/{machine}/{generator}`
+          - `shared/{generator}`
+          - `per-export/{export}/{generator}`
+
+          Set by the enclosing generator submodule.
+          Must match `GeneratorId.rel_dir` in `clan_lib/vars/_types.py`.
+        '';
+        internal = true;
+        visible = false;
+      };
+
       generatorName = mkOption {
         type = str;
         description = ''
@@ -55,7 +73,7 @@ let
         type = str;
         defaultText = ''
           builtins.path {
-            name = "$${file.config.generatorName}_$${file.config.name}";
+            name = "$${file.config.rel_dir}_$${file.config.name}";
             path = file.config.flakePath;
           }
         '';
@@ -63,10 +81,12 @@ let
           if file.config.flakePath == null then
             throw "flakePath must be set before accessing path"
           else if !builtins.pathExists file.config.flakePath then
-            throw "File '${file.config.name}' of generator '${file.config.generatorName}' does not exist. Try running 'clan vars generate' first."
+            throw "File '${file.config.name}' at '${file.config.rel_dir}' does not exist. Try running 'clan vars generate' first."
           else
             builtins.path {
-              name = "${file.config.generatorName}_${file.config.name}";
+              # rel_dir + name is unique.
+              # rel_dir contains "/", which is illegal in a store name.
+              name = lib.strings.sanitizeDerivationName "${file.config.rel_dir}_${file.config.name}";
               path = file.config.flakePath;
             };
       };

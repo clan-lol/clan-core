@@ -19,6 +19,11 @@ in
     # ===
     # Injected dependencies
     # ===
+    machineName = mkOption {
+      type = lib.types.str;
+      internal = true;
+      visible = false;
+    };
     globalSettings = mkOption {
       description = ''
         The global vars settings for the whole clan.
@@ -67,6 +72,12 @@ in
             generator:
             (lib.modules.importApply ../../../modules/clan/export-modules/generic-generator.nix {
               fileContextModule = {
+                # Must match GeneratorId.rel_dir in clan_lib/vars/_types.py.
+                config.rel_dir =
+                  if generator.config.share then
+                    "shared/${generator.config.name}"
+                  else
+                    "per-machine/${config.machineName}/${generator.config.name}";
                 options.deploy = mkOption {
                   description = ''
                     Whether the file should be deployed to the target machine.

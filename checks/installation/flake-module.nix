@@ -1,6 +1,7 @@
 {
   self,
   lib,
+  config,
   ...
 }@flakeModule:
 let
@@ -29,6 +30,69 @@ let
   testFlake = importFlake ./.;
 in
 {
+  # Ensures `clan machines install` works without a hardware config.
+  #
+  # If this starts failing, `facter.json` may be out of date.
+  # Get a fresh one by adding this to the installation test:
+  # client.fail("cat test-flake/machines/test-install-machine/facter.json >&2")
+
+  # Age recipients for the age installation test.
+  # Same key pair as pkgs/clan-cli/clan_cli/tests/age_keys.py.
+  clan.vars.settings.recipients.hosts.test-install-machine-without-system-with-age = [
+    "age1dhwqzkah943xzc34tc3dlmfayyevcmdmxzjezdgdy33euxwf59vsp3vk3c"
+  ];
+
+  clan.machines = {
+    test-install-machine-without-system-with-password-store =
+      { lib, ... }:
+      {
+        clan.core.vars.settings.secretStore = lib.mkForce "password-store";
+        # clan-core is itself a clan and uses sops.
+        # Its assertions would fire against this machine.
+        clan.core.vars.enableConsistencyCheck = false;
+
+        imports = [
+          ./installation-machine.nix
+        ];
+      };
+    test-install-machine-without-system = ./installation-machine.nix;
+    test-install-machine-without-system-with-age =
+      { lib, ... }:
+      {
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        # clan-core is itself a clan and uses sops.
+        # Its assertions would fire against this machine.
+        clan.core.vars.enableConsistencyCheck = false;
+
+        imports = [
+          ./installation-machine.nix
+        ];
+      };
+  }
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-${system}" {
+        # Wraps ./installation-machine.nix and adds the facter report.
+        # Do not add configuration here.
+        hardware.facter.reportPath = import ./facter-report.nix system;
+        imports = [ ./installation-machine.nix ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ))
+  // (lib.listToAttrs (
+    lib.map (
+      system:
+      lib.nameValuePair "test-install-machine-age-${system}" {
+        # Age variant.
+        # Exists so closureInfo covers the age packages.
+        hardware.facter.reportPath = import ./facter-report.nix system;
+        clan.core.vars.settings.secretStore = lib.mkForce "age";
+        clan.core.vars.enableConsistencyCheck = false;
+        imports = [ ./installation-machine.nix ];
+      }
+    ) (lib.filter (lib.hasSuffix "linux") config.systems)
+  ));
   perSystem =
     {
       pkgs,

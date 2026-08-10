@@ -37,6 +37,11 @@ let
       group ? "root",
       mode ? "0400",
       restartUnits ? [ ],
+      # In production rel_dir comes from the generator placement.
+      # interface.nix and export-modules/generators.nix set it.
+      # Tests about path mapping pass a real value.
+      # The rest keep the placeholder.
+      rel_dir ? "<placeholder>",
     }:
     {
       inherit
@@ -47,6 +52,7 @@ let
         group
         mode
         restartUnits
+        rel_dir
         ;
     };
 
@@ -59,16 +65,15 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".sopsFile.path;
+      result."vars/shared/gen1/secret1".sopsFile.path;
     expected = "/test/vars/shared/gen1/secret1/secret";
   };
 
@@ -79,16 +84,15 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = false;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "per-machine/machine1/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".sopsFile.path;
+      result."vars/per-machine/machine1/gen1/secret1".sopsFile.path;
     expected = "/test/vars/per-machine/machine1/gen1/secret1/secret";
   };
 
@@ -99,17 +103,17 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".sopsFile.name;
-    expected = "gen1_secret1";
+      result."vars/shared/gen1/secret1".sopsFile.name;
+    # `/` is illegal in a store name and collapses to `-`.
+    expected = "shared-gen1_secret1";
   };
 
   # Secret Filtering Tests (relevantFiles)
@@ -126,14 +130,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/included" ];
+    expected = [ "vars/<placeholder>/included" ];
   };
 
   testFiltersDeployTrue = {
@@ -149,14 +152,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/included" ];
+    expected = [ "vars/<placeholder>/included" ];
   };
 
   testFiltersNeededForUsers = {
@@ -172,14 +174,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/users" ];
+    expected = [ "vars/<placeholder>/users" ];
   };
 
   testFiltersNeededForServices = {
@@ -195,14 +196,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/services" ];
+    expected = [ "vars/<placeholder>/services" ];
   };
 
   testFiltersCombinedConditions = {
@@ -236,14 +236,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/valid" ];
+    expected = [ "vars/<placeholder>/valid" ];
   };
 
   # Secret Definition Extraction Tests
@@ -262,7 +261,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -270,8 +268,8 @@ in
       in
       builtins.sort builtins.lessThan (builtins.attrNames result);
     expected = [
-      "vars/gen1/secret1"
-      "vars/gen2/secret2"
+      "vars/<placeholder>/secret1"
+      "vars/<placeholder>/secret2"
     ];
   };
 
@@ -289,7 +287,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -312,15 +309,14 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       {
-        userSecret = result."vars/gen1/userSecret".neededForUsers;
-        serviceSecret = result."vars/gen1/serviceSecret".neededForUsers;
+        userSecret = result."vars/<placeholder>/userSecret".neededForUsers;
+        serviceSecret = result."vars/<placeholder>/serviceSecret".neededForUsers;
       };
     expected = {
       userSecret = true;
@@ -341,13 +337,12 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".restartUnits or null;
+      result."vars/<placeholder>/secret1".restartUnits or null;
     expected = [ "nginx.service" ];
   };
 
@@ -363,13 +358,12 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "darwin";
           inherit generators;
         };
       in
-      builtins.hasAttr "restartUnits" result."vars/gen1/secret1";
+      builtins.hasAttr "restartUnits" result."vars/<placeholder>/secret1";
     expected = false;
   };
 
@@ -380,29 +374,27 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "nixos";
         inherit generators;
       };
     expected = {
-      "vars/gen1/secret1" = {
+      "vars/shared/gen1/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
         neededForUsers = false;
         restartUnits = [ ];
         sopsFile = {
-          name = "gen1_secret1";
+          name = "shared-gen1_secret1";
           path = "/test/vars/shared/gen1/secret1/secret";
         };
         format = "binary";
       };
-
     };
   };
 
@@ -413,28 +405,26 @@ in
         generators = mkGenerator {
           name = "gen1";
           share = true;
-          files.secret1 = mkFile { };
+          files.secret1 = mkFile { rel_dir = "shared/gen1"; };
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "darwin";
         inherit generators;
       };
     expected = {
-      "vars/gen1/secret1" = {
+      "vars/shared/gen1/secret1" = {
         owner = "root";
         group = "root";
         mode = "0400";
         neededForUsers = false;
         sopsFile = {
-          name = "gen1_secret1";
+          name = "shared-gen1_secret1";
           path = "/test/vars/shared/gen1/secret1/secret";
         };
         format = "binary";
       };
-
     };
   };
 
@@ -449,7 +439,6 @@ in
         };
       in
       mapFn {
-        machineName = "machine1";
         directory = "/test";
         class = "invalid"; # nixos | darwin
         inherit generators;
@@ -468,13 +457,12 @@ in
           files.secret1 = mkFile { owner = "nginx"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".owner;
+      result."vars/<placeholder>/secret1".owner;
     expected = "nginx";
   };
 
@@ -488,13 +476,12 @@ in
           files.secret1 = mkFile { group = "nginx"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".group;
+      result."vars/<placeholder>/secret1".group;
     expected = "nginx";
   };
 
@@ -508,13 +495,12 @@ in
           files.secret1 = mkFile { mode = "0440"; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".mode;
+      result."vars/<placeholder>/secret1".mode;
     expected = "0440";
   };
 
@@ -533,13 +519,12 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".restartUnits;
+      result."vars/<placeholder>/secret1".restartUnits;
     expected = [
       "nginx.service"
       "php-fpm.service"
@@ -557,14 +542,13 @@ in
           files.mySecret = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/myGenerator/mySecret" ];
+    expected = [ "vars/<placeholder>/mySecret" ];
   };
 
   testOutputFormatIsBinary = {
@@ -577,13 +561,12 @@ in
           files.secret1 = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".format;
+      result."vars/<placeholder>/secret1".format;
     expected = "binary";
   };
 
@@ -597,12 +580,11 @@ in
           files.secret1 = mkFile { };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
-        sopsFile = result."vars/gen1/secret1".sopsFile;
+        sopsFile = result."vars/<placeholder>/secret1".sopsFile;
       in
       builtins.isAttrs sopsFile && builtins.hasAttr "name" sopsFile && builtins.hasAttr "path" sopsFile;
     expected = true;
@@ -613,7 +595,7 @@ in
     expr =
       let
         # Mock pathExists to only return true for specific paths
-        pathExists = path: path == "/test/vars/shared/gen1/exists/secret";
+        pathExists = path: path == "/test/vars/<placeholder>/exists/secret";
 
         mapFn = mkMapGeneratorsToSopsSecrets pathExists;
         generators = mkGenerator {
@@ -625,14 +607,13 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
       builtins.attrNames result;
-    expected = [ "vars/gen1/exists" ];
+    expected = [ "vars/<placeholder>/exists" ];
   };
 
   testAllSecretsFilteredWhenNoneExist = {
@@ -649,7 +630,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -676,7 +656,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -694,7 +673,6 @@ in
       let
         mapFn = mkMapGeneratorsToSopsSecrets (_: true);
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           generators = { };
@@ -709,7 +687,6 @@ in
       let
         mapFn = mkMapGeneratorsToSopsSecrets (_: true);
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           generators = {
@@ -738,7 +715,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
@@ -758,43 +734,48 @@ in
           files.secret1 = mkFile { restartUnits = [ ]; };
         };
         result = mapFn {
-          machineName = "machine1";
           directory = "/test";
           class = "nixos";
           inherit generators;
         };
       in
-      result."vars/gen1/secret1".restartUnits;
+      result."vars/<placeholder>/secret1".restartUnits;
     expected = [ ];
   };
 
-  testSpecialCharactersInNames = {
-    expr =
-      let
-        mapFn = mkMapGeneratorsToSopsSecrets (_: true);
-        generators = mkGenerator {
-          name = "gen-with-dash";
-          share = true;
-          files."secret_with_underscore" = mkFile { };
+  # `rel_dir` is escaped differently in each field.
+  # `sopsFile.path` keeps it verbatim.
+  # `sopsFile.name` sanitizes it.
+  testSpecialCharactersInNames =
+    let
+      mapFn = mkMapGeneratorsToSopsSecrets (_: true);
+      generators = mkGenerator {
+        name = "gen-with-dash";
+        share = false;
+        files."secret_with_underscore" = mkFile {
+          rel_dir = "per-machine/machine-1/gen-with-dash";
         };
-        result = mapFn {
-          machineName = "machine-1";
-          directory = "/test";
-          class = "nixos";
-          inherit generators;
-        };
-      in
-      {
-        hasSecret = builtins.hasAttr "vars/gen-with-dash/secret_with_underscore" result;
-        pathCorrect =
-          result."vars/gen-with-dash/secret_with_underscore".sopsFile.path
-          == "/test/vars/shared/gen-with-dash/secret_with_underscore/secret";
       };
-    expected = {
-      hasSecret = true;
-      pathCorrect = true;
+      result = mapFn {
+        directory = "/test";
+        class = "nixos";
+        inherit generators;
+      };
+      key = "vars/per-machine/machine-1/gen-with-dash/secret_with_underscore";
+    in
+    {
+      expr = {
+        hasSecret = builtins.hasAttr key result;
+        path = result.${key}.sopsFile.path;
+        storeName = result.${key}.sopsFile.name;
+      };
+      expected = {
+        hasSecret = true;
+        path = "/test/vars/per-machine/machine-1/gen-with-dash/secret_with_underscore/secret";
+        # `/` collapses to `-`. `-` and `_` survive.
+        storeName = "per-machine-machine-1-gen-with-dash_secret_with_underscore";
+      };
     };
-  };
 
   # Integration-style Tests
   testComplexScenario = {
@@ -803,8 +784,8 @@ in
         pathExists =
           path:
           builtins.elem path [
-            "/clan/vars/shared/passwords/root/secret"
-            "/clan/vars/per-machine/server1/certificates/ssl/secret"
+            "/clan/vars/<placeholder>/root/secret"
+            "/clan/vars/<placeholder>/ssl/secret"
           ];
 
         mapFn = mkMapGeneratorsToSopsSecrets pathExists;
@@ -840,7 +821,6 @@ in
           };
         };
         result = mapFn {
-          machineName = "server1";
           directory = "/clan";
           class = "nixos";
           inherit generators;
@@ -848,12 +828,12 @@ in
       in
       {
         secretCount = builtins.length (builtins.attrNames result);
-        hasRootPassword = builtins.hasAttr "vars/passwords/root" result;
-        hasSSLCert = builtins.hasAttr "vars/certificates/ssl" result;
+        hasRootPassword = builtins.hasAttr "vars/<placeholder>/root" result;
+        hasSSLCert = builtins.hasAttr "vars/<placeholder>/ssl" result;
         noPostgresPassword = !builtins.hasAttr "vars/passwords/postgres" result;
-        rootIsForUsers = result."vars/passwords/root".neededForUsers;
-        sslOwner = result."vars/certificates/ssl".owner;
-        sslRestarts = result."vars/certificates/ssl".restartUnits;
+        rootIsForUsers = result."vars/<placeholder>/root".neededForUsers;
+        sslOwner = result."vars/<placeholder>/ssl".owner;
+        sslRestarts = result."vars/<placeholder>/ssl".restartUnits;
       };
     expected = {
       secretCount = 2;

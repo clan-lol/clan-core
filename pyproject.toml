@@ -42,6 +42,8 @@ lint.ignore = [
   "T201",    # print
   "TD",      # flake8-todos (TODO comments)
   "INP001",  # implicit-namespace-package
+  "CPY001",  # missing-copyright-notice
+  "PLR0917", # too-many-positional-arguments
 
   # Maybe we can fix those
   "D205",    # missing-blank-line-after-summary

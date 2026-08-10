@@ -30,10 +30,10 @@
       # /etc/secret-vars/activation/ instead of the sops default
       # /var/lib/sops-nix/activation/.
       etcSecretVarsActivation =
-        { lib, ... }:
+        { lib, config, ... }:
         {
           system.activationScripts.test-vars-activation.text = lib.mkForce ''
-            test -e /etc/secret-vars/activation/test-activation/test || {
+            test -e ${config.clan.core.vars.generators.test-activation.files.test.path} || {
               echo "\nTEST ERROR: Activation secret not found!\n" >&2
               exit 1
             }
