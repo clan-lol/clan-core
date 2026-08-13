@@ -26,7 +26,7 @@
     };
   };
 
-  nodes = {
+  containers = {
 
     serverone = {
       services.openssh.enable = true;

@@ -30,7 +30,7 @@
     };
   };
 
-  nodes.machine = {
+  containers.machine = {
     clan.core.state.test-backups = {
       folders = [ "/var/test-backups" ];
 

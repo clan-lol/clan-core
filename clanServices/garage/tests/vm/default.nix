@@ -20,7 +20,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     server = {
       services.garage = {
         enable = true;

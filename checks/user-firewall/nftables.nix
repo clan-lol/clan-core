@@ -1,7 +1,7 @@
 {
   name = "user-firewall-nftables";
 
-  nodes = {
+  containers = {
     router = {
       imports = [ ./router.nix ];
     };
@@ -17,7 +17,7 @@
   testScript = ''
     start_all()
     router.wait_for_unit("multi-user.target")
-    router.wait_for_unit("nginx.service")
+    router.wait_for_open_port(80)
     machine.wait_for_unit("multi-user.target")
     machine.wait_for_unit("nginx.service")
 

@@ -18,7 +18,7 @@
       clan = clan-core.lib.clan {
         inherit self;
 
-        machines.test-update-machine =
+        machines.machine =
           {
             lib,
             modulesPath,
@@ -26,11 +26,11 @@
           }:
           {
             imports = [
-              ./test-update-machine/configuration.nix
+              ./machine/configuration.nix
               (modulesPath + "/testing/test-instrumentation.nix")
               (modulesPath + "/profiles/qemu-guest.nix")
+              (modulesPath + "/virtualisation/qemu-vm.nix")
               clan-core.clanLib.test.minifyModule
-              (clan-core + "/lib/test/container-test-driver/nixos-module.nix")
             ];
             nixpkgs.hostPlatform = lib.head (import systems);
 
@@ -50,7 +50,7 @@
               })
             ];
 
-            networking.hostName = "update-machine";
+            networking.hostName = "machine";
 
             environment.etc."install-successful".text = "ok";
 
@@ -60,6 +60,18 @@
 
             # Enable SSH and add authorized key for testing
             services.openssh.enable = true;
+
+            services.openssh.ports = [
+              22
+              2222
+            ];
+            virtualisation.forwardPorts = [
+              {
+                from = "host";
+                host.port = 2222;
+                guest.port = 2222;
+              }
+            ];
             services.openssh.settings.PasswordAuthentication = false;
             users.users.root.openssh.authorizedKeys.keys = [
               (builtins.readFile (clan-core + "/checks/assets/ssh/pubkey"))
@@ -89,7 +101,11 @@
             boot.consoleLogLevel = lib.mkForce 100;
             boot.kernelParams = [ "boot.shell_on_fail" ];
 
-            boot.isContainer = true;
+            boot.loader.grub.enable = false;
+
+            virtualisation.memorySize = 4096;
+            virtualisation.cores = 2;
+
             # Preserve the IP addresses assigned by the test framework
             # (based on virtualisation.vlans = [1] and node number 1)
             networking.interfaces.eth1 = {
@@ -118,31 +134,6 @@
               # Disable substituters to speed up tests
               substituters = lib.mkForce [ ];
             };
-
-            # Define the mounts that exist in the container to prevent them from being stopped
-            fileSystems = {
-              "/" = {
-                device = "/dev/disk/by-label/nixos";
-                fsType = "ext4";
-                options = [ "x-initrd.mount" ];
-              };
-              "/nix/.rw-store" = {
-                device = "tmpfs";
-                fsType = "tmpfs";
-                options = [
-                  "mode=0755"
-                ];
-              };
-              "/nix/store" = {
-                device = "overlay";
-                fsType = "overlay";
-                options = [
-                  "lowerdir=/nix/.ro-store"
-                  "upperdir=/nix/.rw-store/upper"
-                  "workdir=/nix/.rw-store/work"
-                ];
-              };
-            };
           };
 
         inventory =
@@ -150,7 +141,7 @@
           {
             meta.name = "foo";
             meta.domain = "foo";
-            machines.test-update-machine = { };
+            machines.machine = { };
           };
       };
     in

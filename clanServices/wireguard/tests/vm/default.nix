@@ -5,8 +5,8 @@
 
 let
   machines = [
-    "controller1"
-    "controller2"
+    "ctrl1"
+    "ctrl2"
     "peer1"
     "peer2"
     "peer3"
@@ -27,7 +27,7 @@ in
                         wg-test-one
           ┌───────────────────────────────┐
           │            ◄─────────────     │
-          │ controller2              controller1
+          │ ctrl2              ctrl1
           │    ▲       ─────────────►    ▲     ▲
           │    │ │ │ │                 │ │   │ │
           │    │ │ │ │                 │ │   │ │
@@ -45,18 +45,18 @@ in
           module.name = "@clan/wireguard";
           module.input = "self";
 
-          roles.controller.machines."controller1".settings = {
+          roles.controller.machines."ctrl1".settings = {
             endpoint = "192.168.1.1";
           };
 
-          roles.controller.machines."controller2".settings = {
+          roles.controller.machines."ctrl2".settings = {
             endpoint = "192.168.1.2";
           };
 
           roles.peer.machines = {
-            peer1.settings.controller = "controller1";
-            peer2.settings.controller = "controller2";
-            peer3.settings.controller = "controller1";
+            peer1.settings.controller = "ctrl1";
+            peer2.settings.controller = "ctrl2";
+            peer3.settings.controller = "ctrl1";
           };
         };
 
@@ -64,7 +64,7 @@ in
         #wg-test-two = {
         #  module.name = "@clan/wireguard";
 
-        #  roles.controller.machines."controller1".settings = {
+        #  roles.controller.machines."ctrl1".settings = {
         #    endpoint = "192.168.1.1";
         #    port = 51922;
         #  };
@@ -81,7 +81,7 @@ in
     start_all()
 
     # Show all addresses
-    machines = [peer1, peer2, peer3, controller1, controller2]
+    machines = [peer1, peer2, peer3, ctrl1, ctrl2]
     for m in machines:
         m.systemctl("start network-online.target")
 

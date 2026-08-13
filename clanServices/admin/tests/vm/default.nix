@@ -24,7 +24,7 @@ in
     };
   };
 
-  nodes = {
+  containers = {
     client.environment.etc.private-test-key.source = ./private-test-key;
 
     server = {
@@ -42,6 +42,6 @@ in
     for m in machines:
         m.wait_for_unit("network-online.target")
 
-    client.succeed(f"ssh -F /dev/null -i /etc/private-test-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes root@server true &>/dev/null")
+    client.succeed("ssh -F /dev/null -i /etc/private-test-key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o BatchMode=yes root@server true &>/dev/null")
   '';
 }

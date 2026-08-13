@@ -16,7 +16,7 @@
     };
   };
 
-  nodes.server = { };
+  containers.server = { };
 
   testScript = ''
     start_all()

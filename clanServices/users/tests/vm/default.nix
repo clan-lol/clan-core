@@ -35,7 +35,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     server = {
       services.openssh.enable = true;
       users.users.testuser.group = "testuser";

@@ -24,8 +24,8 @@
                   closureInfo = pkgs.closureInfo {
                     rootPaths = [
                       self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full
-                      config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.test-update-machine.config.system.build.toplevel.drvPath
-                      config.nodes.test-update-machine.system.build.toplevel.drvPath
+                      config.clan.test.machinesCross.${pkgs.stdenv.hostPlatform.system}.machine.config.system.build.toplevel.drvPath
+                      config.nodes.machine.system.build.toplevel.drvPath
                       pkgs.stdenv.drvPath
                       pkgs.buildPackages.lndir
                       pkgs.bubblewrap
@@ -50,6 +50,11 @@
 
                   clan.test.fromFlake = ./.;
 
+                  nodes.machine.virtualisation.additionalPaths = [ closureInfo ];
+                  # Needs a writable in-VM nix store with a nix database for
+                  # `clan machines update` and `nix copy`
+                  clan.test.useContainers = false;
+
                   testScript =
                     let
                       testDeps = lib.makeBinPath [
@@ -66,7 +71,6 @@
                       import os
                       import subprocess
                       from pathlib import Path
-                      from nixos_test_lib.ssh import setup_ssh_connection # type: ignore[import-untyped]
                       from nixos_test_lib.nix_setup import prepare_test_flake # type: ignore[import-untyped]
 
                       os.environ["PATH"] = "${testDeps}:" + os.environ.get("PATH", "")
@@ -94,15 +98,14 @@
                           subprocess.run(["age-keygen", "-o", str(passage_dir / "identities")], check=True)
                           os.environ["HOME"] = temp_dir
 
-                          # Set up SSH connection
-                          ssh_conn = setup_ssh_connection(
-                              machine,
-                              temp_dir,
-                              "${../assets/ssh/privkey}"
-                          )
+                          machine.wait_for_open_port(22)
+                          ssh_port = 2222
+                          ssh_key = Path(temp_dir) / "id_ed25519"
+                          ssh_key.write_text(Path("${../assets/ssh/privkey}").read_text())
+                          ssh_key.chmod(0o600)
 
                           # Update the machine configuration to add a new file
-                          machine_config_path = os.path.join(flake_dir, "machines", "test-update-machine", "configuration.nix")
+                          machine_config_path = os.path.join(flake_dir, "machines", "machine", "configuration.nix")
                           os.makedirs(os.path.dirname(machine_config_path), exist_ok=True)
 
                           # Note: update command doesn't accept -i flag, SSH key must be in ssh-agent
@@ -115,7 +118,7 @@
                                   os.environ["SSH_AGENT_PID"] = line.split("=", 1)[1].split(";")[0]
 
                           # Add the SSH key to the agent
-                          subprocess.run(["ssh-add", ssh_conn.ssh_key], check=True)
+                          subprocess.run(["ssh-add", str(ssh_key)], check=True)
 
                           print("TEST: update with --build-host local")
                           with open(machine_config_path, "w") as f:
@@ -125,16 +128,19 @@
                           }
                           """)
 
-                          # rsync the flake into the container
+                          # rsync the flake into the VM. The QEMU guest is only
+                          # reachable from the test driver through the forwarded
+                          # SSH port on localhost; the 192.168.1.x vlan is
+                          # VM-to-VM only.
                           subprocess.run(
                             [
                                 "rsync",
                                 "-a",
                                 "--delete",
                                 "-e",
-                                "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
+                                f"ssh -p {ssh_port} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
                                 f"{str(flake_dir)}/",
-                                "root@192.168.1.1:/flake",
+                                "root@localhost:/flake",
                             ],
                             check=True
                           )
@@ -142,13 +148,14 @@
                           # allow machine to ssh into itself
                           subprocess.run([
                               "ssh",
+                              "-p", str(ssh_port),
                               "-o", "UserKnownHostsFile=/dev/null",
                               "-o", "StrictHostKeyChecking=no",
-                              "root@192.168.1.1",
+                              "root@localhost",
                               "mkdir -p /root/.ssh && chmod 700 /root/.ssh && echo \"$(cat \"${../assets/ssh/privkey}\")\" > /root/.ssh/id_ed25519 && chmod 600 /root/.ssh/id_ed25519",
                           ], check=True)
 
-                          # install the clan-cli package into the container's Nix store
+                          # install the clan-cli package into the VM's Nix store
                           subprocess.run(
                             [
                                 "nix",
@@ -156,7 +163,7 @@
                                 "--from",
                                 f"{store_dir}",
                                 "--to",
-                                "ssh://root@192.168.1.1",
+                                "ssh://root@localhost",
                                 "--no-check-sigs",
                                 "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}",
                                 "--extra-experimental-features", "nix-command flakes",
@@ -164,25 +171,27 @@
                             check=True,
                             env={
                               **os.environ,
-                              "NIX_SSHOPTS": "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
+                              "NIX_SSHOPTS": f"-p {ssh_port} -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no",
                             },
                           )
 
                           # generate passage identity for password-store on remote
                           subprocess.run([
                               "ssh",
+                              "-p", str(ssh_port),
                               "-o", "UserKnownHostsFile=/dev/null",
                               "-o", "StrictHostKeyChecking=no",
-                              "root@192.168.1.1",
+                              "root@localhost",
                               "mkdir -p /root/.passage && ${pkgs.age}/bin/age-keygen -o /root/.passage/identities",
                           ], check=True)
 
                           # generate sops keys
                           subprocess.run([
                               "ssh",
+                              "-p", str(ssh_port),
                               "-o", "UserKnownHostsFile=/dev/null",
                               "-o", "StrictHostKeyChecking=no",
-                              "root@192.168.1.1",
+                              "root@localhost",
                               "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                               "vars",
                               "keygen",
@@ -192,9 +201,10 @@
                           # Run ssh on the host to run the clan update command via --build-host local
                           subprocess.run([
                               "ssh",
+                              "-p", str(ssh_port),
                               "-o", "UserKnownHostsFile=/dev/null",
                               "-o", "StrictHostKeyChecking=no",
-                              "root@192.168.1.1",
+                              "root@localhost",
                               "${self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full}/bin/clan",
                               "machines",
                               "update",
@@ -203,7 +213,7 @@
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
                               "--build-host", "localhost",
-                              "test-update-machine",
+                              "machine",
                               "--target-host", "root@localhost",
                           ], check=True)
 
@@ -237,8 +247,8 @@
                               "--flake", str(flake_dir),
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
-                              "test-update-machine",
-                              "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
+                              "machine",
+                              "--target-host", f"root@localhost:{ssh_port}",
                           ]
                           print("Running command:", " ".join(cmd))
                           subprocess.run(cmd, check=True)
@@ -265,9 +275,9 @@
                               "--flake", flake_dir,
                               "--host-key-check", "none",
                               "--upload-inputs",  # Use local store instead of fetching from network
-                              "--build-host", f"root@192.168.1.1:{ssh_conn.host_port}",
-                              "test-update-machine",
-                              "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
+                              "--build-host", f"root@localhost:{ssh_port}",
+                              "machine",
+                              "--target-host", f"root@localhost:{ssh_port}",
                           ], check=True)
 
                           # Verify the second update was successful
@@ -295,8 +305,8 @@
                               "--flake", str(flake_dir),
                               "--host-key-check", "none",
                               "--upload-inputs",
-                              "test-update-machine",
-                              "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
+                              "machine",
+                              "--target-host", f"root@localhost:{ssh_port}",
                           ], capture_output=True, text=True)
                           assert result.returncode != 0, (
                               f"Expected update to fail due to switch inhibitors, "
@@ -330,8 +340,8 @@
                                   "--flake", str(flake_dir),
                                   "--host-key-check", "none",
                                   "--upload-inputs",
-                                  "test-update-machine",
-                                  "--target-host", f"root@192.168.1.1:{ssh_conn.host_port}",
+                                  "machine",
+                                  "--target-host", f"root@localhost:{ssh_port}",
                               ], check=True)
                           finally:
                               del os.environ["NIXOS_NO_CHECK"]

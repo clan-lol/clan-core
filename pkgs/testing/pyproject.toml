@@ -38,9 +38,11 @@ line-length = 88
 select = ["ALL"]
 ignore = [
     "D", # docstrings
-    "ANN", # type annotations  
+    "ANN", # type annotations
     "COM812", # trailing comma
     "ISC001", # string concatenation
     "T201", # print statements
+    "S603", # subprocess-without-shell-equals-true
+    "S607", # start-process-with-partial-path
     "CPY001", # copyright notice
 ]

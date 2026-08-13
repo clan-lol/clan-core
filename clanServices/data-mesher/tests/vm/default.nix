@@ -61,9 +61,6 @@
         nodes.alpha.clan.core.vars.generators.data-mesher-node-identity.files."identity.pub".path;
     in
     ''
-      import base64
-      import subprocess
-
       def upload_file(node, filename, content, key_path="${./admin.key}"):
           """Create a file and upload it via the cli"""
           node.succeed(f"echo -n '{content}' > /tmp/{filename}")
@@ -117,9 +114,9 @@
       url_key = b64.urlsafe_b64encode(raw_key).rstrip(b"=").decode()
 
       ns_filename = f"test_ns/{url_key}"
-      alpha.succeed(f"echo -n 'namespace_data' > /tmp/ns_file")
+      alpha.succeed("echo -n 'namespace_data' > /tmp/ns_file")
       alpha.wait_until_succeeds(
-          f"data-mesher file update /tmp/ns_file"
+          "data-mesher file update /tmp/ns_file"
           f" --name '{ns_filename}'"
           f" --url http://[::1]:7331"
           f" --key ${alphaIdentityKey}"
@@ -135,7 +132,7 @@
       # Uploading without --cert should fail
       alpha.succeed("echo -n 'no_cert' > /tmp/ns_nocert")
       alpha.fail(
-          f"data-mesher file update /tmp/ns_nocert"
+          "data-mesher file update /tmp/ns_nocert"
           f" --name '{ns_filename}'"
           f" --url http://[::1]:7331"
           f" --key ${alphaIdentityKey}"

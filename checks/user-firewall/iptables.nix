@@ -1,7 +1,7 @@
 {
   name = "user-firewall-iptables";
 
-  nodes = {
+  containers = {
     router =
       { ... }:
       {

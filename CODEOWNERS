@@ -1,6 +1,5 @@
 clanServices/.* @pinpox @kenji
 
-lib/test/container-test-driver/.* @DavHau @mic92
 lib/inventory/.* @hsjobeki
 lib/inventoryClass/.* @hsjobeki
 lib/jsonschema/.* @hgl

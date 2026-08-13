@@ -20,7 +20,7 @@
     };
   };
 
-  nodes =
+  containers =
     let
       hostConfig = ''
         192.168.1.1 ca.foo

@@ -43,7 +43,7 @@
     };
   };
 
-  nodes = {
+  containers = {
     machine1 = {
       networking.domain = "clan";
     };
