@@ -145,6 +145,29 @@ in
       hostMachine = machineFor "test-install-machine-${pkgs.stdenv.hostPlatform.system}";
       hostAgeMachine = machineFor "test-install-machine-age-${pkgs.stdenv.hostPlatform.system}";
 
+      # Packages that must be fully realizable inside the offline test store.
+      # The install phase runs `clan machines install`, which builds the system
+      # closure ON the target VM (no network). Building these requires all of
+      # their outputs (docs/dev too) plus their sources, none of which appear
+      # in a runtime closure — so seed every output explicitly.
+      installBuildWorld = [
+        pkgs.kmod
+        pkgs.unzip
+        pkgs.dbus
+        pkgs.libxml2
+        pkgs.libxslt
+        pkgs.texinfo
+        pkgs.autoconf
+        pkgs.automake
+        pkgs.patchutils
+        pkgs.python3Minimal
+        pkgs.file
+        pkgs.linuxHeaders
+        pkgs.glibcLocales
+      ];
+
+      allOutputs = p: if p ? outputs then map (o: p.${o}) p.outputs else [ p ];
+
       closureInfo = pkgs.closureInfo {
         rootPaths = [
           installationFlake
@@ -160,6 +183,7 @@ in
           # Needed for password-store
           pkgs.shellcheck-minimal
         ]
+        ++ builtins.concatMap allOutputs installBuildWorld
         ++ builtins.map (i: i.outPath) (builtins.attrValues self.inputs)
         ++ builtins.map (import ./facter-report.nix) (
           lib.filter (lib.hasSuffix "linux") flakeModule.config.systems
