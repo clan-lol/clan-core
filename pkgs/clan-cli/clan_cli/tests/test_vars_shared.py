@@ -719,6 +719,75 @@ def test_age_set_shared_var_for_multiple_machines(
 
 @pytest.mark.broken_on_darwin
 @pytest.mark.with_core
+def test_age_fix_keeps_all_recipients_on_shared_deployed_secret(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+) -> None:
+    """'clan vars fix' over all machines must keep every machine as a
+    recipient of a shared deployed secret (age backend).
+
+    Regression: fix_vars resolved generators one machine at a time, so each
+    per-machine pass re-encrypted the shared secret to that single machine's
+    pubkey, and only the last machine in the loop could still decrypt.
+    """
+    age_key = age_keys[0]
+    machine_names = ["machine1", "machine2"]
+
+    for m in machine_names:
+        config = flake.machines[m] = create_test_machine_config()
+        clan_vars = config["clan"]["core"]["vars"]
+        clan_vars["settings"]["secretStore"] = "age"
+        shared_gen = clan_vars["generators"]["shared_generator"]
+        shared_gen["share"] = True
+        shared_gen["files"]["my_secret"]["secret"] = True
+        shared_gen["script"] = 'echo -n "hunter2" > "$out"/my_secret'
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    (flake.path / "clan.nix").write_text(
+        f"{{\n"
+        f'  vars.settings.recipients.hosts.machine1 = ["{age_key.pubkey}"];\n'
+        f'  vars.settings.recipients.hosts.machine2 = ["{age_key.pubkey}"];\n'
+        f"}}\n"
+    )
+
+    age_key_dir = flake.path / ".age"
+    age_key_dir.mkdir()
+    age_key_file = age_key_dir / "key.txt"
+    age_key_file.write_text(age_key.privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_file))
+
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup age shared fix test"],
+        cwd=flake.path,
+        check=True,
+    )
+
+    cli.run(["vars", "generate", "--flake", str(flake.path), "--no-sandbox"])
+
+    gen_id = GeneratorId(name="shared_generator", placement=Shared())
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+    secret_file = store.secret_path(gen_id, "my_secret")
+    expected_recipients = sorted(store.get_machine_pubkey(m) for m in machine_names)
+    assert store._read_recipients(secret_file) == expected_recipients
+
+    # The default CLI invocation: fix all machines, one after the other.
+    cli.run(["vars", "fix", "--flake", str(flake.path)])
+
+    store = age.SecretStore(flake=Flake(str(flake.path)))
+    assert store._read_recipients(secret_file) == expected_recipients, (
+        "fix must keep every declaring machine as recipient of a shared deployed secret"
+    )
+    for m in machine_names:
+        key = store.decrypt_machine_key(m)
+        assert store._run_age_decrypt_with_key(secret_file, key) == b"hunter2"
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
 def test_password_store_set_shared_var_for_multiple_machines(
     monkeypatch: pytest.MonkeyPatch,
     flake: ClanFlake,
