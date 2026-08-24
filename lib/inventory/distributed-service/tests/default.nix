@@ -76,6 +76,50 @@ in
       inherit res;
     };
 
+  # manifest.maintainers accepts plain strings as shorthand for { name = ...; }
+  # and always merges into the structured form.
+  test_manifest_maintainers =
+    let
+      res = createTestClan {
+        modules."maintained-module" = {
+          _class = "clan.service";
+          manifest = {
+            name = "maintained";
+            maintainers = [
+              "somebody"
+              {
+                name = "someone-else";
+                email = "someone@example.com";
+              }
+            ];
+          };
+        };
+        inventory.instances."instance_foo" = {
+          module = {
+            name = "maintained-module";
+            input = "self";
+          };
+        };
+      };
+    in
+    {
+      expr = res.config._services.allServices.self-maintained-module.manifest.maintainers;
+      expected = [
+        {
+          name = "somebody";
+          github = null;
+          email = null;
+          matrix = null;
+        }
+        {
+          name = "someone-else";
+          github = null;
+          email = "someone@example.com";
+          matrix = null;
+        }
+      ];
+    };
+
   # A module can be imported multiple times
   # A module can also have multiple instances within the same module
   # This mean modules must be grouped together, imported once
