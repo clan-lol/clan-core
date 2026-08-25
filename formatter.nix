@@ -81,10 +81,8 @@
       treefmt.settings.global.excludes = [
         "*.png"
         "*.svg"
-        "package-lock.json"
         "*.jpeg"
         "*.gitignore"
-        ".vscode/*"
         "*.toml"
         "*.clan-flake"
         "*.code-workspace"
@@ -104,14 +102,11 @@
         "**/node_modules/*"
         "**/.mypy_cache/*"
 
-        "checks/data-mesher/vars/*"
-        "checks/lib/ssh/privkey"
-        "checks/lib/ssh/pubkey"
-        "checks/matrix-synapse/synapse-registration_shared_secret"
+        "checks/assets/ssh/privkey"
+        "checks/assets/ssh/pubkey"
+        "checks/installation/assets/ssh/pubkey"
         "checks/secrets/clan-secrets"
         "checks/secrets/sops/groups/group/machines/machine"
-        "checks/syncthing/introducer/introducer_device_id"
-        "checks/syncthing/introducer/introducer_test_api"
         "pkgs/clan-cli/clan_cli/tests/data/gnupg.conf"
         "pkgs/clan-cli/clan_cli/tests/data/password-store/.gpg-id"
         "pkgs/clan-cli/clan_cli/tests/data/ssh_host_ed25519_key"
@@ -122,7 +117,6 @@
         # Clan site does its own fmt checking while linting
         # because of the difficult of supporting prettier plugins
         "pkgs/clan-site/*"
-        "docs/migrate.py"
       ];
       treefmt.settings.formatter.ruff-format.includes = [
         "*/bin/clan"
