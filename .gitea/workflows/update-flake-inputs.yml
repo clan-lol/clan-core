@@ -18,8 +18,6 @@ jobs:
       - name: Update flake inputs
         uses: Mic92/update-flake-inputs-gitea@pull/119/merge
         with:
-          # Exclude private flakes and update-clan-core checks flake
-          exclude-patterns: "checks/impure/flake.nix"
           auto-merge: true
           git-author-name: "clan-bot"
           git-committer-name: "clan-bot"

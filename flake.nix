@@ -47,21 +47,10 @@
         optional
         pathExists
         ;
-
-      privateInputs =
-        if builtins.pathExists (./. + "/.skip-private-inputs") then
-          { }
-        else
-          (import ./devFlake/flake-compat.nix {
-            src = ./devFlake;
-          }).outputs.inputs;
     in
     flake-parts.lib.mkFlake
       {
         inherit inputs;
-        specialArgs = {
-          inherit privateInputs;
-        };
       }
       (
         {
