@@ -19,8 +19,6 @@ jobs:
       - name: Update flake inputs
         uses: Mic92/update-flake-inputs-gitea@main
         with:
-          # Exclude private flakes and update-clan-core checks flake
-          exclude-patterns: "checks/impure/flake.nix"
           auto-merge: true
           base-branch: "26.05"
           # Keep update branches distinct from the ones the main workflow creates
