@@ -25,6 +25,10 @@ Those are sent to the central monitoring server for storage and visualization.
 - WireGuard service now fully supports darwin machines using wg-quick interfaces
 - Added `clan.core.networking.extraHosts` for managing /etc/hosts on darwin via launchd
 
+### Service Maintainers
+
+- Services can now declare who maintains them via `manifest.maintainers`
+
 ### SSH Agent Forwarding
 
 - Added configurable SSH agent forwarding for deployments

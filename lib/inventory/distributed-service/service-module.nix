@@ -341,6 +341,49 @@ in
                 );
               };
 
+              maintainers = mkOption {
+                default = [ ];
+                description = ''
+                  People responsible for this service.
+                '';
+                example = lib.literalExpression ''
+                  [
+                    "somebody"
+                    {
+                      name = "someone-else";
+                      email = "someone@example.com";
+                    }
+                  ]
+                '';
+                type = types.listOf (
+                  types.coercedTo types.str (name: { inherit name; }) (
+                    types.submodule {
+                      options = {
+                        name = mkOption {
+                          type = types.str;
+                          description = "Account name on the forge hosting this service, e.g. git.clan.lol.";
+                        };
+                        github = mkOption {
+                          type = types.nullOr types.str;
+                          default = null;
+                          description = "GitHub handle, if different from `name` or the service lives on GitHub.";
+                        };
+                        email = mkOption {
+                          type = types.nullOr types.str;
+                          default = null;
+                          description = "Contact email.";
+                        };
+                        matrix = mkOption {
+                          type = types.nullOr types.str;
+                          default = null;
+                          description = "Matrix ID, e.g. `@user:matrix.org`.";
+                        };
+                      };
+                    }
+                  )
+                );
+              };
+
               # TODO: Restrict?
               exports.out = mkOption {
                 type = types.listOf types.str;
