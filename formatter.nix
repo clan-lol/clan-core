@@ -112,7 +112,6 @@
         "checks/secrets/sops/groups/group/machines/machine"
         "checks/syncthing/introducer/introducer_device_id"
         "checks/syncthing/introducer/introducer_test_api"
-        "nixosModules/clanCore/vars/secret/sops/eval-tests/populated/vars/my_machine/my_generator/my_secret"
         "pkgs/clan-cli/clan_cli/tests/data/gnupg.conf"
         "pkgs/clan-cli/clan_cli/tests/data/password-store/.gpg-id"
         "pkgs/clan-cli/clan_cli/tests/data/ssh_host_ed25519_key"
