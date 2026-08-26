@@ -33,11 +33,26 @@
       {
         options.multicastInterfaces = lib.mkOption {
           type = lib.types.listOf lib.types.attrs;
-          default = [ ];
+          default = [
+            {
+              # Degrade overlay/VPN interfaces so direct links win.
+              Regex = "(zt|wg|tailscale|mycelium|tinc|tun|tap|ygg).*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+              Priority = 10;
+            }
+            {
+              Regex = ".*";
+              Beacon = true;
+              Listen = true;
+              Port = 5400;
+            }
+          ];
           description = ''
-            Interfaces to use for Yggdrasil multicast peer discovery.
-            By default, multicast is enabled on all interfaces (empty list).
-            To restrict multicast to specific interfaces, add them to this list.
+            Interfaces for Yggdrasil multicast peer discovery; enabled on
+            all interfaces by default, `[ ]` disables. Listener ports are
+            opened in the firewall automatically.
             See https://yggdrasil-network.github.io/configurationref.html#multicastinterfaces
           '';
           example = [
@@ -55,7 +70,7 @@
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1024;
+              Priority = 100;
             }
             {
               # Or restrict to wifi interfaces
@@ -63,7 +78,7 @@
               Beacon = true;
               Listen = true;
               Port = 5400;
-              Priority = 1025;
+              Priority = 101;
             }
           ];
         };
@@ -81,15 +96,15 @@
               };
 
               quic = lib.mkOption {
-                description = "QUIC port, used for the quic:// yggdrasil listener";
-                default = 6444;
-                type = lib.types.port;
+                description = "QUIC port, used for the quic:// yggdrasil listener. Disabled by default.";
+                default = null;
+                type = lib.types.nullOr lib.types.port;
               };
 
               ws = lib.mkOption {
-                description = "Websocket port, used for the ws:// yggdrasil listener";
-                default = 6445;
-                type = lib.types.port;
+                description = "Websocket port, used for the ws:// yggdrasil listener. Disabled by default.";
+                default = null;
+                type = lib.types.nullOr lib.types.port;
               };
 
               tls = lib.mkOption {
@@ -111,9 +126,7 @@
           '';
           example = [
             "tcp://192.168.1.1:6443"
-            "quic://192.168.1.1:6444"
-            "tls://192.168.1.1:6445"
-            "ws://192.168.1.1:6446"
+            "tls://192.168.1.1:6446"
           ];
         };
 
@@ -161,8 +174,10 @@
           }:
           let
 
+            # Build peer URLs for one export, dialing the given protocols
+            # for each IP.
             mkPeers =
-              export:
+              protocols: export:
               let
                 # Extract host list from the export
                 hostList = export.peer.hosts or [ ];
@@ -183,23 +198,25 @@
                 # Filter out empty IPs
                 filteredHosts = lib.filter (ip: ip != "") hosts;
 
-                # Helper to create peer URLs for a given IP
+                # Static peers get a worse (higher) priority than
+                # multicast-discovered links, so local peerings carry the
+                # traffic and static routes act as fallback.
+                staticPeerParams = "?priority=20";
                 mkPeerUrlsForIp =
                   ip:
                   if (lib.hasSuffix ".onion" ip) then
-                    # Tor onion peers use SOCKS proxy
-                    # socks:// = TCP (port 6443)
-                    # sockstls:// = TLS (port 6446)
-                    [
-                      "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}"
-                      "sockstls://127.0.0.1:9050/${ip}:${toString settings.ports.tls}"
-                    ]
-                  else if (lib.hasInfix ":" ip) then
-                    # We need to add [ ] for IPv6 addresses
-                    lib.mapAttrsToList (protocol: port: "${protocol}://[${ip}]:${toString port}") settings.ports
+                    # Tor onion peers use the local SOCKS proxy
+                    [ "socks://127.0.0.1:9050/${ip}:${toString settings.ports.tcp}${staticPeerParams}" ]
                   else
-                    # No [ ] for IPv4 addresses
-                    lib.mapAttrsToList (protocol: port: "${protocol}://${ip}:${toString port}") settings.ports;
+                    map (
+                      protocol:
+                      let
+                        port = toString settings.ports.${protocol};
+                        # We need to add [ ] for IPv6 addresses
+                        host = if (lib.hasInfix ":" ip) then "[${ip}]" else ip;
+                      in
+                      "${protocol}://${host}:${port}${staticPeerParams}"
+                    ) protocols;
               in
               lib.concatMap mkPeerUrlsForIp filteredHosts;
 
@@ -209,9 +226,22 @@
               scope: scope.serviceName != service.config.manifest.name && scope.machineName != machine.name
             ) exports;
 
-            exportedPeerIPs = lib.concatLists (map mkPeers (lib.attrValues nonLocalExports));
-
-            exportedPeers = exportedPeerIPs;
+            # A single tcp:// link suffices for exports from VPN transports
+            # (already encrypted, unfiltered). Internet exports may cross
+            # filtered networks, so dial every enabled protocol to maximize
+            # the chance that one gets through.
+            enabledProtocols = lib.attrNames (lib.filterAttrs (_: port: port != null) settings.ports);
+            exportedPeers = lib.concatLists (
+              lib.mapAttrsToList (
+                scopeKey: export:
+                mkPeers (
+                  if (clanLib.parseScope scopeKey).serviceName == "clan-core/internet" then
+                    enabledProtocols
+                  else
+                    [ "tcp" ]
+                ) export
+              ) nonLocalExports
+            );
 
             # Collect public keys from all machines in the role
             allowedPublicKeys = lib.filter (key: key != "") (
@@ -328,7 +358,9 @@
               # We persist our keys with vars.
               persistentKeys = false;
               settings = {
-                Listen = lib.mapAttrsToList (protocol: port: "${protocol}://[::]:${toString port}") settings.ports;
+                Listen = lib.mapAttrsToList (protocol: port: "${protocol}://[::]:${toString port}") (
+                  lib.filterAttrs (_: port: port != null) settings.ports
+                );
                 # Point to the credential-mounted path (works with both old and new modules)
                 PrivateKeyPath = "/private-key";
                 IfName = "ygg";
@@ -339,15 +371,18 @@
               };
             };
             networking.firewall = with settings.ports; {
-              allowedUDPPorts = [
-                5400 # Multicast
-                quic # QUIC
-              ];
+              allowedUDPPorts = lib.optional (quic != null) quic;
               allowedTCPPorts = [
                 tcp
-                ws # WebSocket
                 tls # TLS
-              ];
+              ]
+              ++ lib.optional (ws != null) ws
+              # Link-local TCP listener ports for multicast peer discovery
+              ++ lib.unique (
+                lib.concatMap (
+                  mi: lib.optional ((mi.Listen or false) && (mi.Port or 0) != 0) mi.Port
+                ) settings.multicastInterfaces
+              );
 
               # Restrict ygg interface to only allow traffic from clan members
               # (iptables)

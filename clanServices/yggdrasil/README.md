@@ -126,8 +126,14 @@ This service therefore also sets up firewall rules, such that the `ygg` network
 interface only accepts traffic from Clan member IPs.
 
 By default, multicast peer discovery is enabled on all network interfaces,
-allowing automatic discovery of local peers. Since Yggdrasil provides end-to-end
-encryption, this is safe even on untrusted networks.
+allowing automatic discovery of local peers. Since Yggdrasil provides
+end-to-end encryption and peering is limited by `AllowedEncryptionPublicKeys`,
+this is safe even on untrusted networks. Set
+`settings.multicastInterfaces = [ ]` to disable.
+
+When several links to the same peer exist, the lowest `Priority` wins. The
+defaults prefer direct local links (0) over overlay/VPN interfaces (10) and
+statically configured peers from service exports (20).
 
 If you want to restrict multicast to specific interfaces (e.g., only VPN
 interfaces), you can configure `settings.multicastInterfaces` with a list of
