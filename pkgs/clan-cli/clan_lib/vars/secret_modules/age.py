@@ -5,11 +5,11 @@ import shutil
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import ClassVar, override
+from typing import override
 
 from clan_lib.cmd import Log, RunOpts
 from clan_lib.cmd import run as cmd_run
-from clan_lib.dirs import runtime_deps_flake
+from clan_lib.dirs import runtime_deps_flake, user_config_dir
 from clan_lib.errors import ClanCmdError, ClanError
 from clan_lib.flake import Flake
 from clan_lib.git import commit_files
@@ -151,12 +151,13 @@ class SecretStore(StoreBase):
 
         return recipients
 
-    # Well-known age identity file locations, checked in order as fallback
-    _IDENTITY_SEARCH_PATHS: ClassVar[list[Path]] = [
-        Path("~/.config/age/identities"),
-        Path("~/.config/sops/age/keys.txt"),
-        Path("~/.age/key.txt"),
-    ]
+    def _identity_search_paths(self) -> list[Path]:
+        """Return well-known age identity file locations, checked in order."""
+        return [
+            Path("~/.config/age/identities").expanduser(),
+            user_config_dir() / "sops" / "age" / "keys.txt",
+            Path("~/.age/key.txt").expanduser(),
+        ]
 
     def get_identity(self) -> tuple[str | None, list[Path]]:
         """Get age identities for decrypting machine keys.
@@ -182,15 +183,15 @@ class SecretStore(StoreBase):
             return (None, [key_path])
 
         # Collect all existing well-known identity files
+        candidates = self._identity_search_paths()
         found: list[Path] = []
-        for candidate in self._IDENTITY_SEARCH_PATHS:
-            expanded = candidate.expanduser()
-            if expanded.exists():
-                log.debug("Found age identity at %s", expanded)
-                found.append(expanded)
+        for candidate in candidates:
+            if candidate.exists():
+                log.debug("Found age identity at %s", candidate)
+                found.append(candidate)
 
         if not found:
-            search_paths = ", ".join(str(p) for p in self._IDENTITY_SEARCH_PATHS)
+            search_paths = ", ".join(str(p) for p in candidates)
             msg = (
                 "No age identity found. Set one of:\n"
                 "  - AGE_KEY env var (inline private key)\n"
