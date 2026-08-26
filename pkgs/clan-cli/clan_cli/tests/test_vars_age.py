@@ -383,8 +383,8 @@ def test_age_get_identity_fallback_paths(
 
     monkeypatch.setattr(
         age.SecretStore,
-        "_IDENTITY_SEARCH_PATHS",
-        [fake_identity],
+        "_identity_search_paths",
+        lambda _: [fake_identity],
     )
 
     content, paths = store.get_identity()
@@ -407,8 +407,8 @@ def test_age_get_identity_none_found(
     monkeypatch.delenv("AGE_KEYFILE", raising=False)
     monkeypatch.setattr(
         age.SecretStore,
-        "_IDENTITY_SEARCH_PATHS",
-        [Path("/nonexistent/1"), Path("/nonexistent/2")],
+        "_identity_search_paths",
+        lambda _: [Path("/nonexistent/1"), Path("/nonexistent/2")],
     )
 
     with pytest.raises(ClanError, match="No age identity found"):
@@ -449,8 +449,8 @@ def test_age_health_check(
     monkeypatch.delenv("AGE_KEY", raising=False)
     monkeypatch.setattr(
         age.SecretStore,
-        "_IDENTITY_SEARCH_PATHS",
-        [Path("/nonexistent")],
+        "_identity_search_paths",
+        lambda _: [Path("/nonexistent")],
     )
     result = store.health_check("my_machine", [])
     assert result is not None
