@@ -41,6 +41,26 @@ in
                 Remove the machine-level configuration.
               '';
             }
+            {
+              assertion =
+                config.clanConfig.clanInternals.vars.settings.age.externalStore
+                == config.clan.core.vars.settings.age.externalStore;
+              message = ''
+                Machine '${config.clan.core.settings.machine.name}' overrides vars.settings.age.externalStore.
+
+                The age store location is clan-wide: the CLI only reads the
+                clan-level setting, so a per-machine override silently loses
+                secrets at activation time. Set it once at the clan level:
+
+                ```
+                # clan.nix / flake.nix
+
+                clan.vars.settings.age.externalStore = ${lib.boolToString config.clan.core.vars.settings.age.externalStore};
+                ```
+
+                Remove the machine-level configuration.
+              '';
+            }
           ];
     }
   ]

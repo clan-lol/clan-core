@@ -151,6 +151,15 @@ Location on the target where encrypted secrets are uploaded (default: `/etc/secr
 clan.core.vars.age.secretLocation = "/etc/my-secrets";
 ```
 
+### `vars.settings.age.externalStore`
+
+Keep the age store outside the flake repository (default: `false`), see
+[External Store](#external-store-public-repositories):
+
+```nix
+vars.settings.age.externalStore = true;
+```
+
 ## Repository Layout
 
 ```text
@@ -177,6 +186,56 @@ your-clan/
                 └── ssh.id_ed25519.pub/
                     └── value     # Public (non-secret) values
 ```
+
+## External Store (Public Repositories)
+
+By default the `secrets/` store is committed to the flake repository. For a
+public flake repository this permanently publishes the (encrypted) secrets
+with their full git history. To keep the store out of the flake entirely:
+
+```nix
+# clan.nix — commits the intent, not the location
+vars.settings.age.externalStore = true;
+```
+
+```bash
+# each admin's environment — their local copy of the store
+export CLAN_AGE_STORE_DIR=~/clan-secrets
+```
+
+The flag is a boolean on purpose: admins managing shared infrastructure can
+keep their store copies in different places. If `CLAN_AGE_STORE_DIR` points
+to a git repository, clan commits store changes there with the same commit
+messages it would use in the flake repo — share it out-of-band like a
+passage/password-store repository.
+
+Migrating an existing in-repo store:
+
+```bash
+mv secrets "$CLAN_AGE_STORE_DIR"
+git rm -r --cached secrets && git commit
+```
+
+The encrypted secrets remain in the flake's git history until it is
+rewritten.
+
+Misconfigurations fail loudly: enabling the flag without the environment
+variable, setting the variable without the flag, pointing it inside the
+flake repository, or leaving a non-empty `secrets/` behind are all errors.
+
+### Deployment implications
+
+With an internal store the encrypted secrets are part of the system closure.
+With an external store they are not: `clan machines update` uploads them to
+`secretLocation` alongside the machine key, and activation decrypts them
+from there. Two consequences:
+
+- Building system closures (CI, `nix build`, `nix flake check`) requires no
+  access to the store at all.
+- Activating a system without a prior `clan machines update` — a bare
+  `nixos-rebuild switch`, or rolling back to an old generation after secrets
+  changed — can leave secrets missing; activation prints a
+  `not found, skipping` warning for each.
 
 ## Multiple Recipients
 
@@ -255,7 +314,7 @@ Check the path in `AGE_KEYFILE` exists and is readable.
 | Encryption tool | age directly | sops (wrapping age) |
 | Decryption location | Target machine (activation scripts) | Target machine (sops-nix) |
 | Decryption binary | `age` (shell scripts) | `sops-install-secrets` (Go) |
-| Machine keys | Auto-generated, in-repo | Auto-generated, in-repo |
+| Machine keys | Auto-generated, in-repo or external store | Auto-generated, in-repo |
 | Key indirection | Yes (user → machine key → secret) | Yes (similar) |
 | Shared secrets | Multi-recipient age encryption | sops-nix groups |
 | Hardware tokens | Via age plugins | Via sops/age plugins |
