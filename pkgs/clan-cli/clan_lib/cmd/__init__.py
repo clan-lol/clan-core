@@ -74,8 +74,8 @@ def handle_io(
     wlist = (
         [process.stdin] if input_bytes is not None else []
     )  # wlist is a list of file descriptors to be monitored for write events
-    stdout_buf = b""
-    stderr_buf = b""
+    stdout_buf = bytearray()
+    stderr_buf = bytearray()
     start = time.time()
 
     # Function to handle file descriptors
@@ -110,7 +110,7 @@ def handle_io(
                 command_list=cmd or [],
                 returncode=-1,  # Indicate abnormal termination
                 msg=None,
-                stdout_raw=stdout_buf,
+                stdout_raw=bytes(stdout_buf),
             )
             raise ClanCmdTimeoutError(cmd_out, timeout)
 
@@ -186,7 +186,7 @@ def handle_io(
     return (
         stdout_buf.decode("utf-8", "replace"),
         stderr_buf.decode("utf-8", "replace"),
-        stdout_buf,
+        bytes(stdout_buf),
     )
 
 
