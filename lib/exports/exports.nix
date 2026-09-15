@@ -38,7 +38,7 @@ let
       ];
       checkedParts = lib.map (
         part:
-        lib.throwIf (builtins.match ".?:.?" part != null) ''
+        lib.throwIf (lib.hasInfix ":" part) ''
           mkExportsScope: ${part} cannot contain the ":" character
         '' part
       ) parts;
