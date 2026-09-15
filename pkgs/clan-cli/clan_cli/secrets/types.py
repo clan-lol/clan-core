@@ -18,6 +18,9 @@ def secret_name_type(arg_value: str) -> str:
     if not VALID_SECRET_NAME.match(arg_value):
         msg = "Invalid character in secret name. Allowed characters are a-z, A-Z, 0-9, ., -, and _"
         raise argparse.ArgumentTypeError(msg)
+    if arg_value in {".", ".."} or "/" in arg_value:
+        msg = f"Invalid secret name '{arg_value}'. A secret name must be a single path component"
+        raise argparse.ArgumentTypeError(msg)
     return arg_value
 
 

@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import os
@@ -11,6 +12,7 @@ from unittest.mock import patch
 
 import pytest
 from clan_cli.secrets.key import generate_private_key
+from clan_cli.secrets.types import secret_name_type
 from clan_cli.tests.age_keys import assert_secrets_file_recipients
 from clan_cli.tests.fixtures_flakes import FlakeForTest
 from clan_cli.tests.gpg_keys import GpgKey
@@ -1199,3 +1201,13 @@ def test_secrets_key_generate_reports_registered_user(
     # The already-registered key is reported as such, with no add instructions.
     assert "is already set and registered as user 'alice'" in output.err
     assert "clan secrets users add" not in output.err
+
+
+@pytest.mark.parametrize("name", [".", "..", "../..", "a/b"])
+def test_secret_name_rejects_path_references(name: str) -> None:
+    """A secret name is joined onto sops/secrets/, so it must be one component.
+
+    'clan secrets remove ..' would otherwise rmtree the whole sops tree.
+    """
+    with pytest.raises(argparse.ArgumentTypeError):
+        secret_name_type(name)
