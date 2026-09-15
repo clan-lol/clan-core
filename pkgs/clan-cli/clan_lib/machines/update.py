@@ -515,11 +515,7 @@ def _nixos_activate(
 
     # Not an inhibitor failure — could be SSH drop or real error.
     # Retry once (switch-to-configuration is idempotent).
-    log.info(
-        "[%s] activation returned %d — retrying",
-        machine_name,
-        switch_ret.returncode,
-    )
+    log.info("activation returned %d — retrying", switch_ret.returncode)
     retry_ret = target_host_root.run(
         switch_cmd("switch"),
         RunOpts(
@@ -538,11 +534,7 @@ def _nixos_activate(
         RunOpts(check=False, prefix=machine_name),
     )
     if check.returncode == 0 and check.stdout.strip() == config_path:
-        log.info(
-            "[%s] target is already running %s — activation succeeded",
-            machine_name,
-            config_path,
-        )
+        log.info("target is already running %s — activation succeeded", config_path)
         return
 
     msg = (
