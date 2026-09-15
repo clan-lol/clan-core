@@ -909,6 +909,12 @@ def test_secrets(
         ],
     )
 
+    # The admin reaches key2 through admin-group, so no direct user grant is
+    # created. A direct grant would survive 'groups remove-user'.
+    assert not (
+        test_flake_with_core.path / "sops" / "secrets" / "key2" / "users" / owner
+    ).exists(follow_symlinks=False)
+
     with use_age_key(age_keys[1].privkey, monkeypatch):
         with capture_output as output:
             cli.run(
