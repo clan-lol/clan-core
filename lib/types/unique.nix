@@ -52,7 +52,7 @@ in
       expr = eval.config.foo;
       expectedError = {
         type = "ThrownError";
-        message = "*nested imports";
+        msg = "nested imports";
       };
     };
 
@@ -71,7 +71,7 @@ in
       expr = eval.config.foo;
       expectedError = {
         type = "TypeError";
-        message = "cannot convert a function to JSON";
+        msg = "cannot convert a function to JSON";
       };
     };
 
@@ -86,7 +86,7 @@ in
       expr = eval.config.foo;
       expectedError = {
         type = "ThrownError";
-        message = ".*foo.* is not of type";
+        msg = ".*foo.* is not of type";
       };
     };
 }
