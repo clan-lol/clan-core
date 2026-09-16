@@ -99,7 +99,10 @@ def toposort_closure[T: Comparable, N: GeneratorGraphNode](
     # return the topological sorted list of generators to execute
     final_dep_graph = {}
     for gen_key in sorted(closure, key=lambda k: k.key()):
-        deps = set(generators[gen_key].dependencies) & closure
+        deps = sorted(
+            set(generators[gen_key].dependencies) & closure,
+            key=lambda k: k.key(),
+        )
         final_dep_graph[gen_key] = deps
     sorter = TopologicalSorter(final_dep_graph)
     result = list(sorter.static_order())
