@@ -527,6 +527,7 @@
 
                   datasources.settings.datasources = [
                     {
+                      uid = "mimir";
                       name = "mimir";
                       url = "http://127.0.0.1:${toString config.services.mimir.configuration.server.http_listen_port}${config.services.mimir.configuration.server.http_path_prefix}${config.services.mimir.configuration.api.prometheus_http_prefix}";
                       type = "prometheus";
@@ -534,6 +535,7 @@
                       jsonData.manageAlerts = false;
                     }
                     {
+                      uid = "loki";
                       name = "loki";
                       url = "http://127.0.0.1:${toString config.services.loki.configuration.server.http_listen_port}${config.services.loki.configuration.server.http_path_prefix}";
                       type = "loki";
