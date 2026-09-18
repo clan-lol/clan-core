@@ -98,3 +98,34 @@ Additional local collector fragments can be added with `environment.etc."alloy/<
 ### Server
 
 Servers store metrics and logs. They also provide optional dashboards for visualization and an alerting system.
+
+By default the server sets up nginx as a reverse proxy on the machine's FQDN,
+exposing mimir under `/mimir/`, loki under `/loki/` (both guarded by basic
+auth) and grafana under `/grafana/`.
+
+#### Using an external reverse proxy
+
+If the server machine already runs another reverse proxy (e.g. caddy or
+traefik) on ports 80/443, disable the built-in nginx:
+
+```nix
+server.machines.<machine>.settings = {
+  grafana.enable = true;
+  host = "monitoring.example.com";
+  proxy.enable = false;
+  # Set if your proxy serves the monitoring endpoints via https.
+  proxy.useSSL = true;
+};
+```
+
+The external proxy must replicate these routes:
+
+| Route       | Upstream                                            | Auth                                                |
+| ----------- | --------------------------------------------------- | --------------------------------------------------- |
+| `/mimir/`   | `http://127.0.0.1:3001` (no prefix stripping)       | basic auth, htpasswd from the `mimir-auth` vars generator |
+| `/loki/`    | `http://127.0.0.1:3002` (no prefix stripping)       | basic auth, htpasswd from the `loki-auth` vars generator |
+| `/grafana/` | `http://127.0.0.1:3000`, `/grafana` prefix stripped, websockets enabled | none                           |
+
+The htpasswd files are available on the server machine at
+`config.clan.core.vars.generators.mimir-auth.files.htpasswd.path` and
+`config.clan.core.vars.generators.loki-auth.files.htpasswd.path`.
