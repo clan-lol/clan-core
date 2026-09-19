@@ -38,7 +38,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -97,7 +97,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -118,7 +118,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -177,7 +177,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -198,7 +198,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -257,7 +257,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -278,7 +278,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -337,7 +337,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -358,7 +358,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "P982945308D3682D1"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -497,7 +497,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P982945308D3682D1"
+            "uid": "loki"
           },
           "direction": "backward",
           "editorMode": "builder",
@@ -521,7 +521,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -545,7 +545,7 @@
               "oneClick": true,
               "targetBlank": false,
               "title": "Show logs",
-              "url": "/a/grafana-lokiexplore-app/explore/service/nginx.service/logs?patterns=%5B%5D&${__url_time_range}﻿﻿&var-lineFormat=&var-ds=P982945308D3682D1&var-filters=service_name%7C%3D%7C﻿${__series.name}﻿.service&var-filters=instance%7C%3D%7C${hostname}&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&displayedFields=%5B%5D&urlColumns=%5B%5D&visualizationType=%22logs%22&prettifyLogMessage=false&sortOrder=%22Descending%22&wrapLogMessage=false"
+              "url": "/a/grafana-lokiexplore-app/explore/service/nginx.service/logs?patterns=%5B%5D&${__url_time_range}﻿﻿&var-lineFormat=&var-ds=loki&var-filters=service_name%7C%3D%7C﻿${__series.name}﻿.service&var-filters=instance%7C%3D%7C${hostname}&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&displayedFields=%5B%5D&urlColumns=%5B%5D&visualizationType=%22logs%22&prettifyLogMessage=false&sortOrder=%22Descending%22&wrapLogMessage=false"
             }
           ],
           "mappings": [
@@ -664,7 +664,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -723,7 +723,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -756,7 +756,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "P46B05499459EE360"
+          "uid": "mimir"
         },
         "definition": "label_values(instance)",
         "description": "",
