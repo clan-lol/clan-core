@@ -54,7 +54,7 @@ in
           default = { };
         };
 
-        config.checks = lib.optionalAttrs (pkgs.stdenv.isLinux) tests;
+        config.checks = lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux) tests;
       }
     );
   };

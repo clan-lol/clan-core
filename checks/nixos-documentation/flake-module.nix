@@ -30,7 +30,7 @@ in
   perSystem =
     { pkgs, ... }:
     {
-      checks = lib.optionalAttrs pkgs.stdenv.isLinux {
+      checks = lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         nixos-documentation = testFlake.nixosConfigurations.test-documentation.config.system.build.toplevel;
       };
     };

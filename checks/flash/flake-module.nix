@@ -167,7 +167,8 @@ in
     {
       # Skip flash test on aarch64-linux for now as it's too slow
       checks =
-        lib.optionalAttrs (pkgs.stdenv.isLinux && pkgs.stdenv.hostPlatform.system != "aarch64-linux")
+        lib.optionalAttrs
+          (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.system != "aarch64-linux")
           {
             nixos-test-flash = self.clanLib.test.baseTest {
               name = "flash";
