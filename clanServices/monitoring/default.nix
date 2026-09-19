@@ -286,6 +286,35 @@
               '';
               example = "monitoring.example.com";
             };
+
+            proxy = {
+              enable = lib.mkOption {
+                type = lib.types.bool;
+                default = true;
+                description = ''
+                  Whether to set up nginx as a reverse proxy exposing mimir, loki
+                  and grafana under /mimir, /loki and /grafana on the machine's
+                  FQDN, with basic auth for /mimir and /loki.
+
+                  Disable this if the machine already runs another reverse proxy
+                  (e.g. caddy or traefik). The external proxy must replicate these
+                  routes and guard /mimir and /loki with the htpasswd files from
+                  the mimir-auth and loki-auth vars generators.
+                '';
+              };
+
+              useSSL = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = ''
+                  Only used when proxy.enable is false: whether the external
+                  reverse proxy serves the monitoring endpoints via https.
+                  Controls grafana's root_url scheme and secure cookies. With the
+                  built-in nginx proxy this is detected automatically from the
+                  nginx virtual host.
+                '';
+              };
+            };
           };
         };
 
@@ -302,10 +331,18 @@
             let
               networkingInterfaces = builtins.attrNames config.networking.interfaces;
               defaultVirtualHost = config.services.nginx.virtualHosts."${config.networking.fqdn}";
-              useSSL = defaultVirtualHost.addSSL || defaultVirtualHost.forceSSL || defaultVirtualHost.onlySSL;
+              useSSL =
+                if settings.proxy.enable then
+                  defaultVirtualHost.addSSL || defaultVirtualHost.forceSSL || defaultVirtualHost.onlySSL
+                else
+                  settings.proxy.useSSL;
+              grafanaDomain =
+                if settings.proxy.enable || settings.host == null then config.networking.fqdn else settings.host;
             in
             {
-              networking.firewall.allowedTCPPorts = [ 80 ] ++ lib.optional useSSL 443;
+              networking.firewall.allowedTCPPorts = lib.mkIf settings.proxy.enable (
+                [ 80 ] ++ lib.optional useSSL 443
+              );
 
               clan.core = {
                 postgresql = {
@@ -354,7 +391,7 @@
                 };
               };
 
-              services.nginx = {
+              services.nginx = lib.mkIf settings.proxy.enable {
                 enable = true;
 
                 preStart = ''
@@ -380,8 +417,8 @@
                 };
               };
 
-              systemd.services.nginx.serviceConfig = {
-                LoadCredential = [
+              systemd.services.nginx = lib.mkIf settings.proxy.enable {
+                serviceConfig.LoadCredential = [
                   "mimir-auth-htpasswd:${config.clan.core.vars.generators.mimir-auth.files.htpasswd.path}"
                   "loki-auth-htpasswd:${config.clan.core.vars.generators.loki-auth.files.htpasswd.path}"
                 ];
@@ -501,12 +538,12 @@
                     admin_password = "$__file{/run/credentials/grafana.service/grafana-admin-password}";
                     secret_key = "$__file{/run/credentials/grafana.service/grafana-secret-key}";
                     cookie_secure = useSSL;
-                    csrf_trusted_origins = config.networking.fqdn;
+                    csrf_trusted_origins = grafanaDomain;
                   };
 
                   server = {
-                    domain = config.networking.fqdn;
-                    root_url = "http" + lib.optionalString useSSL "s" + "://${config.networking.fqdn}/grafana/";
+                    domain = grafanaDomain;
+                    root_url = "http" + lib.optionalString useSSL "s" + "://${grafanaDomain}/grafana/";
                   };
 
                   snapshots = {
