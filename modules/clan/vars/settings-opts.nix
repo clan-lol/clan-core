@@ -240,6 +240,27 @@ in
       '';
     };
 
+    age = mkOption {
+      type = lib.types.submodule {
+        options = {
+          externalStore = mkOption {
+            type = bool;
+            default = false;
+            description = ''
+              Keep the age secret store outside the flake repository.
+
+              When enabled, machine keys and encrypted secrets live in the
+              directory named by the CLAN_AGE_STORE_DIR environment variable
+            '';
+          };
+        };
+      };
+      default = { };
+      description = ''
+        Settings for the age secret store.
+      '';
+    };
+
   };
 
   config.stores = {

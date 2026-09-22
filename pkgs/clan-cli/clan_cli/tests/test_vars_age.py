@@ -29,6 +29,7 @@ def setup_age_flake(
     monkeypatch: pytest.MonkeyPatch,
     age_key: KeyPair,
     machines: list[str] | None = None,
+    external_store: bool = False,
 ) -> tuple[Flake, Path]:
     """Set up a flake with age backend and return (Flake, age_key_file_path).
 
@@ -47,11 +48,14 @@ def setup_age_flake(
     monkeypatch.chdir(flake.path)
 
     # Write clan.nix with recipients for all machines
-    hosts_block = "\n".join(
+    settings_lines = [
         f'  vars.settings.recipients.hosts.{m} = ["{age_key.pubkey}"];'
         for m in machines
-    )
-    (flake.path / "clan.nix").write_text(f"{{\n{hosts_block}\n}}\n")
+    ]
+    if external_store:
+        settings_lines.append("  vars.settings.age.externalStore = true;")
+    settings_block = "\n".join(settings_lines)
+    (flake.path / "clan.nix").write_text(f"{{\n{settings_block}\n}}\n")
 
     # Set up age key file
     age_key_dir = flake.path / ".age"
@@ -229,6 +233,174 @@ def test_generate_secret_var_age(
         "my_generator2", PerMachine("my_machine"), flake_obj
     )
     assert not store.exists(my_generator2_obj.key, "my_secret2")
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_external_store_dir(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+    tmp_path: Path,
+) -> None:
+    """An external age store keeps all store files outside the flake repository."""
+    age_key = age_keys[0]
+    config = flake.machines["my_machine"] = create_test_machine_config()
+    clan_vars = config["clan"]["core"]["vars"]
+    clan_vars["settings"]["secretStore"] = "age"
+    my_generator = clan_vars["generators"]["my_generator"]
+    my_generator["files"]["my_secret"]["secret"] = True
+    my_generator["script"] = 'echo hello > "$out"/my_secret'
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    (flake.path / "clan.nix").write_text(
+        "{\n"
+        f'  vars.settings.recipients.hosts.my_machine = ["{age_key.pubkey}"];\n'
+        "  vars.settings.age.externalStore = true;\n"
+        "}\n"
+    )
+    age_key_file = tmp_path / "key.txt"
+    age_key_file.write_text(age_key.privkey)
+    monkeypatch.setenv("AGE_KEYFILE", str(age_key_file))
+    subprocess.run(["git", "add", "."], cwd=flake.path, check=True)
+    subprocess.run(
+        ["git", "commit", "-m", "setup age backend"], cwd=flake.path, check=True
+    )
+
+    # External store as its own git repo (passage-style private sync)
+    store_dir = tmp_path / "age-store"
+    store_dir.mkdir()
+    subprocess.run(["git", "init"], cwd=store_dir, check=True)
+    monkeypatch.setenv("CLAN_AGE_STORE_DIR", str(store_dir))
+
+    # This test asserts commit routing; the devshell sets CLAN_NO_COMMIT=1
+    # which reduces commit_files to `git add --intent-to-add`.
+    monkeypatch.delenv("CLAN_NO_COMMIT", raising=False)
+
+    cli.run(["vars", "generate", "--flake", str(flake.path), "my_machine"])
+
+    flake_obj = Flake(str(flake.path))
+    store = age.SecretStore(flake=flake_obj)
+    gen = make_generator("my_generator", PerMachine("my_machine"), flake_obj)
+
+    # Round-trip works and files live under the external dir
+    assert store.get(gen.key, "my_secret").decode() == "hello\n"
+    assert (store_dir / "age-keys" / "machines" / "my_machine" / "pub").exists()
+    assert (store_dir / "clan-vars").exists()
+
+    # Nothing store-related in the flake repo or its git index
+    assert not (store.clan_dir / "secrets").exists()
+    tracked = subprocess.run(
+        ["git", "ls-files"],
+        cwd=flake.path,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "secrets/" not in tracked
+
+    # Commits landed in the external repo instead
+    store_log = subprocess.run(
+        ["git", "log", "--format=%s"],
+        cwd=store_dir,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "Add age machine key for 'my_machine'" in store_log
+    assert "vars: update my_generator/my_secret" in store_log
+
+    # populate_dir uploads the encrypted secrets: they are not part of the
+    # system closure when the store is external.
+    svc_var = make_var("my_secret", machines=["my_machine"], needed_for="services")
+    gen_with_files = make_generator(
+        "my_generator", PerMachine("my_machine"), flake_obj, files=[svc_var]
+    )
+    with TemporaryDirectory() as tmpdir:
+        output_dir = Path(tmpdir)
+        store.populate_dir(
+            [gen_with_files],
+            "my_machine",
+            output_dir,
+            phases=["services", "users", "activation"],
+        )
+        uploaded = (
+            output_dir
+            / "vars"
+            / "per-machine"
+            / "my_machine"
+            / "my_generator"
+            / "my_secret"
+            / "my_secret.age"
+        )
+        assert uploaded.exists()
+        assert (
+            uploaded.read_bytes()
+            == store.secret_path(gen.key, "my_secret").read_bytes()
+        )
+
+    # Deletion is committed externally as well
+    store.delete(gen.key, "my_secret")
+    assert not store.exists(gen.key, "my_secret")
+    store_log = subprocess.run(
+        ["git", "log", "--format=%s"],
+        cwd=store_dir,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+    assert "vars: delete my_generator/my_secret" in store_log
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_external_store_dir_guards(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+    tmp_path: Path,
+) -> None:
+    """A misconfigured external store fails loudly instead of leaking secrets."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0], external_store=True)
+
+    # externalStore enabled but CLAN_AGE_STORE_DIR not set is rejected
+    monkeypatch.delenv("CLAN_AGE_STORE_DIR", raising=False)
+    store = age.SecretStore(flake=flake_obj)
+    with pytest.raises(ClanError, match="CLAN_AGE_STORE_DIR is not set"):
+        store.secrets_dir()
+
+    # Pointing inside the flake repository is rejected
+    monkeypatch.setenv("CLAN_AGE_STORE_DIR", str(flake.path / "external-secrets"))
+    store = age.SecretStore(flake=flake_obj)
+    with pytest.raises(ClanError, match="inside the flake"):
+        store.secrets_dir()
+
+    # A non-empty in-repo store must be migrated first
+    store = age.SecretStore(flake=flake_obj)
+    in_repo_store = store.clan_dir / "secrets"
+    in_repo_store.mkdir(parents=True)
+    (in_repo_store / "leftover").write_text("x")
+    monkeypatch.setenv("CLAN_AGE_STORE_DIR", str(tmp_path / "age-store"))
+    with pytest.raises(ClanError, match="not empty"):
+        store.secrets_dir()
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_age_external_store_dir_requires_setting(
+    monkeypatch: pytest.MonkeyPatch,
+    flake: ClanFlake,
+    age_keys: list[KeyPair],
+    tmp_path: Path,
+) -> None:
+    """A stray CLAN_AGE_STORE_DIR without the externalStore setting is rejected."""
+    flake_obj, _ = setup_age_flake(flake, monkeypatch, age_keys[0])
+
+    monkeypatch.setenv("CLAN_AGE_STORE_DIR", str(tmp_path / "age-store"))
+    store = age.SecretStore(flake=flake_obj)
+    with pytest.raises(ClanError, match="externalStore = true"):
+        store.secrets_dir()
 
 
 @pytest.mark.broken_on_darwin
