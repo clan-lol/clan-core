@@ -240,7 +240,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           closureInfo = pkgs.closureInfo {
             rootPaths =
               # Not available on darwin
-              (lib.optionals (!pkgs.stdenv.isDarwin) [
+              (lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
                 # needed by flash list tests
                 pkgs.kbd.out
                 pkgs.glibcLocales
@@ -299,7 +299,7 @@ pythonRuntime.pkgs.buildPythonApplication {
         }
         (
           let
-            marker = if pkgs.stdenv.isDarwin then "and not broken_on_darwin" else "";
+            marker = if pkgs.stdenv.hostPlatform.isDarwin then "and not broken_on_darwin" else "";
           in
           ''
             set -euo pipefail

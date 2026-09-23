@@ -209,7 +209,7 @@ in
         let
           installTestClanCli = self.packages.${pkgs.stdenv.hostPlatform.system}.clan-cli-full;
         in
-        pkgs.lib.mkIf (pkgs.stdenv.isLinux && !pkgs.stdenv.isAarch64) {
+        pkgs.lib.mkIf (pkgs.stdenv.hostPlatform.isLinux && !pkgs.stdenv.hostPlatform.isAarch64) {
           /*
             Test: Complete Clan machine installation workflow
 
