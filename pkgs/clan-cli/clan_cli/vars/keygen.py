@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -7,11 +8,26 @@ from clan_cli.secrets.key import generate_key
 from clan_cli.secrets.sops import KeyType, SopsKey, maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
 from clan_lib.api.directory import get_clan_dir
-from clan_lib.flake import Flake
-from clan_lib.nix_selectors import vars_settings_secret_store
+from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.vars.keygen import get_user_or_default
 
 log = logging.getLogger(__name__)
+
+_AGE_SECRET_STORE = re.compile(r'secretStore\s*=\s*"age"')
+
+
+def _template_uses_age_backend(flake_dir: Path) -> bool:
+    """Whether a freshly created clan selects the age vars backend.
+
+    Reads the template sources instead of evaluating the flake: right after
+    `create_clan` the clan-core input may not be locked yet (`--no-update`),
+    and evaluating would fetch clan-core just to answer this question.
+    """
+    return any(
+        _AGE_SECRET_STORE.search(nix_file.read_text())
+        for nix_file in (flake_dir / "clan.nix", flake_dir / "flake.nix")
+        if nix_file.exists()
+    )
 
 
 def _select_keys_interactive(pub_keys: list[SopsKey]) -> list[SopsKey]:
@@ -86,22 +102,20 @@ def register_admin_keys(
     The age backend takes its recipients from clan.nix, which `create_clan`
     already filled in. The sops backend needs a sops user in the repository.
     """
-    backend = Flake(str(flake_dir)).select(vars_settings_secret_store())
-    if backend == "age":
+    if _template_uses_age_backend(flake_dir):
         if not age_recipients(keys):
             log.warning(
                 "None of the selected keys is an age key. Add your age public key "
                 "to vars.settings.recipients.default in clan.nix.",
             )
         return
-    if backend == "sops":
-        add_user(
-            clan_dir=flake_dir,
-            name=get_user_or_default(user),
-            keys=keys,
-            force=True,
-            flake_dir=flake_dir,
-        )
+    add_user(
+        clan_dir=flake_dir,
+        name=get_user_or_default(user),
+        keys=keys,
+        force=True,
+        flake_dir=flake_dir,
+    )
 
 
 def _create_secrets_user(
