@@ -32,3 +32,10 @@ The empty `multicastInterfaces` default silently disabled multicast peer
 discovery. It is now enabled on all interfaces by default, with direct
 local links preferred over overlay interfaces and static peers. Set
 `settings.multicastInterfaces = [ ]` to opt out.
+
+## Changes
+
+### p2p-ssh-iroh is no longer experimental
+
+The `p2p-ssh-iroh` service is now considered stable. Its experimental
+warnings have been removed from the service and networking docs.

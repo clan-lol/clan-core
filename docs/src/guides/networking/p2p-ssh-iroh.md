@@ -1,9 +1,5 @@
 # P2P SSH via Iroh
 
-:::admonition[Experimental]{type=danger}
-This service is experimental and will change in the future.
-:::
-
 :::admonition[Security Notice]{type=warning}
 Enabling this service exposes your machine's SSH service to anyone on the iroh network. The only protection against unauthorized access is SSH authentication itself. Before enabling this service, make sure SSH on all affected machines is configured securely: use private key authentication only and disable password login.
 :::
@@ -54,28 +50,16 @@ After running `clan vars generate` and deploying, both laptops are reachable via
 
 ## Guide
 
-To try out p2p-ssh-iroh, first follow one of the Getting Started Guides, up through and including installation.
-
-Then, uncomment the part of `clan.nix` file that looks like this:
+Add an instance to the `inventory.instances` of your `clan.nix`:
 
 ```nix
-# p2p-ssh-iroh = {
-#   roles.server.tags = [ "nixos" ];
-# };
+p2p-ssh-iroh.roles.server.tags.all = { };
 ```
 
-So it looks like this:
+To limit it to specific machines, replace `all` with any tags that identify them.
 
-```nix
-p2p-ssh-iroh = {
-  roles.server.tags = [ "nixos" ];
-};
-```
-
-(Use any tags that identify the machines you want to add this feature to.)
-
-:::admonition[Experimental]{type=danger}
-Because this feature is still in experimental stages, we do not recommend deleting the `sshd` entry unless you know exactly what you're doing. Doing so will remove your key from the `authorized_keys` file on the machine. If p2p-ssh-iroh fails, you will no longer be able to log in through `ssh` [without a password](../vars/intro-to-vars#your-first-var-the-root-password).
+:::admonition[Keep sshd]{type=warning}
+Do not delete the `sshd` entry. It puts your key into the `authorized_keys` file on the machine; p2p-ssh-iroh only transports the SSH connection and still relies on it for authentication.
 :::
 
 Next, run the updater:
