@@ -15,6 +15,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
 from clan_lib.nix import nix_shell
+from clan_lib.nix_selectors import vars_settings_age
 from clan_lib.vars._types import GeneratorId, PerMachine, Shared, StoreRequest
 from clan_lib.vars.generator import Generator
 from clan_lib.vars.list import stringify_all_vars
@@ -692,6 +693,10 @@ def test_age_ensure_machine_key_provisions_age_keygen(
         raise KeygenReachedError
 
     monkeypatch.setattr(age, "cmd_run", record_cmd)
+    # Evaluate the flake while nix still uses the sandbox test store. Without
+    # IN_NIX_SANDBOX the select would hit the read-only /nix/store, and the
+    # test would only pass when another test had cached this selector.
+    flake_obj.select(vars_settings_age())
     # nix_shell is a passthrough inside the sandbox, which would hide the bug
     monkeypatch.delenv("IN_NIX_SANDBOX", raising=False)
     monkeypatch.delenv("CLAN_PROVIDED_PACKAGES", raising=False)
