@@ -47,6 +47,7 @@ inventory.instances = {
 
 - `logLevel`: Log level (default: info)
 - `port`: Port for cluster communication (default: 7946)
+- `certificateValidity`: Validity of the generated node identity certificate as a Go duration (default: `2160h`, 90 days). Regenerate the `data-mesher-node-identity` vars before it expires.
 - `extraBootstrapPeers`: List of extra bootstrap peers to connect to when joining the cluster.
 - `interfaces`: The network interface(s) for cluster communication - defaults to all interfaces
 - `files`: Map of file names to lists of authorized ED25519 public keys
