@@ -236,6 +236,11 @@ def vars_password_store_secret_location(system: str, machines: list[str]) -> str
 
 
 @static_selector
+def vars_settings_secret_store() -> str:
+    return "clanInternals.vars.settings.secretStore"
+
+
+@static_selector
 def vars_settings_recipients() -> str:
     return "clanInternals.vars.settings.?recipients"
 

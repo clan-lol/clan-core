@@ -29,6 +29,10 @@ This means **user key rotation** only re-encrypts machine keys (one per machine)
 
 ## Quick Start
 
+:::admonition[Note]{type=note}
+Clans created with `clan init` use the age backend by default: `clan init` selects or generates your age key and adds its public key to `vars.settings.recipients.default` in `clan.nix`. You can skip to [Generate Secrets](#3-generate-secrets).
+:::
+
 ### 1. Set Up Your Age Identity
 
 The backend automatically checks these locations for your private key:

@@ -3,22 +3,19 @@
 ```nix
 {
   inventory.instances = {
-    # Deploy user alice on all machines. Don't prompt for password (will be
-    # auto-generated).
+    # Deploy user alice on all machines. The password is auto-generated
+    # (`prompt` defaults to `false`).
     user-alice = {
       module = {
         name = "users";
         input = "clan-core";
       };
       roles.default.tags = [ "all" ];
-      roles.default.settings = {
-        user = "alice";
-        prompt = false;
-      };
+      roles.default.settings.user = "alice";
     };
 
     # Deploy user Carol on all machines. Prompt only once and use the
-    # same password on all machines. (`share = true`)
+    # same password on all machines. (`prompt = true`, `share = true`)
     user-carol = {
       module = {
         name = "users";
@@ -27,6 +24,7 @@
       roles.default.tags = [ "all" ];
       roles.default.settings = {
         user = "carol";
+        prompt = true;
         share = true;
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ..."

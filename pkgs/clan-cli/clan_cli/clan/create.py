@@ -1,13 +1,18 @@
 # !/usr/bin/env python3
 import argparse
 import logging
+import sys
 from pathlib import Path
 
 from clan_lib.clan.create import CreateOptions, create_clan
 from clan_lib.errors import ClanError
 
 from clan_cli.completions import add_dynamic_completer, complete_templates_clan
-from clan_cli.vars.keygen import create_secrets_user_auto
+from clan_cli.vars.keygen import (
+    age_recipients,
+    register_admin_keys,
+    select_admin_keys,
+)
 
 log = logging.getLogger(__name__)
 
@@ -64,6 +69,7 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
 
             args.name = Path(user_input)
 
+        admin_keys = select_admin_keys(sys.stdin.isatty())
         create_clan(
             CreateOptions(
                 dest=Path(args.name),
@@ -71,14 +77,13 @@ def register_create_parser(parser: argparse.ArgumentParser) -> None:
                 setup_git=not args.no_git,
                 src_flake=args.flake,
                 update_clan=not args.no_update,
+                age_recipients=age_recipients(admin_keys),
             ),
         )
-        flake_dir = Path(args.name).resolve()
-        create_secrets_user_auto(
-            clan_dir=flake_dir,
-            flake_dir=flake_dir,
+        register_admin_keys(
+            flake_dir=Path(args.name).resolve(),
+            keys=admin_keys,
             user=args.user,
-            force=True,
         )
 
     parser.set_defaults(func=create_flake_command)
