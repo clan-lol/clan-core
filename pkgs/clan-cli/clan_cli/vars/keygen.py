@@ -1,16 +1,33 @@
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 
 from clan_cli.secrets.key import generate_key
-from clan_cli.secrets.sops import SopsKey, maybe_get_admin_public_keys
+from clan_cli.secrets.sops import KeyType, SopsKey, maybe_get_admin_public_keys
 from clan_cli.secrets.users import add_user
 from clan_lib.api.directory import get_clan_dir
 from clan_lib.flake import Flake  # noqa: TC002
 from clan_lib.vars.keygen import get_user_or_default
 
 log = logging.getLogger(__name__)
+
+_AGE_SECRET_STORE = re.compile(r'secretStore\s*=\s*"age"')
+
+
+def _template_uses_age_backend(flake_dir: Path) -> bool:
+    """Whether a freshly created clan selects the age vars backend.
+
+    Reads the template sources instead of evaluating the flake: right after
+    `create_clan` the clan-core input may not be locked yet (`--no-update`),
+    and evaluating would fetch clan-core just to answer this question.
+    """
+    return any(
+        _AGE_SECRET_STORE.search(nix_file.read_text())
+        for nix_file in (flake_dir / "clan.nix", flake_dir / "flake.nix")
+        if nix_file.exists()
+    )
 
 
 def _select_keys_interactive(pub_keys: list[SopsKey]) -> list[SopsKey]:
@@ -38,100 +55,85 @@ def _select_keys_interactive(pub_keys: list[SopsKey]) -> list[SopsKey]:
     return selected_keys
 
 
-def create_secrets_user_interactive(
-    clan_dir: Path,
-    flake_dir: Path,
-    user: str | None = None,
-    force: bool = False,
-) -> None:
-    """Initialize sops keys for vars interactively."""
-    user = get_user_or_default(user)
+def select_admin_keys(interactive: bool) -> list[SopsKey]:
+    """Pick existing admin keys of this machine, or generate a new age key."""
     pub_keys = maybe_get_admin_public_keys()
     if pub_keys:
-        # let the user select which of the keys to use
-        pub_keys = _select_keys_interactive(pub_keys)
-    else:
+        return _select_keys_interactive(pub_keys) if interactive else pub_keys
+
+    if not interactive:
+        return [generate_key()]
+
+    log.info("\nNo admin keys found on this machine, generating a new age key.")
+    key = generate_key()
+    # make sure the user backups the generated key
+    log.info("\n⚠️  IMPORTANT: Secret Key Backup ⚠️")
+    log.info(
+        "The generated key above is CRITICAL for accessing your clan's secrets.",
+    )
+    log.info("Without this key, you will lose access to all encrypted data!")
+    log.info("Please backup the key file immediately to a secure location.")
+    log.info(f"The key is stored in {key.source}")
+    confirm = None
+    while not confirm or confirm.lower() != "y":
         log.info(
-            "\nNo admin keys found on this machine, generating a new key for sops.",
+            "\nI have backed up the key file to a secure location. Confirm [y/N]: ",
         )
-        pub_keys = [generate_key()]
-        # make sure the user backups the generated key
-        log.info("\n⚠️  IMPORTANT: Secret Key Backup ⚠️")
-        log.info(
-            "The generated key above is CRITICAL for accessing your clan's secrets.",
-        )
-        log.info("Without this key, you will lose access to all encrypted data!")
-        log.info("Please backup the key file immediately to a secure location.")
-        log.info("The key is typically stored in ~/.config/sops/age/keys.txt")
-        confirm = None
-        while not confirm or confirm.lower() != "y":
-            log.info(
-                "\nI have backed up the key file to a secure location. Confirm [y/N]: ",
+        confirm = input().strip().lower()
+        if confirm != "y":
+            log.error(
+                "You must backup the key before proceeding. This is critical for data recovery!",
             )
-            confirm = input().strip().lower()
-            if confirm != "y":
-                log.error(
-                    "You must backup the key before proceeding. This is critical for data recovery!",
-                )
-
-    # persist the generated or chosen admin pubkey in the repo
-    add_user(
-        clan_dir=clan_dir,
-        name=user,
-        keys=pub_keys,
-        force=force,
-        flake_dir=flake_dir,
-    )
+    return [key]
 
 
-def _create_secrets_user_non_interactive(
-    clan_dir: Path,
+def age_recipients(keys: list[SopsKey]) -> list[str]:
+    """Public keys usable as recipients of the age vars backend."""
+    return [key.pubkey for key in keys if key.key_type == KeyType.AGE]
+
+
+def register_admin_keys(
     flake_dir: Path,
+    keys: list[SopsKey],
     user: str | None = None,
-    force: bool = False,
 ) -> None:
-    """Initialize sops keys for vars non-interactively."""
-    user = get_user_or_default(user)
-    pub_keys = maybe_get_admin_public_keys()
-    if not pub_keys:
-        pub_keys = [generate_key()]
-    add_user(
-        clan_dir=clan_dir,
-        name=user,
-        keys=pub_keys,
-        force=force,
-        flake_dir=flake_dir,
-    )
+    """Grant the admin keys access to the secrets of a freshly created clan.
 
-
-def create_secrets_user_auto(
-    clan_dir: Path,
-    flake_dir: Path,
-    user: str | None = None,
-    force: bool = False,
-    interactive: bool | None = None,
-) -> None:
-    """Detect if the user is in interactive mode or not and choose the appropriate routine.
-
-    If interactive is explicitly set, it overrides the automatic TTY detection.
+    The age backend takes its recipients from clan.nix, which `create_clan`
+    already filled in. The sops backend needs a sops user in the repository.
     """
-    if interactive is None:
-        interactive = sys.stdin.isatty()
+    if _template_uses_age_backend(flake_dir):
+        if not age_recipients(keys):
+            log.warning(
+                "None of the selected keys is an age key. Add your age public key "
+                "to vars.settings.recipients.default in clan.nix.",
+            )
+        return
+    add_user(
+        clan_dir=flake_dir,
+        name=get_user_or_default(user),
+        keys=keys,
+        force=True,
+        flake_dir=flake_dir,
+    )
 
-    if interactive:
-        create_secrets_user_interactive(
-            clan_dir=clan_dir,
-            flake_dir=flake_dir,
-            user=user,
-            force=force,
-        )
-    else:
-        _create_secrets_user_non_interactive(
-            clan_dir=clan_dir,
-            flake_dir=flake_dir,
-            user=user,
-            force=force,
-        )
+
+def _create_secrets_user(
+    clan_dir: Path,
+    flake_dir: Path,
+    interactive: bool,
+    user: str | None = None,
+    force: bool = False,
+) -> None:
+    """Initialize sops keys for vars."""
+    user = get_user_or_default(user)
+    add_user(
+        clan_dir=clan_dir,
+        name=user,
+        keys=select_admin_keys(interactive),
+        force=force,
+        flake_dir=flake_dir,
+    )
 
 
 def _command(
@@ -139,20 +141,13 @@ def _command(
 ) -> None:
     flake: Flake = args.flake
     clan_dir = get_clan_dir(flake)
-    if args.no_interactive:
-        _create_secrets_user_non_interactive(
-            clan_dir=clan_dir,
-            flake_dir=flake.path,
-            user=args.user,
-            force=args.force,
-        )
-    else:
-        create_secrets_user_auto(
-            clan_dir=clan_dir,
-            flake_dir=flake.path,
-            user=args.user,
-            force=args.force,
-        )
+    _create_secrets_user(
+        clan_dir=clan_dir,
+        flake_dir=flake.path,
+        interactive=not args.no_interactive and sys.stdin.isatty(),
+        user=args.user,
+        force=args.force,
+    )
 
 
 def register_keygen_parser(parser: argparse.ArgumentParser) -> None:

@@ -192,7 +192,7 @@ Once booted, you will see a QR code and text similar to this:
 │ Press 'Ctrl-C' for console access
 ```
 
-Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure in step 12.
+Take note of the **installer IP address** displayed above, either for wireless or LAN, depending on how you connected. The next steps pass this address to `--target-host`. After installation the machine gets a different IP, but Clan reaches it without one (see step 12).
 
 :::admonition[Important]{type=note}
 If you find there's no IP address listed (and instead it shows "DOWN" then proceed to the next section to enable wireless).
@@ -280,7 +280,7 @@ clan machines install test-machine --target-host root@<INSTALLER-IP>
 
 Replace `<INSTALLER-IP>` with the installer IP address as before.
 
-You will be asked whether you want to install; type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on) and a root password (you can either create one or let Clan assign a random one).
+You will be asked whether you want to install; type `y`. You will also be prompted for WiFi credentials (use the same network your setup machine is on). Clan generates a random root password for the machine; you can show it with `clan vars get test-machine user-password-root/user-password`.
 
 ### If you get an error about Sandboxing
 
@@ -290,7 +290,7 @@ If you get an error regarding sandboxing not being available, type the following
 clan vars generate test-machine --no-sandbox
 ```
 
-You may need to re-enter the WiFi credentials and root password. Then run the install again:
+You may need to re-enter the WiFi credentials. Then run the install again:
 
 ```bash
 clan machines install test-machine --target-host <USER>@<INSTALLER-IP>
@@ -298,36 +298,11 @@ clan machines install test-machine --target-host <USER>@<INSTALLER-IP>
 
 After completion, remove the USB drive before the machine reboots. You may need to reboot manually.
 
-## 12. Configure Access and Connect
+## 12. Connect
 
-After installation the machine reboots into the installed system and gets a **new IP address** — the installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in at the machine's console and run `ip -4 addr`), then tell Clan how to reach the machine.
+After installation the machine reboots into the installed system and gets a **new IP address** — the installer IP is no longer valid. You don't need to look it up: the `p2p-ssh-iroh` instance in `clan.nix` lets `clan ssh` and `clan machines update` reach the machine over [iroh](https://www.iroh.computer/), even behind NAT.
 
-Find the `inventory.instances` line in `clan.nix` and add:
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
-`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
-
-```bash
-clan ssh test-machine
-```
-
-You'll quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line you're shown, which will look similar to this:
-
-```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
-```
-
-Then try again:
+Once the machine has booted, connect to it:
 
 ```bash
 clan ssh test-machine

@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from clan_lib.api import API
@@ -21,13 +21,28 @@ from clan_lib.version import read_version
 log = logging.getLogger(__name__)
 
 
-def substitute_clan_placeholders(clan_dir: Path, values: dict[str, str]) -> None:
-    """Substitute {{placeholder}} patterns in clan.nix or flake.nix after template copy."""
+def substitute_clan_placeholders(
+    clan_dir: Path,
+    values: dict[str, str],
+    age_recipients: list[str],
+) -> None:
+    """Substitute placeholders in clan.nix or flake.nix after template copy.
+
+    `{{name}}` is replaced with `values[name]`. The quoted list element
+    `"{{ageRecipients}}"` is replaced with one quoted string per recipient, or
+    with a comment if there are none, so the template stays valid Nix.
+    """
+    rendered_recipients = (
+        " ".join(f'"{recipient}"' for recipient in age_recipients)
+        if age_recipients
+        else '# "age1..."'
+    )
     for filename in ["clan.nix", "flake.nix"]:
         nix_file = clan_dir / filename
         if not nix_file.exists():
             continue
         content = nix_file.read_text()
+        content = content.replace('"{{ageRecipients}}"', rendered_recipients)
         for name, value in values.items():
             content = content.replace("{{" + name + "}}", value)
         nix_file.write_text(content)
@@ -70,6 +85,8 @@ class CreateOptions:
     initial: InventoryMetaInput | None = None
     update_clan: bool = True
     domain: str | None = None
+    # Age public keys that may decrypt secrets of clans using the age backend.
+    age_recipients: list[str] = field(default_factory=list)
 
     # -- Internal use only --
     #
@@ -145,7 +162,7 @@ def create_clan(opts: CreateOptions) -> InventoryMetaOutput:
             placeholders["domain"] = opts.initial["domain"]
         else:
             placeholders["domain"] = "clan"
-        substitute_clan_placeholders(dest, placeholders)
+        substitute_clan_placeholders(dest, placeholders, opts.age_recipients)
 
         # Pin the clan-core input to the release this CLI corresponds to. Runs
         # after any _postprocess_flake_hook (e.g. offline tests rewrite the
