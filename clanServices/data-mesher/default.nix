@@ -40,6 +40,16 @@ in
             '';
           };
 
+          certificateValidity = lib.mkOption {
+            type = lib.types.strMatching "([0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h))+";
+            default = "2160h";
+            example = "87600h";
+            description = ''
+              Validity period of the node identity certificate, as a Go duration
+              string (largest unit is `h`; e.g. `2160h` for 90 days).
+            '';
+          };
+
           extraBootstrapPeers = lib.mkOption {
             type = lib.types.listOf lib.types.str;
             default = [ ];
@@ -242,7 +252,7 @@ in
                         --network-key "$in/data-mesher-network/network.key" \
                         --identity-key "$out/identity.pub" \
                         --output "$out/identity.cert" \
-                        --validity 2160h    # 90 days for now TODO: expose this in the clan module
+                        --validity ${settings.certificateValidity}
                   '';
                 };
               };
