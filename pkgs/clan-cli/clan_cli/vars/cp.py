@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from clan_cli.completions import (
     add_dynamic_completer,

@@ -1,27 +1,16 @@
-import shutil
-import subprocess
 from pathlib import Path
 
 import pytest
-from clan_cli.tests.age_keys import KeyPair
 from clan_cli.tests.fixtures_flakes import ClanFlake, create_test_machine_config
 from clan_cli.tests.helpers import cli
 from clan_cli.vars.public_modules import in_repo as in_repo_mod
-from clan_cli.vars.secret_modules import sops
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
-from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
-from clan_lib.nix import run
-from clan_lib.vars._types import GeneratorId, PerMachine, Shared
-from clan_lib.vars.export_vars import export_vars
+from clan_lib.vars._types import GeneratorId, PerMachine
 from clan_lib.vars.generator import (
     Generator,
 )
-from clan_lib.vars.import_vars import import_vars
-from clan_lib.vars.list import get_machine_vars
-from clan_lib.vars.secret_modules import age, password_store
-from clan_lib.vars.set import set_var
 
 
 def test_cp_command_no_flake(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
