@@ -9,7 +9,7 @@ from clan_cli.vars.public_modules import in_repo as in_repo_mod
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.machines import Machine
-from clan_lib.vars._types import GeneratorId, PerMachine
+from clan_lib.vars._types import GeneratorId, PerMachine, Shared
 from clan_lib.vars.get import VarNotFoundError, get_machine_var
 from clan_lib.vars.secret_modules import age, sops
 
@@ -171,3 +171,42 @@ def test_cp_command_fails_if_dest_does_not_have_generator(
                 "generator/my_value",
             ]
         )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+def test_cp_command_rejects_shared_var(
+    monkeypatch: pytest.MonkeyPatch,
+    flake_with_sops: ClanFlake,
+) -> None:
+    """Copying a var shared by both machines is rejected and leaves the value untouched."""
+    flake = flake_with_sops
+
+    machine1_config = flake.machines["machine1"] = create_test_machine_config()
+    generator = machine1_config["clan"]["core"]["vars"]["generators"]["generator"]
+    generator["share"] = True
+    generator["files"]["my_value"]["secret"] = False
+    generator["script"] = 'echo "$RANDOM" > "$out"/my_value'
+    flake.machines["machine2"] = machine1_config
+
+    flake.refresh()
+    monkeypatch.chdir(flake.path)
+
+    cli.run(["vars", "generate", "--flake", str(flake.path)])
+    in_repo_store = in_repo_mod.VarsStore(Flake(str(flake.path)))
+    key = GeneratorId(name="generator", placement=Shared())
+    value_before = in_repo_store.get(key, "my_value")
+
+    with pytest.raises(ClanError, match="is shared"):
+        cli.run(
+            [
+                "vars",
+                "cp",
+                "--flake",
+                str(flake.path),
+                "machine1",
+                "machine2",
+                "generator/my_value",
+            ]
+        )
+    assert in_repo_store.get(key, "my_value") == value_before

@@ -154,12 +154,12 @@ For more detailed information, visit: {help_hyperlink("vars", guides_url("guides
         epilog=(
             f"""
 This subcommand allows copying a specific var from one machine to another.
-This requires a generator for the specified var to be present in both machine's configurations.
+This requires a generator for the specified var to be present in both machines' configurations.
 
 Examples:
 
-    $ clan vars cp my-pc my-server zerotier/vpn-ip
-    Will copy the var from the specified source machine to the specified target machine.
+    $ clan vars cp old-server new-server borgbackup/borgbackup.repokey
+    Will copy the borgbackup repository key from old-server to new-server.
 
 For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/vars-custom-generators"))}
         """

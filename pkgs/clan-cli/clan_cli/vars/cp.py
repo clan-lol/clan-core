@@ -18,14 +18,25 @@ def cp_command(
     src_machine = Machine(name=src_machine_name, flake=flake)
     dest_machine = Machine(name=dest_machine_name, flake=flake)
 
-    var = get_machine_var(src_machine, var_id)
+    src_var = get_machine_var(src_machine, var_id)
+    dest_var = get_machine_var(dest_machine, var_id)
 
-    if not var.exists:
-        msg = f"Var {var.id} has not yet been generated for source machine {src_machine_name}"
+    src_gen = src_var._generator  # noqa: SLF001
+    dest_gen = dest_var._generator  # noqa: SLF001
+    if (
+        src_gen is not None
+        and src_gen.share
+        and dest_gen is not None
+        and dest_gen.share
+    ):
+        msg = f"Var {var_id} is shared, {src_machine_name} and {dest_machine_name} already use the same value"
         raise ClanError(msg)
 
-    # use var_id because set_var ignores the machine argument if passed an already-resolved var
-    set_var(dest_machine, var_id, var.value, flake)
+    if not src_var.exists:
+        msg = f"Var {src_var.id} has not yet been generated for source machine {src_machine_name}"
+        raise ClanError(msg)
+
+    set_var(dest_machine, dest_var, src_var.value, flake)
 
 
 def _cp_command(
