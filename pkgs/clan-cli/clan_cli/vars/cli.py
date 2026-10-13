@@ -6,6 +6,7 @@ from clan_cli.hyperlink import help_hyperlink
 from clan_lib.docs import guides_url
 
 from .check import register_check_parser
+from .cp import register_cp_parser
 from .export_cmd import register_export_parser
 from .fix import register_fix_parser
 from .generate import register_generate_parser
@@ -146,6 +147,26 @@ For more detailed information, visit: {help_hyperlink("vars", guides_url("guides
         formatter_class=HelpFormatter,
     )
     register_set_parser(set_parser)
+
+    cp_parser = subparser.add_parser(
+        "cp",
+        help="copy a var from one machine to another",
+        epilog=(
+            f"""
+This subcommand allows copying a specific var from one machine to another.
+This requires a generator for the specified var to be present in both machine's configurations.
+
+Examples:
+
+    $ clan vars cp my-pc my-server zerotier/vpn-ip
+    Will copy the var from the specified source machine to the specified target machine.
+
+For more detailed information, visit: {help_hyperlink("vars", guides_url("guides/vars/vars-custom-generators"))}
+        """
+        ),
+        formatter_class=HelpFormatter,
+    )
+    register_cp_parser(cp_parser)
 
     parser_generate = subparser.add_parser(
         "generate",
