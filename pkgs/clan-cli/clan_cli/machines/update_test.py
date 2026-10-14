@@ -613,28 +613,37 @@ def test_nixos_activate_omits_nixos_no_check_when_unset() -> None:
 
 
 def test_flake_store_path_uses_metadata_path() -> None:
-    """When flake metadata reports a store path, use it without further commands."""
-    with patch("clan_lib.machines.update.run") as mock_run:
-        result = _flake_store_path("/some/flake", {"path": _FAKE_FLAKE_PATH})
+    """When flake metadata reports a store path, use it without prefetching."""
+    flake = Flake("/some/flake")
+    with patch.object(Flake, "prefetch") as mock_prefetch:
+        result = _flake_store_path(flake, {"path": _FAKE_FLAKE_PATH})
 
     assert result == _FAKE_FLAKE_PATH
-    mock_run.assert_not_called()
+    mock_prefetch.assert_not_called()
 
 
-def test_flake_store_path_falls_back_to_prefetch() -> None:
+def test_flake_store_path_reuses_prefetched_store_path() -> None:
     """Lazy-trees clients omit `path` from flake metadata.
 
-    In that case the source must be materialized via `nix flake prefetch`
-    and its `storePath` returned.
+    The flake was already prefetched for evaluation, so its store path is
+    reused without running `nix flake prefetch` again.
     """
-    proc = MagicMock()
-    proc.stdout = f'{{"storePath": "{_FAKE_FLAKE_PATH}"}}'
-
-    with patch("clan_lib.machines.update.run", return_value=proc) as mock_run:
-        result = _flake_store_path("/some/flake", {"locks": {"nodes": {}}})
+    flake = Flake("/some/flake", store_path=_FAKE_FLAKE_PATH)
+    with patch.object(Flake, "prefetch") as mock_prefetch:
+        result = _flake_store_path(flake, {"locks": {"nodes": {}}})
 
     assert result == _FAKE_FLAKE_PATH
-    cmd: list[str] = mock_run.call_args.args[0]
-    prefetch_idx = cmd.index("flake")
-    assert cmd[prefetch_idx : prefetch_idx + 3] == ["flake", "prefetch", "--json"]
-    assert cmd[-1] == "/some/flake"
+    mock_prefetch.assert_not_called()
+
+
+def test_flake_store_path_prefetches_when_not_yet_prefetched() -> None:
+    """Without `path` in metadata and no prior prefetch, prefetch the flake."""
+    flake = Flake("/some/flake")
+
+    def fake_prefetch(self: Flake) -> None:
+        self.store_path = _FAKE_FLAKE_PATH
+
+    with patch.object(Flake, "prefetch", autospec=True, side_effect=fake_prefetch):
+        result = _flake_store_path(flake, {"locks": {"nodes": {}}})
+
+    assert result == _FAKE_FLAKE_PATH
