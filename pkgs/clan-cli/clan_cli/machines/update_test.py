@@ -8,6 +8,7 @@ from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
 from clan_lib.machines.update import (
     _build_darwin_rebuild_cmd,
+    _flake_store_path,
     upload_sources,
 )
 
@@ -609,3 +610,40 @@ def test_nixos_activate_omits_nixos_no_check_when_unset() -> None:
         assert "NIXOS_NO_CHECK" not in cmd_str, (
             f"NIXOS_NO_CHECK should not appear when unset: {call.args[0]}"
         )
+
+
+def test_flake_store_path_uses_metadata_path() -> None:
+    """When flake metadata reports a store path, use it without prefetching."""
+    flake = Flake("/some/flake")
+    with patch.object(Flake, "prefetch") as mock_prefetch:
+        result = _flake_store_path(flake, {"path": _FAKE_FLAKE_PATH})
+
+    assert result == _FAKE_FLAKE_PATH
+    mock_prefetch.assert_not_called()
+
+
+def test_flake_store_path_reuses_prefetched_store_path() -> None:
+    """Lazy-trees clients omit `path` from flake metadata.
+
+    The flake was already prefetched for evaluation, so its store path is
+    reused without running `nix flake prefetch` again.
+    """
+    flake = Flake("/some/flake", store_path=_FAKE_FLAKE_PATH)
+    with patch.object(Flake, "prefetch") as mock_prefetch:
+        result = _flake_store_path(flake, {"locks": {"nodes": {}}})
+
+    assert result == _FAKE_FLAKE_PATH
+    mock_prefetch.assert_not_called()
+
+
+def test_flake_store_path_prefetches_when_not_yet_prefetched() -> None:
+    """Without `path` in metadata and no prior prefetch, prefetch the flake."""
+    flake = Flake("/some/flake")
+
+    def fake_prefetch(self: Flake) -> None:
+        self.store_path = _FAKE_FLAKE_PATH
+
+    with patch.object(Flake, "prefetch", autospec=True, side_effect=fake_prefetch):
+        result = _flake_store_path(flake, {"locks": {"nodes": {}}})
+
+    assert result == _FAKE_FLAKE_PATH
