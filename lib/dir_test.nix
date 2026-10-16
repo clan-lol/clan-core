@@ -9,9 +9,9 @@ let
       lib.extends (
         final: _:
         let
-          clan-core = {
+          mock-core = {
             clanLib = final;
-            modules.clan.default = lib.modules.importApply ../modules/clan { inherit clan-core; };
+            modules.clan.default = lib.modules.importApply ../modules/clan { clan-core = mock-core; };
 
             # Note: Can add other things to "clan-core"
             # ... Not needed for this test
@@ -19,7 +19,12 @@ let
         in
         {
           clan = import ./clan {
-            inherit lib clan-core;
+            inherit lib;
+            clanLib = final;
+            clanModule = mock-core.modules.clan.default;
+            # ---
+            defaultNixpkgs = throw "Should not depend on nixos";
+            defaultDarwin = throw "Should not depend on darwin";
           };
 
           # Override clanLib.fs for unit-testing against a virtual filesystem
