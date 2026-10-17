@@ -3,7 +3,7 @@
   nodejs_24,
   fetchPnpmDeps,
   pnpmConfigHook,
-  pnpm_10,
+  pnpm_12,
   stdenv,
   jq,
   git,
@@ -23,9 +23,9 @@ stdenv.mkDerivation (
   let
     fodArgs = {
       inherit (finalAttrs) src version;
-      pnpm = pnpm_10;
+      pnpm = pnpm_12;
       sourceRoot = "${finalAttrs.src.name}/${finalAttrs.pnpmRoot}";
-      fetcherVersion = 3;
+      fetcherVersion = 4;
     };
     fodAttrs = fodArgs // {
       pname = builtins.hashString "md5" (builtins.toJSON fodArgs);
@@ -57,7 +57,7 @@ stdenv.mkDerivation (
     pnpmDeps = fetchPnpmDeps (
       fodAttrs
       // {
-        hash = "sha256-YjAxd61eLr9ejdq+qCHUT/uSEcBkqU+Ez0WNoJu+DMU=";
+        hash = "sha256-dQEJydP64msu87IjSeUV+fQCCmciq38EYfmtOVz7dig=";
       }
     );
 
