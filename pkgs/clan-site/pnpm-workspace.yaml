@@ -1,3 +1,6 @@
+allowBuilds:
+  esbuild: true
+  unrs-resolver: true
 # pnpm is chosen over npm because npm's workspace's support is not good
 # https://github.com/npm/cli/issues/5463
 engineStrict: true
