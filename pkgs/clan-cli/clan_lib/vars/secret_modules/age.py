@@ -742,7 +742,7 @@ class SecretStore(StoreBase):
         # secrets are not part of the flake and thus not in the system closure.
         # Upload them next to the machine key; the module decrypts them from
         # `<secretLocation>/vars/...` at activation. The layout must match
-        # age-runtime-path.nix (pinned by the age-source-path eval test).
+        # age-runtime-path.nix (pinned by the age-paths eval test).
         if self._is_external:
             for generator in generators:
                 for file in generator.files:

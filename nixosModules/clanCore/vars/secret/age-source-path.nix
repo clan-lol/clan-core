@@ -1,6 +1,6 @@
 # On-disk path of an age-encrypted vars secret.
 # Mirrors clan_lib/vars/secret_modules/age.py:secret_path.
-# Pinned by eval-tests/age-source-path.nix against real fixtures.
+# Pinned by eval-tests/age-paths.nix against real fixtures.
 #
 # {clanDir}/secrets/clan-vars/{rel_dir}/{name}/{name}.age
 #

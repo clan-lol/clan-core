@@ -10,7 +10,7 @@ in
   below it keeps the whole source as context. A reference into that source
   would change with every commit to the clan, whatever the commit touched.
 
-  Pinned by ../eval-tests/age-source-path.nix.
+  Pinned by ../eval-tests/age-paths.nix.
 */
 clanDir: rel_dir: fileName:
 let
