@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import logging
 import urllib.parse
 from collections.abc import Callable  # Union for str | None
@@ -74,7 +74,7 @@ def is_correct_day_format(date_day: str) -> bool:
 
     """
     try:
-        datetime.datetime.strptime(date_day, "%Y-%m-%d").replace(tzinfo=datetime.UTC)
+        dt.datetime.strptime(date_day, "%Y-%m-%d").replace(tzinfo=dt.UTC)
     except ValueError:
         return False
     return True
@@ -102,15 +102,15 @@ class LogFile:
             msg = f"LogFile.date_day '{self.date_day}' is not in YYYY-MM-DD format."
             raise ValueError(msg)
         try:
-            datetime.datetime.strptime(self.date_second, "%H-%M-%S").replace(
-                tzinfo=datetime.UTC,
+            dt.datetime.strptime(self.date_second, "%H-%M-%S").replace(
+                tzinfo=dt.UTC,
             )
         except ValueError as ex:
             msg = f"LogFile.date_second '{self.date_second}' is not in HH-MM-SS format."
             raise ValueError(msg) from ex
 
     @property
-    def _datetime_obj(self) -> datetime.datetime:
+    def _datetime_obj(self) -> dt.datetime:
         """Get the datetime object for this log file.
 
         Returns:
@@ -118,10 +118,10 @@ class LogFile:
 
         """
         # Formats are pre-validated by __post_init__.
-        return datetime.datetime.strptime(
+        return dt.datetime.strptime(
             f"{self.date_day} {self.date_second}",
             "%Y-%m-%d %H-%M-%S",
-        ).replace(tzinfo=datetime.UTC)
+        ).replace(tzinfo=dt.UTC)
 
     def get_file_path(self) -> Path:
         """Get the full file path for this log file.
@@ -200,7 +200,7 @@ class LogDayDir:
             raise ValueError(msg)
 
     @property
-    def _date_obj(self) -> datetime.date:
+    def _date_obj(self) -> dt.date:
         """Get the date object for this log day directory.
 
         Returns:
@@ -208,8 +208,8 @@ class LogDayDir:
 
         """
         return (
-            datetime.datetime.strptime(self.date_day, "%Y-%m-%d")
-            .replace(tzinfo=datetime.UTC)
+            dt.datetime.strptime(self.date_day, "%Y-%m-%d")
+            .replace(tzinfo=dt.UTC)
             .date()
         )
 
@@ -319,7 +319,7 @@ class LogManager:
             FileExistsError: If the log file already exists.
 
         """
-        now_utc = datetime.datetime.now(tz=datetime.UTC)
+        now_utc = dt.datetime.now(tz=dt.UTC)
 
         if group_path is None:
             group_path = ["default"]

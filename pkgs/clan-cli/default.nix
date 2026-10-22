@@ -167,8 +167,10 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
   makeWrapperArgs = [
-    "--unset LD_LIBRARY_PATH"
-    "--unset PYTHONPATH"
+    "--unset"
+    "LD_LIBRARY_PATH"
+    "--unset"
+    "PYTHONPATH"
 
     # include selected runtime dependencies in the PATH
     "--prefix"
