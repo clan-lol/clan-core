@@ -257,6 +257,15 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.docbook-xsl-nons
                 pkgs.kmod
                 pkgs.kmod.dev
+
+                # Build dependencies for impure tests. A .drv root also pulls in
+                # the outputs of every input derivation. On darwin that is the
+                # whole stdenv bootstrap (llvm/clang sources, Apple SDKs, ~1M
+                # files), which setupNixInNix copies on every run. No test that
+                # runs on darwin builds a derivation.
+                pkgs.stdenv.drvPath
+                pkgs.bash.drvPath
+                (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
               ])
               ++ [
                 templateDerivation
@@ -281,8 +290,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 (pkgs.callPackage ../../clanServices/zerotier/pkgs/zerotier-tools { })
 
                 # Build dependencies for impure tests
-                pkgs.stdenv.drvPath
-                pkgs.bash.drvPath
                 pkgs.buildPackages.lndir
                 (pkgs.perl.withPackages (
                   p: with p; [
@@ -290,7 +297,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                     FileSlurp
                   ]
                 ))
-                (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
                 pkgs.desktop-file-utils
                 pkgs.dbus
                 pkgs.unzip
