@@ -13,13 +13,13 @@ let
   isNixOS = _class == "nixos";
   isDarwin = _class == "darwin";
 
-  # Path layouts: ./age-source-path.nix, ./age-runtime-path.nix.
-  encryptedSourcePath = import ./age-source-path.nix;
+  # Path layouts: ./age-source-path.nix, ./age-store-path.nix, ./age-runtime-path.nix.
+  encryptedStorePath = import ./age-store-path.nix { inherit lib; };
   encryptedRuntimePath = import ./age-runtime-path.nix;
 
-  # Internal store (default): the .age file is part of the flake and thus of
-  # the system closure; secrets missing from the flake are skipped at eval
-  # time (src = null).
+  # Internal store (default): each .age file of the flake enters the system
+  # closure as its own store path (./age-store-path.nix); secrets missing
+  # from the flake are skipped at eval time (src = null).
   # External store (vars.settings.age.externalStore): the store is not in the
   # flake; populate_dir uploads the .age files next to the machine key and we
   # decrypt them from under secretLocation at runtime.
@@ -28,10 +28,7 @@ let
     if externalStore then
       encryptedRuntimePath secretLocation rel_dir fileName
     else
-      let
-        storePath = encryptedSourcePath clanDir rel_dir fileName;
-      in
-      if builtins.pathExists storePath then storePath else null;
+      encryptedStorePath clanDir rel_dir fileName;
 
   # Collect all secret files with their permissions, grouped by phase
   secretFiles = lib.concatLists (
