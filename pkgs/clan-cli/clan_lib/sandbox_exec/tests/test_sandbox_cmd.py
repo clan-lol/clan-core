@@ -88,6 +88,7 @@ def test_sandbox_works_returns_true_on_linux() -> None:
         sandbox_works.cache_clear()
 
 
+@pytest.mark.impure
 @pytest.mark.skipif(sys.platform != "darwin", reason="macOS only")
 def test_sandbox_works_returns_true_on_darwin() -> None:
     """sandbox_works returns True on macOS with sandbox-exec available."""
