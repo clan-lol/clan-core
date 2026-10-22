@@ -32,7 +32,7 @@ in
       legacyPackages.evalTests-generators-to-sops = import ./secret/sops/generators-to-sops-test.nix {
         inherit lib;
       };
-      legacyPackages.evalTests-age-source-path = import ./eval-tests/age-source-path.nix { inherit lib; };
+      legacyPackages.evalTests-age-source-path = import ./eval-tests/age-source-path.nix { };
 
       # Run: nix build .#legacyPackages.x86_64-linux.evalCheck-eval-module-clan-vars
       legacyPackages.evalCheck-eval-module-clan-vars = self.clanLib.test.mkEvalCheck {

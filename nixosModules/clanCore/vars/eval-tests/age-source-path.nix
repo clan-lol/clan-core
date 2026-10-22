@@ -1,20 +1,10 @@
-{ lib }:
+{ ... }:
 let
   encryptedSourcePath = import ../secret/age-source-path.nix;
   encryptedRuntimePath = import ../secret/age-runtime-path.nix;
   encryptedStorePath = import ../secret/age-store-path.nix;
 
   fixturesRoot = ../tests;
-
-  # Two clan directories in the string form that `clan.directory` gets from
-  # the flake. Both hold the same .age file. Only the first one holds the
-  # other fixtures.
-  fullClanDir = "${fixturesRoot}";
-  secretOnlyClanDir = "${lib.fileset.toSource {
-    root = fixturesRoot;
-    fileset = fixturesRoot + "/secrets/clan-vars/shared/shared-generator/shared-secret";
-  }}";
-  storePath = clanDir: encryptedStorePath clanDir "shared/shared-generator" "shared-secret";
 
   # Every fixture must resolve to a real file.
   # A dropped path segment trips the assertion below.
@@ -72,26 +62,26 @@ in
     expected = "/clan/secrets/clan-vars/per-export/A/one/foo/foo.age";
   };
 
-  # The store path must depend on the .age file only. A path below the clan
-  # directory changes with each unrelated file in it.
+  # The clan directory is a string, as `clan.directory` gets it from the flake.
+  # The store path must be the .age file copied on its own. A path below the
+  # clan directory changes with each unrelated file in it.
   test_store_path_ignores_other_files = {
-    expr = storePath fullClanDir == storePath secretOnlyClanDir;
-    expected = true;
+    expr = encryptedStorePath "${../tests}" "shared/shared-generator" "shared-secret";
+    expected = "${../tests/secrets/clan-vars/shared/shared-generator/shared-secret/shared-secret.age}";
   };
 
-  # The string is a store path of its own, not a path below the clan directory.
-  # An attribute name cannot carry string context, so the key drops it.
+  # The context must hold only the copied file, not the clan directory.
   test_store_path_is_own_context = {
-    expr = builtins.getContext (storePath fullClanDir);
-    expected = {
-      ${builtins.unsafeDiscardStringContext (storePath fullClanDir)} = {
-        path = true;
-      };
-    };
+    expr = builtins.getContext (
+      encryptedStorePath "${../tests}" "shared/shared-generator" "shared-secret"
+    );
+    expected = builtins.getContext "${
+      ../tests/secrets/clan-vars/shared/shared-generator/shared-secret/shared-secret.age
+    }";
   };
 
   test_store_path_missing_file = {
-    expr = encryptedStorePath fullClanDir "shared/shared-generator" "no-such-secret";
+    expr = encryptedStorePath "${../tests}" "shared/shared-generator" "no-such-secret";
     expected = null;
   };
 
