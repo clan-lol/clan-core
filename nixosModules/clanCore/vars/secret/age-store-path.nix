@@ -18,9 +18,9 @@ let
   sourcePath = encryptedSourcePath clanDir rel_dir fileName;
 in
 if builtins.pathExists sourcePath then
-  "${builtins.path {
+  builtins.path {
     path = sourcePath;
     name = lib.strings.sanitizeDerivationName (baseNameOf sourcePath);
-  }}"
+  }
 else
   null
