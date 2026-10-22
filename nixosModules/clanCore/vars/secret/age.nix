@@ -14,7 +14,7 @@ let
   isDarwin = _class == "darwin";
 
   # Path layouts: ./age-source-path.nix, ./age-store-path.nix, ./age-runtime-path.nix.
-  encryptedStorePath = import ./age-store-path.nix { inherit lib; };
+  encryptedStorePath = import ./age-store-path.nix;
   encryptedRuntimePath = import ./age-runtime-path.nix;
 
   # Internal store (default): each .age file of the flake enters the system

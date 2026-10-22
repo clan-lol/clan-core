@@ -2,7 +2,7 @@
 let
   encryptedSourcePath = import ../secret/age-source-path.nix;
   encryptedRuntimePath = import ../secret/age-runtime-path.nix;
-  encryptedStorePath = import ../secret/age-store-path.nix { inherit lib; };
+  encryptedStorePath = import ../secret/age-store-path.nix;
 
   fixturesRoot = ../tests;
 

@@ -1,4 +1,3 @@
-{ lib }:
 let
   encryptedSourcePath = import ./age-source-path.nix;
 in
@@ -20,7 +19,7 @@ in
 if builtins.pathExists sourcePath then
   builtins.path {
     path = sourcePath;
-    name = lib.strings.sanitizeDerivationName (baseNameOf sourcePath);
+    name = "${fileName}.age";
   }
 else
   null
