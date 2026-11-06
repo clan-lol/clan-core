@@ -104,7 +104,15 @@
               ...
             }:
             {
-              services.alloy =
+              services.alloy = {
+                enable = true;
+                extraFlags = [
+                  "--server.http.enable-pprof=false"
+                  "--disable-reporting=true"
+                ];
+              };
+
+              environment.etc."alloy/config.alloy" =
                 let
                   serverMachineCount = lib.length (lib.attrNames roles.server.machines);
                   protocol = "http" + lib.optionalString settings.useSSL "s";
@@ -153,12 +161,7 @@
                   extraLokiJournalRelabelRulesAfterNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.afterNormalization;
                 in
                 {
-                  enable = true;
-                  extraFlags = [
-                    "--server.http.enable-pprof=false"
-                    "--disable-reporting=true"
-                  ];
-                  configPath = builtins.toFile "config.alloy" ''
+                  source = builtins.toFile "config.alloy" ''
                     // Collects metrics and sends them to mimir.
                     prometheus.exporter.unix "local_system" {
                       // See the list of available collectors in the alloy docs at
@@ -253,8 +256,6 @@
                     }
                   '';
                 };
-
-              environment.etc."alloy/config.alloy".source = config.services.alloy.configPath;
 
               systemd.services.alloy.serviceConfig = {
                 ExecStart = lib.mkForce "${lib.getExe config.services.alloy.package} run /etc/alloy ${lib.escapeShellArgs config.services.alloy.extraFlags}";
