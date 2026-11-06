@@ -49,6 +49,32 @@
               example = true;
             };
 
+            prometheus.collectors = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [
+                "cpu"
+                "filesystem"
+                "meminfo"
+                "systemd"
+              ];
+              description = ''
+                List of collectors enabled on the Alloy `prometheus.exporter.unix` component.
+
+                Setting this replaces the default list, so include the default
+                collectors if you want to keep them. The bundled Grafana
+                dashboards use metrics from all of the default collectors.
+
+                See the [list of available collectors](https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list).
+              '';
+              example = [
+                "cpu"
+                "filesystem"
+                "meminfo"
+                "netdev"
+                "systemd"
+              ];
+            };
+
             loki.journal.relabelRules.beforeNormalization = lib.mkOption {
               type = lib.types.listOf lib.types.str;
               default = [ ];
@@ -143,7 +169,7 @@
                     prometheus.exporter.unix "local_system" {
                       // See the list of available collectors in the alloy docs at
                       // https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list
-                      set_collectors = [ "cpu", "filesystem", "meminfo", "systemd" ]
+                      set_collectors = ${builtins.toJSON settings.prometheus.collectors}
                     }
 
                     prometheus.scrape "scrape_metrics" {

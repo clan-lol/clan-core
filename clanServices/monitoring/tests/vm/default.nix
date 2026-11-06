@@ -38,6 +38,13 @@
               ''
             ];
           };
+          client.machines.machine2.settings.prometheus.collectors = [
+            "cpu"
+            "filesystem"
+            "meminfo"
+            "netdev"
+            "systemd"
+          ];
           server.machines.machine1.settings.grafana.enable = true;
         };
       };
@@ -85,6 +92,8 @@
           machine.succeed("test -f /etc/alloy/logs-collector.alloy")
           machine.succeed("test -f /etc/alloy/writers.alloy")
       machine2.succeed("test -f /etc/alloy/local-extension.alloy")
+      machine1.fail("grep -F '\"netdev\"' /etc/alloy/metrics-collector.alloy")
+      machine2.succeed("grep -F '\"netdev\"' /etc/alloy/metrics-collector.alloy")
       machine1.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
       machine2.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
 

@@ -70,3 +70,10 @@ local links preferred over overlay interfaces and static peers. Set
 
 The `p2p-ssh-iroh` service is now considered stable. Its experimental
 warnings have been removed from the service and networking docs.
+
+### `monitoring`: configurable Prometheus collectors
+
+The monitoring client role has a new `settings.prometheus.collectors` option
+that sets the collectors of the Alloy `prometheus.exporter.unix` component. It
+defaults to the previously hardcoded `cpu`, `filesystem`, `meminfo`, and
+`systemd` collectors.
