@@ -92,7 +92,7 @@ Journal relabeling can be customized in two phases:
 - `settings.loki.journal.relabelRules.beforeNormalization` for raw journal labels such as `__journal__*`
 - `settings.loki.journal.relabelRules.afterNormalization` for normalized labels such as `instance`, `service_name`, and `level`
 
-The generated monitoring collector config is installed as `/etc/alloy/config.alloy`.
+The generated monitoring collector config is installed in `/etc/alloy` as `metrics-collector.alloy`, `logs-collector.alloy`, and `writers.alloy`.
 Additional local collector fragments can be added with `environment.etc."alloy/<name>.alloy"`.
 
 ### Server

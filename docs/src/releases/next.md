@@ -45,6 +45,16 @@ installed machines without configuring an IP address. The unused
 `modules/gnome.nix` example was dropped from the template. Existing clans are
 unaffected.
 
+### `monitoring`: Alloy config split into multiple files
+
+The generated Alloy config `/etc/alloy/config.alloy` has been split into
+`metrics-collector.alloy`, `logs-collector.alloy`, and `writers.alloy`. Alloy
+loads all `.alloy` files in `/etc/alloy` as one config, so a custom
+`environment.etc."alloy/config.alloy"` no longer replaces the generated config.
+It is loaded alongside the new files, and any component names it shares with
+them conflict. To replace part of the generated config, override the
+corresponding file instead.
+
 ## Fixes
 
 ### yggdrasil: multicast peer discovery now actually on by default
