@@ -91,6 +91,7 @@ in
       zpool = {
         zroot = {
           type = "zpool";
+          mode = "mirror"; # (6)
           rootFsOptions = {
             compression = "lz4";
             acltype = "posixacl";
