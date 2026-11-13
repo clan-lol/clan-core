@@ -31,7 +31,10 @@ let
           sleep 1
         done
 
-        mkdir -p "${folder}"
+        # pg_restore reads the dump from stdin, so only root needs access
+        umask 077
+        install -d -m 0700 -o root -g root /var/backup/postgres "${folder}"
+        rm -f "${current}.tmp"
         runuser -u postgres -- pg_dump ${compression} --dbname=${db.name} -Fc -c > "${current}.tmp"
         mv "${current}.tmp" ${current}
       '';
@@ -57,14 +60,16 @@ let
 
         if [[ -e "${current}" ]]; then
           (
-            systemctl stop ${lib.concatStringsSep " " db.restore.stopOnRestore}
-            trap "systemctl start ${lib.concatStringsSep " " db.restore.stopOnRestore}" EXIT
+            ${lib.optionalString (db.restore.stopOnRestore != [ ]) ''
+              systemctl stop ${builtins.toString db.restore.stopOnRestore}
+              trap "systemctl start ${builtins.toString db.restore.stopOnRestore}" EXIT
+            ''}
 
             mkdir -p "${folder}"
             if runuser -u postgres -- psql -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '${db.name}'" | grep -q 1; then
               runuser -u postgres -- dropdb "${db.name}"
             fi
-            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+            runuser -u postgres -- pg_restore -C -d postgres < "${current}"
           )
         else
           echo No database backup found, skipping restore
@@ -225,7 +230,7 @@ in
             if runuser -u postgres -- psql -d postgres -c "SELECT 1 FROM pg_database WHERE datname = '${db.name}'" | grep -q 1; then
               runuser -u postgres -- dropdb "${db.name}"
             fi
-            runuser -u postgres -- pg_restore -C -d postgres "${current}"
+            runuser -u postgres -- pg_restore -C -d postgres < "${current}"
           )
         else
           echo No database backup found, skipping restore
