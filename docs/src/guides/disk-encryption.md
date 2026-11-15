@@ -17,8 +17,8 @@ You can find out your disk ID by running:
 ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOINT
 ```
 
-::::tabs
-:::tab[Single Disk]
+:::::tabs
+::::tab[Single Disk]
 
 - Copy the configuration below into `machines/<mymachine>/disko.nix`.
 - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
@@ -32,8 +32,8 @@ ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOIN
 4. Tells ZFS to read the decryption passphrase from a file
 5. Replace with the disk ID from the `lsblk` output above
 
-:::
-:::tab[Raid 1]
+::::
+::::tab[Raid 1]
 
 - Copy the configuration below into `machines/<mymachine>/disko.nix`.
 - Don't forget to `git add machines/<mymachine>/disko.nix` so that Nix sees the file.
@@ -46,8 +46,13 @@ ssh root@nixos-installer.local lsblk --output NAME,ID-LINK,FSTYPE,SIZE,MOUNTPOIN
 3. Stalls the boot process until the decryption secret file appears at the expected location
 4. Tells ZFS to read the decryption passphrase from a file
 5. Replace with the disk IDs from the `lsblk` output above
+6. Mirrors the pool across both disks. Without `mode`, disko creates a stripe, and losing either disk loses the whole pool
+
+:::admonition[Pools created from earlier versions of this guide]{type=warning}
+Earlier versions of this configuration had no `mode` and created a stripe instead of a mirror. Check with `zpool status`: a mirror lists both disks under a `mirror-0` entry. A stripe cannot be converted to a mirror in place; back up the data, reinstall with `mode = "mirror"`, and restore.
 :::
 ::::
+:::::
 
 ## Initrd SSH Configuration
 
@@ -115,14 +120,17 @@ To automate the decryption step, create the following script:
 
 - Save it as `machines/<mymachine>/decrypt.sh`.
 - Make it executable with `chmod +x machines/<mymachine>/decrypt.sh`.
-- Run it whenever the machine boots to deliver the encryption key.
+- Run it from the root of your clan directory whenever the machine boots to deliver the encryption key. It reads the key path from your flake, so it needs the flake in the current directory.
 
 ```bash [decrypt.sh] {4,5}
 #!/usr/bin/env bash
 set -euxo pipefail
 
-HOST="192.0.2.1" # (1)
+HOST="192.0.2.1"      # (1)
 MACHINE="<mymachine>" # (2)
+KEY_PATH="$(nix eval --raw ".#nixosConfigurations.${MACHINE}.config.clan.core.vars.generators.zfs.files.key.path")"
+KEY_DIR="$(dirname "$KEY_PATH")"
+
 while ! ping -W 1 -c 1 "$HOST"; do
   sleep 1
 done
@@ -130,12 +138,23 @@ while ! timeout --foreground 10 ssh -p 7172 "root@$HOST" true; do
   sleep 1
 done
 
-# Vars secrets are laid out by placement; the zfs generator is per-machine,
-# so its partitioning key lands under per-machine/$MACHINE/zfs/key.
-KEY_DIR="/run/partitioning-secrets/per-machine/$MACHINE/zfs"
-# Ensure that $KEY_DIR/key only ever exists with the full key
-clan vars get "$MACHINE" zfs/key | ssh -p 7172 "root@${HOST}" "mkdir -p $KEY_DIR && cat > $KEY_DIR/key.tmp && mv $KEY_DIR/key.tmp $KEY_DIR/key"
+# The initrd polls for KEY_PATH, so it must only ever appear complete and root-only
+clan vars get "$MACHINE" zfs/key | ssh -p 7172 "root@${HOST}" \
+  "umask 077 && mkdir -p '${KEY_DIR}' && cat > '${KEY_PATH}.tmp' && mv '${KEY_PATH}.tmp' '${KEY_PATH}'"
 ```
 
 1. Replace with your machine's IP address
 2. Replace with your machine's name
+
+:::admonition[Pools created before the per-machine key path]{type=warning}
+The script writes the key to the path that the `zfs-import-zroot` unit waits for, which is the `zfs/key` path of your machine's vars. ZFS itself reads the key from the pool's `keylocation` property, which disko set when it created the pool. If the vars path has changed since then, the boot hangs in the initrd even though the script succeeded.
+
+To recover, run the script first, then point `keylocation` at the new path while the machine waits in the initrd. Run this from the root of your clan directory, with `HOST`, `MACHINE` and `KEY_PATH` set as in the script:
+
+```bash
+ssh -p 7172 "root@${HOST}" "zfs set keylocation=file://${KEY_PATH} zroot/root"
+```
+
+The initrd has already imported the pool, so ZFS accepts the new `keylocation` before the key is loaded. The `zfs-import-zroot` unit retries every second and then unlocks the pool. The property persists, so you need to do this only once. On a machine that has not rebooted yet, run the same `zfs set` command over your normal SSH connection to avoid the hang.
+
+:::
