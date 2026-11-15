@@ -1,16 +1,16 @@
 {
   writeShellApplication,
   util-linux,
-  pnpm_10,
+  pnpm_12,
 }:
 writeShellApplication {
   name = "clan-site";
   runtimeInputs = [
     util-linux
-    pnpm_10
+    pnpm_12
   ];
   text = builtins.readFile ./cli.sh;
   passthru = {
-    pnpm = pnpm_10;
+    pnpm = pnpm_12;
   };
 }

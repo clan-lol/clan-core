@@ -1,16 +1,7 @@
-# Pins the on-disk layout for age-encrypted vars secrets.
-# ../secret/age.nix and age.py:secret_path must agree on it.
-#
-# Divergence is silent.
-# age.nix skips secrets whose `pathExists` is false.
-# The activation script becomes empty.
-# Boot then fails on hashedPasswordFile: "password file does not exist".
-#
-# Fixtures live in ../tests/secrets/clan-vars and come from the Python writer.
-# Change them and the writer together.
 { ... }:
 let
   encryptedSourcePath = import ../secret/age-source-path.nix;
+  encryptedRuntimePath = import ../secret/age-runtime-path.nix;
 
   fixturesRoot = ../tests;
 
@@ -68,5 +59,12 @@ in
   test_per_export_layout = {
     expr = encryptedSourcePath "/clan" "per-export/A/one" "foo";
     expected = "/clan/secrets/clan-vars/per-export/A/one/foo/foo.age";
+  };
+
+  # External store: the runtime path must mirror the upload layout of
+  # populate_dir in age.py (vars/{rel_dir}/{name}/{name}.age).
+  test_external_runtime_layout = {
+    expr = encryptedRuntimePath "/etc/secret-vars" "per-machine/jon/zerotier" "identity";
+    expected = "/etc/secret-vars/vars/per-machine/jon/zerotier/identity/identity.age";
   };
 }

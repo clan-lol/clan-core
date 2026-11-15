@@ -38,8 +38,8 @@
           };
           prompt = lib.mkOption {
             type = lib.types.bool;
-            default = true;
-            example = false;
+            default = false;
+            example = true;
             description = ''
               Whether the user should be prompted for a password.
 
@@ -83,8 +83,7 @@
             description = ''
               Weather the user should have the same password on all machines.
 
-              By default, you will be prompted for a new password for every host.
-              Unless `generate` is set to `true`.
+              By default, every host gets its own password.
             '';
           };
 

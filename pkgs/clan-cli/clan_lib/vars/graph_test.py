@@ -118,6 +118,49 @@ def test_required_generators() -> None:
     ]
 
 
+def test_independent_dependencies_run_in_key_order() -> None:
+    """Two independent dependencies of one generator run in key order.
+
+    graphlib breaks ties by insertion order, so an unsorted predecessor
+    set makes the run order, and with it the prompt order, depend on
+    PYTHONHASHSEED.
+    """
+    public_store, secret_store = create_mock_stores({})
+
+    machine_name = "test_machine"
+    gen_b = Generator(
+        key=_pm("gen_b", machine_name),
+        dependency_map={},
+        _public_store=public_store,
+        _secret_store=secret_store,
+    )
+    gen_c = Generator(
+        key=_pm("gen_c", machine_name),
+        dependency_map={},
+        _public_store=public_store,
+        _secret_store=secret_store,
+    )
+    # sorts first, so its predecessors are inserted into the sorter first
+    gen_a = Generator(
+        key=_pm("gen_a", machine_name),
+        dependency_map={
+            gen_b.key.name: gen_b.key,
+            gen_c.key.name: gen_c.key,
+        },
+        _public_store=public_store,
+        _secret_store=secret_store,
+    )
+    generators: dict[GeneratorId, Generator] = {
+        generator.key: generator for generator in [gen_a, gen_b, gen_c]
+    }
+
+    assert generator_names(all_missing_closure(generators.keys(), generators)) == [
+        "('test_machine', 'gen_b')",
+        "('test_machine', 'gen_c')",
+        "('test_machine', 'gen_a')",
+    ]
+
+
 def test_shared_generator_invalidates_multiple_machines_dependents() -> None:
     # Create mock stores
     exists_map = {"shared_gen": False, "gen_1": True, "gen_2": True}

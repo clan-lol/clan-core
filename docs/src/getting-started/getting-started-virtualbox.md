@@ -181,9 +181,7 @@ Install NixOS on the target machine by typing:
 clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
-You will be asked whether you want to install; type `y`. You will also be prompted for a password; you can accept the defaults and press Enter.
-
-You will then be asked for a password to assign to the root login for the machine. You can either create one, or let Clan assign a random one.
+You will be asked whether you want to install; type `y`. Clan generates a random root password for the machine; you can show it with `clan vars get test-machine user-password-root/user-password`.
 
 ### If you get an error about Sandboxing
 
@@ -215,38 +213,9 @@ Now click **Start** at the top of the window (or double-click the Virtual Machin
 test-machine login:
 ```
 
-The installed system gets a **new IP address** — the installer IP is no longer valid. At the `test-machine login:` prompt, log in as `root` (using the password you set during install) and run:
+The installed system gets a **new IP address** — the installer IP is no longer valid. You don't need to look it up: the `p2p-ssh-iroh` instance in `clan.nix` lets `clan ssh` and `clan machines update` reach the machine over [iroh](https://www.iroh.computer/), even behind NAT.
 
-```bash
-ip addr
-```
-
-Note the IP address, then tell Clan how to reach the machine. In `clan.nix`, find the `inventory.instances` line and add:
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
-`clan ssh` and `clan machines update` use this address. Now you can try connecting to the remote machine:
-
-```bash
-clan ssh test-machine
-```
-
-You will quite likely get an error at first regarding the host identification. It should include a line to type to remove the old ID; paste the line shown, which will look similar to this:
-
-```bash
-ssh-keygen -f '/home/user/.ssh/known_hosts' -R '<MACHINE-IP>'
-```
-
-Then try again:
+Connect to the machine:
 
 ```bash
 clan ssh test-machine

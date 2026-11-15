@@ -17,6 +17,7 @@ from clan_lib.nix import current_system, nix_command, nix_shell
 from clan_lib.nix_selectors import (
     secrets_age_plugins,
     vars_age_secret_location,
+    vars_settings_age,
     vars_settings_recipients,
 )
 from clan_lib.ssh.host import Host
@@ -42,6 +43,13 @@ class SecretStore(StoreBase):
     rotating users only requires re-encrypting machine keys, not every secret.
 
     For shared vars, secrets are encrypted to all machines' public keys.
+
+    The store lives in `<flake>/secrets` and is committed to the flake
+    repository by default. Setting `vars.settings.age.externalStore = true`
+    in the clan config keeps the store (and its git history, if the
+    directory is a git repository) outside the flake, e.g. for public flake
+    repositories; each admin then points CLAN_AGE_STORE_DIR at their local
+    copy of the store.
     """
 
     @property
@@ -51,6 +59,8 @@ class SecretStore(StoreBase):
     def __init__(self, flake: Flake) -> None:
         super().__init__(flake)
         self._age_plugins: list[str] | None = None
+        self._secrets_dir: Path | None = None
+        self._external: bool | None = None
 
     @property
     def store_name(self) -> str:
@@ -90,8 +100,95 @@ class SecretStore(StoreBase):
 
     # ── Path helpers ──────────────────────────────────────────────────────
 
+    def _external_store(self) -> bool:
+        """Whether this clan opts into an external store via
+        `vars.settings.age.externalStore`.
+        """
+        if self._external is None:
+            result = self.flake.select(vars_settings_age())
+            age_settings = result.get("age", {})
+            self._external = isinstance(age_settings, dict) and bool(
+                age_settings.get("externalStore")
+            )
+        return self._external
+
     def secrets_dir(self) -> Path:
-        return self.clan_dir / "secrets"
+        if self._secrets_dir is None:
+            env_dir = os.environ.get("CLAN_AGE_STORE_DIR")
+            if not self._external_store():
+                if env_dir:
+                    msg = (
+                        "CLAN_AGE_STORE_DIR is set, but this clan does not use "
+                        "an external age store. Enable it explicitly:\n"
+                        "  vars.settings.age.externalStore = true;\n"
+                        "or unset CLAN_AGE_STORE_DIR."
+                    )
+                    raise ClanError(msg)
+                self._secrets_dir = self.clan_dir / "secrets"
+                return self._secrets_dir
+            if not env_dir:
+                msg = (
+                    "vars.settings.age.externalStore is enabled, but "
+                    "CLAN_AGE_STORE_DIR is not set. Point it at your local "
+                    "copy of the age store, e.g.\n"
+                    "  export CLAN_AGE_STORE_DIR=~/clan-secrets"
+                )
+                raise ClanError(msg)
+            store_dir = Path(env_dir).expanduser().resolve()
+            if store_dir.is_relative_to(self.flake.path.resolve()):
+                msg = (
+                    f"CLAN_AGE_STORE_DIR ({store_dir}) is inside the flake "
+                    f"repository ({self.flake.path}). This would publish "
+                    "secrets with the flake; point it at a directory "
+                    "outside the repository."
+                )
+                raise ClanError(msg)
+            in_repo_store = self.clan_dir / "secrets"
+            if in_repo_store.is_dir() and any(in_repo_store.iterdir()):
+                msg = (
+                    f"vars.settings.age.externalStore is enabled, but "
+                    f"{in_repo_store} is not empty. Move the existing store "
+                    f"first:\n"
+                    f"  mv {in_repo_store} {store_dir}\n"
+                    "  git rm -r --cached secrets && git commit"
+                )
+                raise ClanError(msg)
+            self._secrets_dir = store_dir
+        return self._secrets_dir
+
+    @property
+    def _is_external(self) -> bool:
+        return self._external_store()
+
+    def _commit_store_files(self, paths: list[Path], message: str) -> None:
+        """Commit store files to the flake repo or, for an external store, to
+        the store's own git repo (no-op if it is not one).
+        """
+        repo = self.secrets_dir() if self._is_external else self.flake.path
+        commit_files(paths, repo, message)
+
+    def _changed_files(
+        self,
+        paths: list[Path],
+        message: str,
+        commit_paths: list[Path] | None = None,
+    ) -> list[Path]:
+        """Route store paths that callers would commit into the flake repo.
+
+        Internal store: return them unchanged for the caller to commit.
+        External store: commit into the external store instead and return [],
+        so the flake repo never sees store paths. `commit_paths` narrows what
+        gets committed (e.g. deleted files without their removed parent dirs,
+        which git cannot stage).
+        """
+        if not self._is_external:
+            return paths
+        commit_files(
+            commit_paths if commit_paths is not None else paths,
+            self.secrets_dir(),
+            message,
+        )
+        return []
 
     def machine_key_dir(self, machine: str) -> Path:
         """Directory storing a machine's age keypair."""
@@ -254,13 +351,12 @@ class SecretStore(StoreBase):
         self._write_recipients(encrypted_key_file, recipients)
 
         # Commit machine key files
-        commit_files(
+        self._commit_store_files(
             [
                 pubkey_file,
                 encrypted_key_file,
                 self._recipients_file(encrypted_key_file),
             ],
-            self.flake.path,
             f"Add age machine key for '{machine}'",
         )
 
@@ -437,9 +533,10 @@ class SecretStore(StoreBase):
         # - Shared secrets (machine list can change)
         # - Non-deployed secrets (encrypted to user/admin recipients that can change)
         if isinstance(generator.placement, Shared) or not policy.deploy:
-            return [secret_file, self._write_recipients(secret_file, recipients)]
-
-        return [secret_file]
+            changed = [secret_file, self._write_recipients(secret_file, recipients)]
+        else:
+            changed = [secret_file]
+        return self._changed_files(changed, f"vars: update {generator.name}/{name}")
 
     def get(
         self,
@@ -525,9 +622,11 @@ class SecretStore(StoreBase):
         """Delete a secret."""
         secret_file = self.secret_path(generator, name)
         deleted_files: list[Path] = []
+        deleted_secrets: list[Path] = []
         if secret_file.exists():
             secret_file.unlink()
             deleted_files.append(secret_file)
+            deleted_secrets.append(secret_file)
             # Clean up empty parent directories
             parent = secret_file.parent
             while parent != self.secrets_dir() and parent.exists():
@@ -537,29 +636,40 @@ class SecretStore(StoreBase):
                     parent = parent.parent
                 else:
                     break
-        return deleted_files
+        return self._changed_files(
+            deleted_files,
+            f"vars: delete {generator.name}/{name}",
+            commit_paths=deleted_secrets,
+        )
 
     def delete_store(self, machine: str) -> Iterable[Path]:
         """Delete all secrets and machine key for a machine."""
         deleted_files: list[Path] = []
+        deleted_secrets: list[Path] = []
 
         # Delete secrets
         machine_dir = self.secrets_dir() / "clan-vars" / "per-machine" / machine
         if machine_dir.exists():
-            deleted_files.extend(
-                file for file in machine_dir.rglob("*") if file.is_file()
-            )
+            machine_files = [f for f in machine_dir.rglob("*") if f.is_file()]
+            deleted_files.extend(machine_files)
+            deleted_secrets.extend(machine_files)
             shutil.rmtree(machine_dir)
             deleted_files.append(machine_dir)
 
         # Delete machine key
         key_dir = self.machine_key_dir(machine)
         if key_dir.exists():
-            deleted_files.extend(file for file in key_dir.rglob("*") if file.is_file())
+            key_files = [f for f in key_dir.rglob("*") if f.is_file()]
+            deleted_files.extend(key_files)
+            deleted_secrets.extend(key_files)
             shutil.rmtree(key_dir)
             deleted_files.append(key_dir)
 
-        return deleted_files
+        return self._changed_files(
+            deleted_files,
+            f"vars: delete secrets for machine '{machine}'",
+            commit_paths=deleted_secrets,
+        )
 
     # ── Upload / deployment ───────────────────────────────────────────────
     #
@@ -567,6 +677,8 @@ class SecretStore(StoreBase):
     # system closure (referenced directly from the flake directory).
     # Only the machine private key needs to be uploaded out-of-band,
     # since it must not be in the world-readable nix store.
+    # With an external store (vars.settings.age.externalStore) the encrypted
+    # files are not in the flake, so they are uploaded out-of-band as well.
 
     @override
     def populate_dir(
@@ -626,6 +738,32 @@ class SecretStore(StoreBase):
                         target_path.write_bytes(plaintext)
                         target_path.chmod(file.mode)
 
+        # For an external store (vars.settings.age.externalStore) the encrypted
+        # secrets are not part of the flake and thus not in the system closure.
+        # Upload them next to the machine key; the module decrypts them from
+        # `<secretLocation>/vars/...` at activation. The layout must match
+        # age-runtime-path.nix (pinned by the age-source-path eval test).
+        if self._is_external:
+            for generator in generators:
+                for file in generator.files:
+                    if (
+                        file.needed_for in ("services", "users")
+                        and file.needed_for in phases
+                        and file.secret
+                        and file.deploy
+                    ):
+                        secret_file = self.secret_path(generator.key, file.name)
+                        if not secret_file.exists():
+                            continue
+                        target_path = (
+                            output_dir
+                            / "vars"
+                            / self.rel_dir(generator.key, file.name)
+                            / f"{file.name}.age"
+                        )
+                        target_path.parent.mkdir(parents=True, exist_ok=True)
+                        target_path.write_bytes(secret_file.read_bytes())
+
     @override
     def get_upload_directory(self, machine: str) -> str:
         """Get the target directory for machine key upload."""
@@ -641,10 +779,11 @@ class SecretStore(StoreBase):
         host: Host,
         phases: list[str],
     ) -> None:
-        """Upload the machine private key to the target.
+        """Upload the populate_dir payload to secretLocation on the target.
 
-        Encrypted secrets are delivered via the nix store as part of the
-        system closure. Only the machine key needs out-of-band upload.
+        Internal store: the machine key and plaintext activation secrets;
+        encrypted secrets are part of the system closure. External store:
+        additionally the encrypted secrets themselves.
         """
         with TemporaryDirectory(prefix="age-upload-") as _tempdir:
             upload_dir = Path(_tempdir).resolve()
@@ -708,9 +847,8 @@ class SecretStore(StoreBase):
             current = self._read_recipients(encrypted_key_file)
             if current != wanted:
                 self.rekey_machine_key(machine)
-                commit_files(
+                self._commit_store_files(
                     [encrypted_key_file, self._recipients_file(encrypted_key_file)],
-                    self.flake.path,
                     f"Re-encrypt machine key for '{machine}'",
                 )
 
@@ -757,8 +895,7 @@ class SecretStore(StoreBase):
                     f"Re-encrypted secret {generator.name}/{file.name} "
                     f"for {len(recipients)} recipients"
                 )
-                commit_files(
+                self._commit_store_files(
                     [secret_file, self._recipients_file(secret_file)],
-                    self.flake.path,
                     f"Re-encrypt secret {generator.name}/{file.name} for {len(recipients)} recipients",
                 )

@@ -8,7 +8,9 @@ from clan_lib.errors import ClanError
 
 from clan_cli.completions import add_dynamic_completer, complete_templates_clan
 from clan_cli.vars.keygen import (
-    create_secrets_user_auto,
+    age_recipients,
+    register_admin_keys,
+    select_admin_keys,
 )
 
 log = logging.getLogger(__name__)
@@ -37,6 +39,7 @@ def init_command(args: argparse.Namespace) -> None:
         else:
             args.domain = "clan"
 
+    admin_keys = select_admin_keys(interactive)
     create_clan(
         CreateOptions(
             dest=Path(args.name),
@@ -45,15 +48,13 @@ def init_command(args: argparse.Namespace) -> None:
             src_flake=args.flake,
             update_clan=not args.no_update,
             domain=args.domain,
+            age_recipients=age_recipients(admin_keys),
         ),
     )
-    flake_dir = Path(args.name).resolve()
-    create_secrets_user_auto(
-        clan_dir=flake_dir,
-        flake_dir=flake_dir,
+    register_admin_keys(
+        flake_dir=Path(args.name).resolve(),
+        keys=admin_keys,
         user=args.user,
-        force=True,
-        interactive=interactive,
     )
 
 

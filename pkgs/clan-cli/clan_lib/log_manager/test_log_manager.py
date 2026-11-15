@@ -3,7 +3,7 @@
 Tests are based on actual usage patterns from example_usage.py and api.py.
 """
 
-import datetime
+import datetime as dt
 import tempfile
 from pathlib import Path
 
@@ -300,9 +300,7 @@ class TestFilterFunction:
         assert "repo1" in repos
 
         # Filter with non-existent date
-        tomorrow = (
-            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
-        ).strftime("%Y-%m-%d")
+        tomorrow = (dt.datetime.now(dt.UTC) + dt.timedelta(days=1)).strftime("%Y-%m-%d")
         repos = configured_log_manager.filter(["clans"], date_day=tomorrow)
         assert repos == []
 
@@ -373,9 +371,7 @@ class TestGetLogFile:
         assert found_log_file.op_key == "deploy_demo"
 
         # Try with wrong date
-        tomorrow = (
-            datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
-        ).strftime("%Y-%m-%d")
+        tomorrow = (dt.datetime.now(dt.UTC) + dt.timedelta(days=1)).strftime("%Y-%m-%d")
         not_found = configured_log_manager.get_log_file(
             "deploy_demo",
             date_day=tomorrow,

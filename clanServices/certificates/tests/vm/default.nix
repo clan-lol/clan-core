@@ -64,15 +64,21 @@
     };
 
   testScript = ''
-    start_all()
+    # Start CA first and let it issue its own cert
+    ca.start()
+    ca.wait_for_unit("step-ca.service")
+    ca.wait_for_file("/var/lib/acme/ca.foo/fullchain.pem")
 
-    import time
+    # Restart nginx so it actively serves the newly issued cert
+    ca.succeed("systemctl restart nginx.service")
 
-    time.sleep(3)
-    ca.succeed("systemctl restart acme-order-renew-ca.foo.service ")
+    # Start server and client now that the CA is fully operational
+    server.start()
+    client.start()
 
-    time.sleep(3)
-    server.succeed("systemctl restart acme-test.foo.service")
+    # Wait for server to obtain its certificate and restart nginx
+    server.wait_for_file("/var/lib/acme/test.foo/fullchain.pem")
+    server.succeed("systemctl restart nginx.service")
 
     # It takes a while for the correct certs to appear (before that self-signed
     # are presented by nginx) so we wait for a bit.

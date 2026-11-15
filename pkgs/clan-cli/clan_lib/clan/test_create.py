@@ -8,6 +8,7 @@ from clan_lib.clan.get import get_clan_details
 from clan_lib.clan.update import UpdateOptions, set_clan_details
 from clan_lib.errors import ClanError
 from clan_lib.flake import Flake
+from clan_lib.nix_selectors import vars_settings_secret_store
 from clan_lib.persist.inventory_store import InventoryStore
 
 if TYPE_CHECKING:
@@ -146,8 +147,7 @@ def test_create_substitutes_placeholders(
         content += flake_nix.read_text()
 
     # Ensure placeholders were substituted
-    assert "{{name}}" not in content
-    assert "{{domain}}" not in content
+    assert "{{" not in content
     assert (
         'meta.name = "test_clan"' in content
         or 'meta.name = inputs.nixpkgs.lib.mkDefault "test_clan"' in content
@@ -156,6 +156,32 @@ def test_create_substitutes_placeholders(
         'meta.domain = "clan"' in content
         or 'meta.domain = inputs.nixpkgs.lib.mkDefault "clan"' in content
     )
+
+
+@pytest.mark.broken_on_darwin
+@pytest.mark.with_core
+@pytest.mark.parametrize(
+    "recipients",
+    [[], ["age1aaaa"], ["age1aaaa", "age1bbbb"]],
+)
+def test_default_uses_age_backend_with_recipients(
+    tmp_path: Path, offline_flake_hook: Any, recipients: list[str]
+) -> None:
+    """The default template selects the age backend and lists the given recipients."""
+    dest = tmp_path / "test_clan"
+
+    create_clan(
+        CreateOptions(
+            dest=dest,
+            template="default",
+            age_recipients=recipients,
+            _postprocess_flake_hook=offline_flake_hook,
+        )
+    )
+
+    flake = Flake(str(dest))
+    assert flake.select(vars_settings_secret_store()) == "age"
+    assert flake.select("clanInternals.vars.settings.recipients.default") == recipients
 
 
 @pytest.mark.broken_on_darwin

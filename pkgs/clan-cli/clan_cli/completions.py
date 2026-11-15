@@ -274,7 +274,11 @@ def complete_vars_for_machine(
     Only completes vars that already exist in the vars directory on disk.
     This is fast as it only scans the filesystem without any evaluation.
     """
-    machine_name = getattr(parsed_args, "machine", None)
+    machine_name = getattr(parsed_args, "machine", None) or getattr(
+        parsed_args,
+        "source_machine",  # for `vars cp`
+        None,
+    )
     if not machine_name:
         return []
 

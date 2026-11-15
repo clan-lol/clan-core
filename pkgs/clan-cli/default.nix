@@ -167,8 +167,10 @@ pythonRuntime.pkgs.buildPythonApplication {
 
   # Arguments for the wrapper to unset LD_LIBRARY_PATH to avoid glibc version issues
   makeWrapperArgs = [
-    "--unset LD_LIBRARY_PATH"
-    "--unset PYTHONPATH"
+    "--unset"
+    "LD_LIBRARY_PATH"
+    "--unset"
+    "PYTHONPATH"
 
     # include selected runtime dependencies in the PATH
     "--prefix"
@@ -240,7 +242,7 @@ pythonRuntime.pkgs.buildPythonApplication {
           closureInfo = pkgs.closureInfo {
             rootPaths =
               # Not available on darwin
-              (lib.optionals (!pkgs.stdenv.isDarwin) [
+              (lib.optionals (!pkgs.stdenv.hostPlatform.isDarwin) [
                 # needed by flash list tests
                 pkgs.kbd.out
                 pkgs.glibcLocales
@@ -255,6 +257,15 @@ pythonRuntime.pkgs.buildPythonApplication {
                 pkgs.docbook-xsl-nons
                 pkgs.kmod
                 pkgs.kmod.dev
+
+                # Build dependencies for impure tests. A .drv root also pulls in
+                # the outputs of every input derivation. On darwin that is the
+                # whole stdenv bootstrap (llvm/clang sources, Apple SDKs, ~1M
+                # files), which setupNixInNix copies on every run. No test that
+                # runs on darwin builds a derivation.
+                pkgs.stdenv.drvPath
+                pkgs.bash.drvPath
+                (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
               ])
               ++ [
                 templateDerivation
@@ -279,8 +290,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                 (pkgs.callPackage ../../clanServices/zerotier/pkgs/zerotier-tools { })
 
                 # Build dependencies for impure tests
-                pkgs.stdenv.drvPath
-                pkgs.bash.drvPath
                 pkgs.buildPackages.lndir
                 (pkgs.perl.withPackages (
                   p: with p; [
@@ -288,7 +297,6 @@ pythonRuntime.pkgs.buildPythonApplication {
                     FileSlurp
                   ]
                 ))
-                (pkgs.closureInfo { rootPaths = [ ]; }).drvPath
                 pkgs.desktop-file-utils
                 pkgs.dbus
                 pkgs.unzip
@@ -299,7 +307,7 @@ pythonRuntime.pkgs.buildPythonApplication {
         }
         (
           let
-            marker = if pkgs.stdenv.isDarwin then "and not broken_on_darwin" else "";
+            marker = if pkgs.stdenv.hostPlatform.isDarwin then "and not broken_on_darwin" else "";
           in
           ''
             set -euo pipefail

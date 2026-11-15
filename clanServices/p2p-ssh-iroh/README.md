@@ -1,8 +1,3 @@
-:::admonition[Experimental]{type=danger}
-This service is experimental and will change in the future.
-
-:::
-
 SSH over [dumbpipe](https://github.com/n0-computer/dumbpipe) (iroh) — NAT-traversing SSH access via encrypted QUIC streams.
 
 ## Overview

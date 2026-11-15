@@ -8,19 +8,30 @@
 }:
 let
   secretLocation = config.clan.core.vars.age.secretLocation;
+  externalStore = config.clan.core.vars.settings.age.externalStore;
   clanDir = config.clan.core.settings.directory;
   isNixOS = _class == "nixos";
   isDarwin = _class == "darwin";
 
-  # Path layout: ./age-source-path.nix.
+  # Path layouts: ./age-source-path.nix, ./age-runtime-path.nix.
   encryptedSourcePath = import ./age-source-path.nix;
+  encryptedRuntimePath = import ./age-runtime-path.nix;
+
+  # Internal store (default): the .age file is part of the flake and thus of
+  # the system closure; secrets missing from the flake are skipped at eval
+  # time (src = null).
+  # External store (vars.settings.age.externalStore): the store is not in the
+  # flake; populate_dir uploads the .age files next to the machine key and we
+  # decrypt them from under secretLocation at runtime.
   encryptedSecretSource =
     rel_dir: fileName:
-    let
-      storePath = encryptedSourcePath clanDir rel_dir fileName;
-    in
-    # Only include if the file exists in the flake; otherwise skip.
-    if builtins.pathExists storePath then storePath else null;
+    if externalStore then
+      encryptedRuntimePath secretLocation rel_dir fileName
+    else
+      let
+        storePath = encryptedSourcePath clanDir rel_dir fileName;
+      in
+      if builtins.pathExists storePath then storePath else null;
 
   # Collect all secret files with their permissions, grouped by phase
   secretFiles = lib.concatLists (
@@ -48,7 +59,9 @@ let
   );
 
   # Generate a bash snippet that decrypts and sets permissions for files of a given phase.
-  # Source .age files come from the nix store (part of the system closure).
+  # Internal store: sources come from the nix store, existence is checked at
+  # eval time. External store: sources come from the uploaded copy under
+  # secretLocation, which may be missing at runtime, so guard and warn.
   phaseDecryptSnippet =
     phase: targetDir:
     let
@@ -62,10 +75,25 @@ let
       in
       ''
         mkdir -p "${destDir}"
-        age --decrypt -i "$key" -o "${destFile}" "${f.src}"
-        chmod ${f.mode} "${destFile}"
-        chown ${f.owner}:${f.group} "${destFile}"
       ''
+      + (
+        if externalStore then
+          ''
+            if [ -e "${f.src}" ]; then
+              age --decrypt -i "$key" -o "${destFile}" "${f.src}"
+              chmod ${f.mode} "${destFile}"
+              chown ${f.owner}:${f.group} "${destFile}"
+            else
+              echo "WARNING: encrypted secret ${f.src} not found, skipping" >&2
+            fi
+          ''
+        else
+          ''
+            age --decrypt -i "$key" -o "${destFile}" "${f.src}"
+            chmod ${f.mode} "${destFile}"
+            chown ${f.owner}:${f.group} "${destFile}"
+          ''
+      )
     ) phaseFiles;
 
   # Cross-platform secret filesystem setup.

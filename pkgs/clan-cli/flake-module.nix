@@ -53,10 +53,10 @@
       };
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
-          # XXX A/B test: nix 2.34 (current default) made clan-pytest-with-core
-          # ~10-30x slower in CI compared to 2.31. Pin the old version while we
-          # investigate the regression.
-          nix = pkgs.nixVersions.nix_2_31;
+          # Nix 2.32-2.34 re-copy locked `path:` store inputs (the test nixpkgs)
+          # on every eval, which made clan-pytest-with-core 10-20x slower.
+          # 2.35 avoids the copy.
+          nix = pkgs.nixVersions.nix_2_35;
           inherit (inputs) nixpkgs nix-select;
           diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;

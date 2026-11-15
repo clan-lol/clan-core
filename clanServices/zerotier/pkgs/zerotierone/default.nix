@@ -17,6 +17,6 @@
     # zerotierone> [phy] Binding UDP listen socket to 127.0.0.1/60002... FAILED.
     doCheck = old.doCheck && !stdenv.hostPlatform.isDarwin;
     meta = old.meta // {
-      license = lib.licenses.apsl20;
+      license = lib.licenses.apple-psl20;
     };
   })

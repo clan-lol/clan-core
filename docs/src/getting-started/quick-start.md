@@ -92,7 +92,7 @@ sudo dd if=nixos-installer-x86_64-linux.iso of=/dev/<USB_DEVICE> bs=4M status=pr
 
 This writes the installer image to the USB drive. All existing data on the drive will be lost.
 
-Boot the target machine from the USB drive. Note the **installer IP address** shown on screen — the following steps pass it to `--target-host`. After installation the machine reboots and gets a different IP, which you'll configure later.
+Boot the target machine from the USB drive. Note the **installer IP address** shown on screen — the following steps pass it to `--target-host`. After installation Clan reaches the machine without an IP address.
 
 :::admonition[No IP?]{type=tip}
 Press Ctrl+C, run `nmtui`, connect to WiFi, then Ctrl+D to return.
@@ -154,7 +154,7 @@ This assigns the disk that NixOS will be installed onto.
 clan machines install test-machine --target-host root@<INSTALLER-IP>
 ```
 
-This builds NixOS from your configuration and installs it on the target machine. You'll be prompted for confirmation, WiFi credentials, and a root password.
+This builds NixOS from your configuration and installs it on the target machine. You'll be prompted for confirmation and WiFi credentials. Clan generates a random root password; show it with `clan vars get test-machine user-password-root/user-password`.
 
 :::admonition[Sandbox error?]{type=tip}
 Run `clan vars generate test-machine --no-sandbox` first, then retry.
@@ -162,34 +162,15 @@ Run `clan vars generate test-machine --no-sandbox` first, then retry.
 
 Remove the USB drive before the machine reboots.
 
-## Configure How to Reach the Machine
-
-After installation the machine reboots into the installed system, which gets a **new IP address**.
-
-The installer IP is no longer valid. Find the new IP (check your router's DHCP leases, or log in locally and run `ip addr`), then tell Clan how to reach it by adding the `internet` instance.
-
-Find the `inventory.instances` line in `clan.nix` and add:
-
-```nix [clan.nix] {2-8}
-  inventory.instances = { # FIND THIS LINE, ADD THE FOLLOWING
-    internet = {
-      roles.default.machines."test-machine" = {
-        settings.host = "<MACHINE-IP>"; # REPLACE WITH THE INSTALLED MACHINE'S IP ADDRESS
-        settings.user = "root";
-      };
-    };
-
-```
-
-`clan ssh` and `clan machines update` read this address to connect to the installed system.
-
 ## Connect
+
+After installation the machine reboots into the installed system, which gets a **new IP address**. You don't need to look it up: the `p2p-ssh-iroh` instance in `clan.nix` lets `clan ssh` and `clan machines update` reach the machine over [iroh](https://www.iroh.computer/), even behind NAT.
 
 ```bash
 clan ssh test-machine
 ```
 
-This opens an SSH session to your machine using the connection details from `clan.nix`. If you get a host identification error, run the `ssh-keygen` command shown in the output, then retry.
+This opens an SSH session to your machine.
 
 ---
 

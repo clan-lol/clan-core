@@ -79,7 +79,7 @@ in
             inherit (self) clanLib;
             clan-core = self;
           };
-          nixosTests = lib.optionalAttrs (pkgs.stdenv.isLinux) {
+          nixosTests = lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux) {
 
             # Base Tests
             nixos-test-secrets = self.clanLib.test.baseTest ./secrets nixosTestArgs;
@@ -102,7 +102,7 @@ in
               # We might want to include this later once everything is fixed
               "dont-depend-on-repo-root"
             ]
-            ++ lib.optionals (pkgs.stdenv.isDarwin) [
+            ++ lib.optionals (pkgs.stdenv.hostPlatform.isDarwin) [
               "docs"
               "deploy-docs-v2"
               # Our darwin CI is unable to run a headless browser, which is
@@ -169,7 +169,7 @@ in
               inherit self;
             };
           in
-          lib.optionalAttrs (pkgs.stdenv.isLinux) {
+          lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux) {
             # import our test
             nixos-test-secrets = import ./secrets nixosTestArgs;
             nixos-test-container = self.clanLib.test.containerTest ./container nixosTestArgs;

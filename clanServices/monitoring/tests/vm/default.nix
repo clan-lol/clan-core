@@ -8,6 +8,7 @@
       machines = {
         machine1 = { };
         machine2 = { };
+        machine3 = { };
       };
 
       instances.monitoring = {
@@ -38,6 +39,20 @@
             ];
           };
           server.machines.machine1.settings.grafana.enable = true;
+        };
+      };
+
+      # A second instance whose server machine brings its own reverse proxy.
+      instances.monitoring-external = {
+        module = {
+          name = "monitoring";
+          input = "self";
+        };
+
+        roles.server.machines.machine3.settings = {
+          grafana.enable = true;
+          host = "machine3.clan";
+          proxy.enable = false;
         };
       };
     };
@@ -74,6 +89,14 @@
       machine1.wait_for_unit("loki")
       machine1.wait_for_unit("mimir")
       machine1.wait_for_unit("grafana")
+
+      machine3.wait_for_unit("loki")
+      machine3.wait_for_unit("mimir")
+      machine3.wait_for_unit("grafana")
+
+      # proxy.enable = false must not pull in nginx.
+      machine3.fail("systemctl cat nginx.service")
+      machine3.wait_until_succeeds("curl -sf http://127.0.0.1:3000/api/health")
 
       machine2.succeed("test \"$(grep -c '^loki.source.journal ' /etc/alloy/config.alloy)\" = 1")
       config = machine2.succeed("cat /etc/alloy/config.alloy")

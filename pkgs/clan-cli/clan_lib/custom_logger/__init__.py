@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO
 
+from clan_lib.async_run import get_async_ctx
 from clan_lib.colors import AnsiColor, RgbColor, color_by_tuple
 
 # https://no-color.org
@@ -44,8 +45,11 @@ class PrefixFormatter(logging.Formatter):
             else:
                 msg_color = AnsiColor.DEFAULT.value
 
-        # If extra["command_prefix"] is set, use that as the logging prefix.
-        command_prefix = getattr(record, "command_prefix", None)
+        # The prefix comes from extra["command_prefix"] for piped subprocess
+        # output, and otherwise from the thread-local fan-out context.
+        command_prefix = (
+            getattr(record, "command_prefix", None) or get_async_ctx().prefix
+        )
 
         # If color is disabled, don't use color.
         if DISABLE_COLOR:

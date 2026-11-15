@@ -1,7 +1,6 @@
 """Check that large PRs (>500 lines added) have at least 2 approving reviews."""
 
 import json
-import math
 import os
 import sys
 import urllib.request
@@ -42,15 +41,16 @@ def main() -> None:
     if not isinstance(pr_data, dict):
         print("Error: unexpected API response for PR data", file=sys.stderr)
         sys.exit(1)
-    total_additions: int = pr_data["additions"]
     pr_author: str = pr_data["user"]["login"]
 
-    # Get per-file stats to exclude lock files
-    changed_files: int = pr_data["changed_files"]
+    # Sum per-file stats, excluding lock files. The PR object's own
+    # additions/changed_files fields are not always populated by Gitea, so the
+    # files endpoint is the only source; page until it returns no more files.
     page_size = 50
-    num_pages = math.ceil(changed_files / page_size)
+    total_additions = 0
     lock_additions = 0
-    for page in range(1, num_pages + 1):
+    page = 1
+    while True:
         files = api_get(
             f"{api_url}/repos/{repo}/pulls/{pr_number}/files?limit={page_size}&page={page}",
             token,
@@ -58,12 +58,15 @@ def main() -> None:
         if not isinstance(files, list):
             print("Error: unexpected API response for PR files", file=sys.stderr)
             sys.exit(1)
+        if not files:
+            break
         for f in files:
+            file_additions: int = f.get("additions", 0)
+            total_additions += file_additions
             if is_lock_file(f["filename"]):
-                lock_additions += f.get("additions", 0)
-                print(
-                    f"  Ignoring lock file: {f['filename']} (+{f.get('additions', 0)})"
-                )
+                lock_additions += file_additions
+                print(f"  Ignoring lock file: {f['filename']} (+{file_additions})")
+        page += 1
 
     additions: int = total_additions - lock_additions
 

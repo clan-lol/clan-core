@@ -23,4 +23,14 @@
     };
     expected = ":::machine01";
   };
+
+  test_build_scope_key_rejects_colon = {
+    expr = clanLib.buildScopeKey {
+      serviceName = "foo:bar";
+    };
+    expectedError = {
+      type = "ThrownError";
+      msg = "cannot contain the \":\" character";
+    };
+  };
 }

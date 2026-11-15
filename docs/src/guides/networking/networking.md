@@ -21,10 +21,6 @@ A higher priority number means Clan tries that service first. When multiple serv
 
 ## P2P SSH (Iroh): NAT-Traversing SSH
 
-:::admonition[Experimental]{type=danger}
-This service is experimental and will change in the future.
-:::
-
 The `p2p-ssh-iroh` service enables SSH access to machines behind NAT or firewalls without port forwarding. It uses [Iroh](https://github.com/n0-computer/dumbpipe)'s peer-to-peer networking to establish encrypted QUIC streams, falling back to relay servers when a direct connection cannot be established.
 
 This is the highest-priority networking service (3000), meaning Clan tries it first. Because it handles NAT traversal automatically, `clan ssh <machine>` works from any admin machine, even one that isn't inside the clan's VPN or on the same network.

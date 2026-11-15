@@ -38,7 +38,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -97,7 +97,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "builder",
@@ -118,7 +118,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -177,7 +177,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
@@ -198,14 +198,14 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "/",
+          "unit": "percent",
           "mappings": [],
           "max": 100,
           "min": 0,
@@ -224,141 +224,66 @@
                 "value": 90
               }
             ]
-          },
-          "unit": "percent"
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
-        "w": 2,
+        "h": 8,
+        "w": 4,
         "x": 4,
         "y": 1
       },
       "id": 3,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
         "reduceOptions": {
+          "values": false,
           "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
+          "fields": ""
         },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
+        "orientation": "horizontal",
+        "displayMode": "basic",
+        "valueMode": "color",
+        "showUnfilled": true,
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizWidth": 8,
+        "minVizHeight": 16,
+        "maxVizHeight": 300,
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        }
       },
       "pluginVersion": "12.0.2",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P46B05499459EE360"
+            "uid": "mimir"
           },
           "disableTextWrap": false,
           "editorMode": "code",
           "exemplar": false,
-          "expr": "100 - (node_filesystem_avail_bytes{instance=\"$hostname\", mountpoint=\"/\"} * 100 / node_filesystem_size_bytes{instance=\"$hostname\", mountpoint=\"/\"})",
+          "expr": "100 - (node_filesystem_avail_bytes{instance=\"$hostname\", fstype!~\"tmpfs|ramfs\"} * 100 / node_filesystem_size_bytes{instance=\"$hostname\", fstype!~\"tmpfs|ramfs\"})",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "interval": "",
-          "legendFormat": "__auto",
+          "legendFormat": "{{mountpoint}}",
           "range": true,
           "refId": "A",
           "useBackend": false
         }
       ],
       "title": "Disk Usage",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P46B05499459EE360"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "displayName": "/nix",
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "#EAB839",
-                "value": 75
-              },
-              {
-                "color": "red",
-                "value": 90
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 6,
-        "y": 1
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P46B05499459EE360"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "100 - (node_filesystem_avail_bytes{instance=\"$hostname\", mountpoint=\"/nix\"} * 100 / node_filesystem_size_bytes{instance=\"$hostname\", mountpoint=\"/nix\"})",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "interval": "",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Disk Usage",
-      "type": "stat"
+      "type": "bargauge"
     },
     {
       "datasource": {
         "type": "loki",
-        "uid": "P982945308D3682D1"
+        "uid": "loki"
       },
       "fieldConfig": {
         "defaults": {
@@ -497,7 +422,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "P982945308D3682D1"
+            "uid": "loki"
           },
           "direction": "backward",
           "editorMode": "builder",
@@ -521,7 +446,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P46B05499459EE360"
+        "uid": "mimir"
       },
       "fieldConfig": {
         "defaults": {
@@ -545,7 +470,7 @@
               "oneClick": true,
               "targetBlank": false,
               "title": "Show logs",
-              "url": "/a/grafana-lokiexplore-app/explore/service/nginx.service/logs?patterns=%5B%5D&${__url_time_range}﻿﻿&var-lineFormat=&var-ds=P982945308D3682D1&var-filters=service_name%7C%3D%7C﻿${__series.name}﻿.service&var-filters=instance%7C%3D%7C${hostname}&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&displayedFields=%5B%5D&urlColumns=%5B%5D&visualizationType=%22logs%22&prettifyLogMessage=false&sortOrder=%22Descending%22&wrapLogMessage=false"
+              "url": "/a/grafana-lokiexplore-app/explore/service/nginx.service/logs?patterns=%5B%5D&${__url_time_range}﻿﻿&var-lineFormat=&var-ds=loki&var-filters=service_name%7C%3D%7C﻿${__series.name}﻿.service&var-filters=instance%7C%3D%7C${hostname}&var-fields=&var-levels=&var-metadata=&var-jsonFields=&var-patterns=&var-lineFilterV2=&var-lineFilters=&timezone=browser&var-all-fields=&displayedFields=%5B%5D&urlColumns=%5B%5D&visualizationType=%22logs%22&prettifyLogMessage=false&sortOrder=%22Descending%22&wrapLogMessage=false"
             }
           ],
           "mappings": [
@@ -660,86 +585,6 @@
         }
       ],
       "type": "state-timeline"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "P46B05499459EE360"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "displayName": "/boot",
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "#EAB839",
-                "value": 75
-              },
-              {
-                "color": "red",
-                "value": 90
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 2,
-        "x": 4,
-        "y": 5
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "text": {},
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.0.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P46B05499459EE360"
-          },
-          "disableTextWrap": false,
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "100 - (node_filesystem_avail_bytes{instance=\"$hostname\", mountpoint=\"/boot\"} * 100 / node_filesystem_size_bytes{instance=\"$hostname\", mountpoint=\"/boot\"})",
-          "fullMetaSearch": false,
-          "includeNullMetadata": true,
-          "interval": "",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A",
-          "useBackend": false
-        }
-      ],
-      "title": "Disk Usage",
-      "type": "stat"
     }
   ],
   "preload": false,
@@ -756,7 +601,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "P46B05499459EE360"
+          "uid": "mimir"
         },
         "definition": "label_values(instance)",
         "description": "",

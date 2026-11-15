@@ -96,7 +96,7 @@ in
     expr = {
       hasMachineSettings =
         res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer.machines.jon
-        ? settings;
+          ? settings;
 
       # settings are specific.
       # Below we access:
@@ -108,7 +108,7 @@ in
 
       hasRoleSettings =
         res.config._services.allServices.self-A.result.allMachines.jon.passthru.instances.instance_foo.roles.peer
-        ? settings;
+          ? settings;
 
       # settings are specific.
       # Below we access:

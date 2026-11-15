@@ -126,7 +126,6 @@ Update `clan.nix` to look like the following:
     };
 
     # Docs: https://clan.lol/docs/unstable/services/official/p2p-ssh-iroh
-    # Status experimental
     # Firewall-traversing SSH access via encrypted QUIC streams
     # p2p-ssh-iroh = {
     #   roles.server.tags = [ "nixos" ];

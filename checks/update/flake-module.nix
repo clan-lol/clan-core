@@ -11,7 +11,8 @@
     }:
     {
       checks =
-        pkgs.lib.optionalAttrs (pkgs.stdenv.isLinux && pkgs.stdenv.hostPlatform.system == "x86_64-linux")
+        pkgs.lib.optionalAttrs
+          (pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.system == "x86_64-linux")
           {
             clan-test-update =
               let
