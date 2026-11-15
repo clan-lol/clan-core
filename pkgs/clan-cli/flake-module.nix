@@ -53,6 +53,10 @@
       };
       packages = {
         clan-cli = pkgs.callPackage ./default.nix {
+          # Nix 2.32-2.34 re-copy locked `path:` store inputs (the test nixpkgs)
+          # on every eval, which made clan-pytest-with-core 10-20x slower.
+          # 2.35 avoids the copy.
+          nix = pkgs.nixVersions.nix_2_35;
           inherit (inputs) nixpkgs nix-select;
           diskoInput = inputs.disko;
           inherit (self.legacyPackages.${system}) setupNixInNix;
