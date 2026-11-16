@@ -2,6 +2,7 @@
 let
   encryptedSourcePath = import ../secret/age-source-path.nix;
   encryptedRuntimePath = import ../secret/age-runtime-path.nix;
+  encryptedStorePath = import ../secret/age-store-path.nix;
 
   fixturesRoot = ../tests;
 
@@ -59,6 +60,29 @@ in
   test_per_export_layout = {
     expr = encryptedSourcePath "/clan" "per-export/A/one" "foo";
     expected = "/clan/secrets/clan-vars/per-export/A/one/foo/foo.age";
+  };
+
+  # The clan directory is a string, as `clan.directory` gets it from the flake.
+  # The store path must be the .age file copied on its own. A path below the
+  # clan directory changes with each unrelated file in it.
+  test_store_path_ignores_other_files = {
+    expr = encryptedStorePath "${../tests}" "shared/shared-generator" "shared-secret";
+    expected = "${../tests/secrets/clan-vars/shared/shared-generator/shared-secret/shared-secret.age}";
+  };
+
+  # The context must hold only the copied file, not the clan directory.
+  test_store_path_is_own_context = {
+    expr = builtins.getContext (
+      encryptedStorePath "${../tests}" "shared/shared-generator" "shared-secret"
+    );
+    expected = builtins.getContext "${
+      ../tests/secrets/clan-vars/shared/shared-generator/shared-secret/shared-secret.age
+    }";
+  };
+
+  test_store_path_missing_file = {
+    expr = encryptedStorePath "${../tests}" "shared/shared-generator" "no-such-secret";
+    expected = null;
   };
 
   # External store: the runtime path must mirror the upload layout of
