@@ -38,6 +38,13 @@
               ''
             ];
           };
+          client.machines.machine2.settings.prometheus.collectors = [
+            "cpu"
+            "filesystem"
+            "meminfo"
+            "netdev"
+            "systemd"
+          ];
           server.machines.machine1.settings.grafana.enable = true;
         };
       };
@@ -80,9 +87,13 @@
       machine1.wait_for_unit("alloy")
       machine2.wait_for_unit("alloy")
 
-      machine1.succeed("test -f /etc/alloy/config.alloy")
-      machine2.succeed("test -f /etc/alloy/config.alloy")
+      for machine in [machine1, machine2]:
+          machine.succeed("test -f /etc/alloy/metrics-collector.alloy")
+          machine.succeed("test -f /etc/alloy/logs-collector.alloy")
+          machine.succeed("test -f /etc/alloy/writers.alloy")
       machine2.succeed("test -f /etc/alloy/local-extension.alloy")
+      machine1.fail("grep -F '\"netdev\"' /etc/alloy/metrics-collector.alloy")
+      machine2.succeed("grep -F '\"netdev\"' /etc/alloy/metrics-collector.alloy")
       machine1.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
       machine2.succeed("systemctl show alloy --property=ExecStart | grep -F '/etc/alloy'")
 
@@ -98,8 +109,8 @@
       machine3.fail("systemctl cat nginx.service")
       machine3.wait_until_succeeds("curl -sf http://127.0.0.1:3000/api/health")
 
-      machine2.succeed("test \"$(grep -c '^loki.source.journal ' /etc/alloy/config.alloy)\" = 1")
-      config = machine2.succeed("cat /etc/alloy/config.alloy")
+      machine2.succeed("test \"$(grep -c '^loki.source.journal ' /etc/alloy/logs-collector.alloy)\" = 1")
+      config = machine2.succeed("cat /etc/alloy/logs-collector.alloy")
 
       pre_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "raw_service_name"' in line)
       instance_line = next(i for i, line in enumerate(config.splitlines(), 1) if 'target_label = "instance"' in line)

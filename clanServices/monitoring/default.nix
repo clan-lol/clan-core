@@ -49,6 +49,32 @@
               example = true;
             };
 
+            prometheus.collectors = lib.mkOption {
+              type = lib.types.listOf lib.types.str;
+              default = [
+                "cpu"
+                "filesystem"
+                "meminfo"
+                "systemd"
+              ];
+              description = ''
+                List of collectors enabled on the Alloy `prometheus.exporter.unix` component.
+
+                Setting this replaces the default list, so include the default
+                collectors if you want to keep them. The bundled Grafana
+                dashboards use metrics from all of the default collectors.
+
+                See the [list of available collectors](https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list).
+              '';
+              example = [
+                "cpu"
+                "filesystem"
+                "meminfo"
+                "netdev"
+                "systemd"
+              ];
+            };
+
             loki.journal.relabelRules.beforeNormalization = lib.mkOption {
               type = lib.types.listOf lib.types.str;
               default = [ ];
@@ -104,24 +130,16 @@
               ...
             }:
             {
-              services.alloy =
-                let
-                  serverMachineCount = lib.length (lib.attrNames roles.server.machines);
-                  protocol = "http" + lib.optionalString settings.useSSL "s";
-                  serverSettings =
-                    if serverMachineCount != 1 then
-                      throw "The monitoring service requires exactly one server machine, but ${toString serverMachineCount} were defined."
-                    else
-                      (lib.head (lib.attrValues roles.server.machines)).settings;
-                  serverHost =
-                    if serverSettings.host != null then
-                      serverSettings.host
-                    else
-                      lib.head (
-                        map (m: "${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
-                      );
-                  serverAddress = "${protocol}://${serverHost}";
+              services.alloy = {
+                enable = true;
+                extraFlags = [
+                  "--server.http.enable-pprof=false"
+                  "--disable-reporting=true"
+                ];
+              };
 
+              environment.etc =
+                let
                   enabledNixosSystemdServices = map (v: "${v}.service") (
                     lib.attrNames (
                       lib.filterAttrs (_name: value: value) (
@@ -144,26 +162,14 @@
                       settings.monitoredSystemdServices
                   );
                   monitoredServicesRegexFragments = map lib.escapeRegex monitoredServices;
-                  monitoredServicesRegex =
-                    if monitoredServices == [ ] then
-                      "^$"
-                    else
-                      "^(${lib.concatStringsSep "|" monitoredServicesRegexFragments})$";
-                  extraLokiJournalRelabelRulesBeforeNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.beforeNormalization;
-                  extraLokiJournalRelabelRulesAfterNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.afterNormalization;
                 in
                 {
-                  enable = true;
-                  extraFlags = [
-                    "--server.http.enable-pprof=false"
-                    "--disable-reporting=true"
-                  ];
-                  configPath = builtins.toFile "config.alloy" ''
+                  "alloy/metrics-collector.alloy".source = builtins.toFile "metrics-collector.alloy" ''
                     // Collects metrics and sends them to mimir.
                     prometheus.exporter.unix "local_system" {
                       // See the list of available collectors in the alloy docs at
                       // https://grafana.com/docs/alloy/latest/reference/components/prometheus/prometheus.exporter.unix/#collectors-list
-                      set_collectors = [ "cpu", "filesystem", "meminfo", "systemd" ]
+                      set_collectors = ${builtins.toJSON settings.prometheus.collectors}
                     }
 
                     prometheus.scrape "scrape_metrics" {
@@ -200,61 +206,91 @@
                         replacement = "nixos_systemd_unit_state"
                       }
                     }
-
-                    prometheus.remote_write "mimir" {
-                      endpoint {
-                        url = "${serverAddress}/mimir/api/v1/push"
-                        basic_auth {
-                          username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
-                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/mimir-auth-password"
-                        }
-                      }
-                    }
-
-                    // Collects logs and sends them to loki.
-                    loki.source.journal "all" {
-                      relabel_rules = loki.relabel.journal.rules
-                      forward_to = [loki.write.loki.receiver]
-                    }
-
-                    loki.relabel "journal" {
-                      ${lib.optionalString (!monitorAllSystemdServices) ''
-                        rule {
-                          action = "keep"
-                          source_labels = ["__journal__systemd_unit"]
-                          regex = ${builtins.toJSON monitoredServicesRegex}
-                        }
-                      ''}
-                      ${extraLokiJournalRelabelRulesBeforeNormalization}
-                      rule {
-                        source_labels = ["__journal__hostname"]
-                        target_label = "instance"
-                      }
-                      rule {
-                        source_labels = ["__journal__systemd_unit"]
-                        target_label = "service_name"
-                      }
-                      rule {
-                        source_labels = ["__journal_priority_keyword"]
-                        target_label = "level"
-                      }
-                      ${extraLokiJournalRelabelRulesAfterNormalization}
-                      forward_to = []
-                    }
-
-                    loki.write "loki" {
-                      endpoint {
-                        url = "${serverAddress}/loki/loki/api/v1/push"
-                        basic_auth {
-                          username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
-                          password_file = sys.env("CREDENTIALS_DIRECTORY") + "/loki-auth-password"
-                        }
-                      }
-                    }
                   '';
-                };
 
-              environment.etc."alloy/config.alloy".source = config.services.alloy.configPath;
+                  "alloy/logs-collector.alloy".source =
+                    let
+                      monitoredServicesRegex =
+                        if monitoredServices == [ ] then
+                          "^$"
+                        else
+                          "^(${lib.concatStringsSep "|" monitoredServicesRegexFragments})$";
+                      extraLokiJournalRelabelRulesBeforeNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.beforeNormalization;
+                      extraLokiJournalRelabelRulesAfterNormalization = lib.concatStringsSep "\n" settings.loki.journal.relabelRules.afterNormalization;
+                    in
+                    builtins.toFile "logs-collector.alloy" ''
+                      // Collects logs and sends them to loki.
+                      loki.source.journal "all" {
+                        relabel_rules = loki.relabel.journal.rules
+                        forward_to = [loki.write.loki.receiver]
+                      }
+
+                      loki.relabel "journal" {
+                        ${lib.optionalString (!monitorAllSystemdServices) ''
+                          rule {
+                            action = "keep"
+                            source_labels = ["__journal__systemd_unit"]
+                            regex = ${builtins.toJSON monitoredServicesRegex}
+                          }
+                        ''}
+                        ${extraLokiJournalRelabelRulesBeforeNormalization}
+                        rule {
+                          source_labels = ["__journal__hostname"]
+                          target_label = "instance"
+                        }
+                        rule {
+                          source_labels = ["__journal__systemd_unit"]
+                          target_label = "service_name"
+                        }
+                        rule {
+                          source_labels = ["__journal_priority_keyword"]
+                          target_label = "level"
+                        }
+                        ${extraLokiJournalRelabelRulesAfterNormalization}
+                        forward_to = []
+                      }
+                    '';
+
+                  "alloy/writers.alloy".source =
+                    let
+                      serverMachineCount = lib.length (lib.attrNames roles.server.machines);
+                      protocol = "http" + lib.optionalString settings.useSSL "s";
+                      serverSettings =
+                        if serverMachineCount != 1 then
+                          throw "The monitoring service requires exactly one server machine, but ${toString serverMachineCount} were defined."
+                        else
+                          (lib.head (lib.attrValues roles.server.machines)).settings;
+                      serverHost =
+                        if serverSettings.host != null then
+                          serverSettings.host
+                        else
+                          lib.head (
+                            map (m: "${m}.${config.clan.core.settings.domain}") (lib.attrNames roles.server.machines)
+                          );
+                      serverAddress = "${protocol}://${serverHost}";
+                    in
+                    builtins.toFile "writers.alloy" ''
+                      prometheus.remote_write "mimir" {
+                        endpoint {
+                          url = "${serverAddress}/mimir/api/v1/push"
+                          basic_auth {
+                            username = "${config.clan.core.vars.generators.mimir-auth.files.username.value}"
+                            password_file = sys.env("CREDENTIALS_DIRECTORY") + "/mimir-auth-password"
+                          }
+                        }
+                      }
+
+                      loki.write "loki" {
+                        endpoint {
+                          url = "${serverAddress}/loki/loki/api/v1/push"
+                          basic_auth {
+                            username = "${config.clan.core.vars.generators.loki-auth.files.username.value}"
+                            password_file = sys.env("CREDENTIALS_DIRECTORY") + "/loki-auth-password"
+                          }
+                        }
+                      }
+                    '';
+                };
 
               systemd.services.alloy.serviceConfig = {
                 ExecStart = lib.mkForce "${lib.getExe config.services.alloy.package} run /etc/alloy ${lib.escapeShellArgs config.services.alloy.extraFlags}";

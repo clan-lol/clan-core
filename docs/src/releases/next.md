@@ -45,6 +45,16 @@ installed machines without configuring an IP address. The unused
 `modules/gnome.nix` example was dropped from the template. Existing clans are
 unaffected.
 
+### `monitoring`: Alloy config split into multiple files
+
+The generated Alloy config `/etc/alloy/config.alloy` has been split into
+`metrics-collector.alloy`, `logs-collector.alloy`, and `writers.alloy`. Alloy
+loads all `.alloy` files in `/etc/alloy` as one config, so a custom
+`environment.etc."alloy/config.alloy"` no longer replaces the generated config.
+It is loaded alongside the new files, and any component names it shares with
+them conflict. To replace part of the generated config, override the
+corresponding file instead.
+
 ## Fixes
 
 ### yggdrasil: multicast peer discovery now actually on by default
@@ -60,3 +70,10 @@ local links preferred over overlay interfaces and static peers. Set
 
 The `p2p-ssh-iroh` service is now considered stable. Its experimental
 warnings have been removed from the service and networking docs.
+
+### `monitoring`: configurable Prometheus collectors
+
+The monitoring client role has a new `settings.prometheus.collectors` option
+that sets the collectors of the Alloy `prometheus.exporter.unix` component. It
+defaults to the previously hardcoded `cpu`, `filesystem`, `meminfo`, and
+`systemd` collectors.
