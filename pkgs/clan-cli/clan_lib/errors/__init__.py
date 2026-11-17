@@ -180,7 +180,11 @@ class ClanCmdError(ClanError):
 
     def __init__(self, cmd: CmdOut) -> None:
         self.cmd = cmd
-        super().__init__()
+        super().__init__(
+            cmd.msg or f"Command failed with exit code {cmd.returncode}",
+            description=cmd.stderr.strip() or None,
+            location=cmd.command_list[0] if cmd.command_list else None,
+        )
 
     def __str__(self) -> str:
         return str(self.cmd)
