@@ -542,7 +542,11 @@ def register_secrets_parser(subparser: argparse._SubParsersAction) -> None:
 
     parser_rename = subparser.add_parser("rename", help="rename a secret")
     add_secret_argument(parser_rename)
-    parser_rename.add_argument("new_name", type=str, help="the new name of the secret")
+    parser_rename.add_argument(
+        "new_name",
+        type=secret_name_type,
+        help="the new name of the secret",
+    )
     parser_rename.set_defaults(func=rename_command)
 
     parser_remove = subparser.add_parser("remove", help="remove a secret")
