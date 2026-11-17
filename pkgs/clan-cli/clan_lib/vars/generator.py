@@ -440,6 +440,14 @@ class Generator:
     def __hash__(self) -> int:
         return hash(self.key)
 
+    def store_for(self, var: Var) -> "StoreBase":
+        """Return the store that holds the value of `var`."""
+        store = self._secret_store if var.secret else self._public_store
+        if store is None:
+            msg = "Stores must be set to resolve the store of a var"
+            raise ClanError(msg)
+        return store
+
     @property
     def exists(self) -> bool:
         """Check if all files for this generator exist in their respective stores."""

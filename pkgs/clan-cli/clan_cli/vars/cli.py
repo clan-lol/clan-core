@@ -15,7 +15,6 @@ from .import_cmd import register_import_parser
 from .keygen import register_keygen_parser
 from .list import register_list_parser
 from .set import register_set_parser
-from .show import register_show_parser
 from .upload import register_upload_parser
 
 
@@ -81,11 +80,15 @@ Examples:
 
     list_parser = subparser.add_parser(
         "list",
-        help="list all vars",
+        help="list vars of the clan or of one machine",
         epilog=(
             f"""
-This subcommand allows listing all non-secret vars for a specific machine.
+Without a machine this subcommand lists every var of the clan as a tree,
+grouped into the scopes `shared`, `per-machine` and `per-export`.
+Public vars are listed with their value, secret vars with the machines that
+receive them. Vars that are not generated yet are listed as <not set>.
 
+With a machine this subcommand lists all vars of that machine.
 The resulting list will be strings terminated by newlines as key-value pairs separated by a space.
 
 This is how an example output might look like:
@@ -95,6 +98,9 @@ This is how an example output might look like:
 ```
 
 Examples:
+
+  $ clan vars list
+  Will list all vars of the clan as a tree.
 
   $ clan vars list [MACHINE]
   Will list vars for the specified machine.
@@ -270,29 +276,3 @@ Examples:
         formatter_class=HelpFormatter,
     )
     register_import_parser(import_parser)
-
-    show_parser = subparser.add_parser(
-        "show",
-        help="show variable ownership across the clan",
-        epilog=(
-            """
-This subcommand displays variable ownership across shared, per-machine, and per-export scopes.
-
-Examples:
-
-  $ clan vars show
-  Show all variables with their scopes and values in tree format.
-
-  $ clan vars show --shared
-  Show only shared variables.
-
-  $ clan vars show --user alice
-  Show variables that user "alice" has access to.
-
-  $ clan vars show --machine server1
-  Show variables that machine "server1" has access to.
-        """
-        ),
-        formatter_class=HelpFormatter,
-    )
-    register_show_parser(show_parser)
