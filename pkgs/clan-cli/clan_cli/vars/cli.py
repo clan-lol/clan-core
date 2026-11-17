@@ -276,14 +276,14 @@ Examples:
         help="show variable ownership across the clan",
         epilog=(
             """
-This subcommand displays variable ownership across shared, per-user, and per-machine scopes.
+This subcommand displays variable ownership across shared, per-machine, and per-export scopes.
 
 Examples:
 
   $ clan vars show
   Show all variables with their scopes and values in tree format.
 
-  $ clan vars show --scope shared
+  $ clan vars show --shared
   Show only shared variables.
 
   $ clan vars show --user alice
@@ -293,6 +293,6 @@ Examples:
   Show variables that machine "server1" has access to.
         """
         ),
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=HelpFormatter,
     )
     register_show_parser(show_parser)

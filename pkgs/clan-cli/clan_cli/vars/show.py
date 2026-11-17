@@ -27,8 +27,8 @@ def get_vars_data(flake_path: Path, capture_access: bool = False) -> dict[str, A
     vars_dir = flake_path / "vars"
     vars_data: dict[str, Any] = {
         "shared": {},
-        "per-user": defaultdict(dict),
         "per-machine": defaultdict(dict),
+        "per-export": defaultdict(dict),
     }
 
     if not vars_dir.exists():
@@ -38,20 +38,20 @@ def get_vars_data(flake_path: Path, capture_access: bool = False) -> dict[str, A
     if shared_dir.exists():
         vars_data["shared"] = scan_vars_dir(shared_dir, capture_access)
 
-    per_user_dir = vars_dir / "per-user"
-    if per_user_dir.exists():
-        for user_dir in per_user_dir.iterdir():
-            if user_dir.is_dir():
-                vars_data["per-user"][user_dir.name] = scan_vars_dir(
-                    user_dir, capture_access
-                )
-
     per_machine_dir = vars_dir / "per-machine"
     if per_machine_dir.exists():
         for machine_dir in per_machine_dir.iterdir():
             if machine_dir.is_dir():
                 vars_data["per-machine"][machine_dir.name] = scan_vars_dir(
                     machine_dir, capture_access
+                )
+
+    per_export_dir = vars_dir / "per-export"
+    if per_export_dir.exists():
+        for export_dir in per_export_dir.iterdir():
+            if export_dir.is_dir():
+                vars_data["per-export"][export_dir.name] = scan_vars_dir(
+                    export_dir, capture_access
                 )
 
     return vars_data
@@ -132,71 +132,68 @@ def scan_vars_dir(directory: Path, capture_access: bool = False) -> dict[str, An
     return vars_dict
 
 
+def filter_by_access(vars_dict: dict, kind: str, name: str) -> dict:
+    """Keep the vars that give `name` access. `kind` is "users" or "machines"."""
+    return {
+        var_name: var_info
+        for var_name, var_info in vars_dict.items()
+        if name in var_info.get(kind, [])
+    }
+
+
+def filter_scope_by_access(scope: dict, kind: str, name: str) -> dict:
+    """Filter every entry of a scope by access and drop the entries left empty."""
+    filtered = {}
+    for entry, entry_vars in scope.items():
+        accessible = filter_by_access(entry_vars, kind, name)
+        if accessible:
+            filtered[entry] = accessible
+    return filtered
+
+
 def apply_filters(vars_data: dict, args: argparse.Namespace) -> dict:
     """Apply filters to vars data."""
     filtered = {
         "shared": vars_data["shared"],
-        "per-user": vars_data["per-user"],
         "per-machine": vars_data["per-machine"],
+        "per-export": vars_data["per-export"],
     }
 
     # Filter by --shared flag
     if getattr(args, "shared", False):
-        filtered["per-user"] = {}
         filtered["per-machine"] = {}
+        filtered["per-export"] = {}
 
     # Filter vars by specific user
     if hasattr(args, "user") and args.user:
-        # Filter per-user vars to only show that user's directory
-        filtered["per-user"] = {
-            k: v for k, v in filtered["per-user"].items() if k == args.user
-        }
-
-        # Filter shared vars to only show those the user has access to
-        if filtered["shared"]:
-            filtered["shared"] = {
-                var_name: var_info
-                for var_name, var_info in filtered["shared"].items()
-                if "users" in var_info and args.user in var_info["users"]
-            }
-
-        # Filter per-machine vars to only show those the user has access to
-        filtered_machines = {}
-        for machine_name, machine_vars in filtered["per-machine"].items():
-            filtered_machine_vars = {
-                var_name: var_info
-                for var_name, var_info in machine_vars.items()
-                if "users" in var_info and args.user in var_info["users"]
-            }
-            if filtered_machine_vars:
-                filtered_machines[machine_name] = filtered_machine_vars
-        filtered["per-machine"] = filtered_machines
+        filtered["shared"] = filter_by_access(filtered["shared"], "users", args.user)
+        filtered["per-machine"] = filter_scope_by_access(
+            filtered["per-machine"], "users", args.user
+        )
+        filtered["per-export"] = filter_scope_by_access(
+            filtered["per-export"], "users", args.user
+        )
 
     # Filter by specific machine (shows vars the machine has access to)
     if hasattr(args, "machine") and args.machine:
-        # Filter shared vars to only show those the machine has access to
-        if filtered["shared"]:
-            filtered["shared"] = {
-                var_name: var_info
-                for var_name, var_info in filtered["shared"].items()
-                if "machines" in var_info and args.machine in var_info["machines"]
-            }
+        filtered["shared"] = filter_by_access(
+            filtered["shared"], "machines", args.machine
+        )
 
-        # Filter per-machine vars to show the specific machine and vars it has access to in other machines
+        # Show the machine's own vars in full, plus vars of other machines it can read
         filtered_machines = {}
         for machine_name, machine_vars in filtered["per-machine"].items():
             if machine_name == args.machine:
-                # Include all vars for this specific machine
                 filtered_machines[machine_name] = machine_vars
-            else:
-                # For other machines, only include vars this machine has access to
-                filtered_machine_vars = {}
-                for var_name, var_info in machine_vars.items():
-                    if "machines" in var_info and args.machine in var_info["machines"]:
-                        filtered_machine_vars[var_name] = var_info
-                if filtered_machine_vars:
-                    filtered_machines[machine_name] = filtered_machine_vars
+                continue
+            accessible = filter_by_access(machine_vars, "machines", args.machine)
+            if accessible:
+                filtered_machines[machine_name] = accessible
         filtered["per-machine"] = filtered_machines
+
+        filtered["per-export"] = filter_scope_by_access(
+            filtered["per-export"], "machines", args.machine
+        )
 
     return filtered
 
@@ -213,38 +210,34 @@ def print_tree(vars_data: dict, filters: str = "") -> None:
         print(f"\n{colored('Shared', YELLOW)}")
         print_vars_tree(vars_data["shared"], indent="  ")
 
-    # Per-user vars
-    if vars_data["per-user"]:
-        has_content = True
-        print(f"\n{colored('Per-User', YELLOW)}")
-        users_list = sorted(vars_data["per-user"].items())
-        for i, (user, user_vars) in enumerate(users_list):
-            is_last = i == len(users_list) - 1
-            branch, prefix = tree_branch(is_last)
-            print(f"  {branch}{colored(user, GREEN)}")
-            if user_vars:
-                print_vars_tree(user_vars, indent=prefix)
-            else:
-                child_branch, _ = tree_branch(True)
-                print(f"{prefix}{child_branch}{dim('(no vars)')}")
-
     # Per-machine vars
     if vars_data["per-machine"]:
         has_content = True
         print(f"\n{colored('Per-Machine', YELLOW)}")
-        machines_list = sorted(vars_data["per-machine"].items())
-        for i, (machine, machine_vars) in enumerate(machines_list):
-            is_last = i == len(machines_list) - 1
-            branch, prefix = tree_branch(is_last)
-            print(f"  {branch}{colored(machine, BLUE)}")
-            if machine_vars:
-                print_vars_tree(machine_vars, indent=prefix)
-            else:
-                child_branch, _ = tree_branch(True)
-                print(f"{prefix}{child_branch}{dim('(no vars)')}")
+        print_scope_tree(vars_data["per-machine"], BLUE)
+
+    # Per-export vars
+    if vars_data["per-export"]:
+        has_content = True
+        print(f"\n{colored('Per-Export', YELLOW)}")
+        print_scope_tree(vars_data["per-export"], GREEN)
 
     if not has_content:
         print(dim("  No vars found"))
+
+
+def print_scope_tree(scope: dict, name_color: str) -> None:
+    """Print one scope: every entry with its vars below it."""
+    entries = sorted(scope.items())
+    for i, (entry, entry_vars) in enumerate(entries):
+        is_last = i == len(entries) - 1
+        branch, prefix = tree_branch(is_last)
+        print(f"  {branch}{colored(entry, name_color)}")
+        if entry_vars:
+            print_vars_tree(entry_vars, indent=prefix)
+        else:
+            child_branch, _ = tree_branch(True)
+            print(f"{prefix}{child_branch}{dim('(no vars)')}")
 
 
 def print_vars_tree(vars_dict: dict, indent: str = "") -> None:
