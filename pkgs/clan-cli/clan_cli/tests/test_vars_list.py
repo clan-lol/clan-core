@@ -73,17 +73,17 @@ def test_vars_list_covers_every_placement(
     assert "Per-Machine" in out
     assert "Per-Export" in out
     # A shared public var is deployed to every machine that declares it
-    assert "○ cert  deploy → jon" in out
-    assert "● key   no deploy" in out
+    assert "○ cert  (jon)" in out
+    assert "● key   no-deploy" in out
     # per-machine scope, grouped by machine and generator, without the machine
     assert "jon" in out
-    assert "○ ssid      deploy" in out
-    assert "● password  deploy" in out
-    assert "password  deploy → jon" not in out
+    assert "○ ssid" in out
+    assert "● password" in out
+    assert "(jon)" not in out.split("Per-Machine")[1].split("Per-Export")[0]
     # per-export scope, keyed by the export key
     assert "zerotier:default:controller:jon" in out
-    assert "○ id     no deploy" in out
-    assert "● token  deploy → jon" in out
+    assert "○ id     no-deploy" in out
+    assert "● token  (jon)" in out
     # no value is ever printed, public or secret
     assert "home-network" not in out
     assert "0123456789abcdef" not in out

@@ -85,8 +85,8 @@ Examples:
             f"""
 Without a machine this subcommand lists every var of the clan as a tree,
 grouped into the scopes `shared`, `per-machine` and `per-export`.
-Each var shows whether it is secret or public, whether it is deployed and to
-which machines, and whether it is generated yet. No value is printed.
+Each var shows whether it is secret or public, where it is deployed, and
+whether it is generated yet. No value is printed.
 The deploy state is declared in the module, it is not checked on the machine.
 
 With a machine this subcommand lists all vars of that machine.

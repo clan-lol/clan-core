@@ -70,30 +70,30 @@ clan vars list
 The vars are grouped into the scopes `shared`, `per-machine` and `per-export`:
 
 ```console
-● secret  ○ public  deploy: declared in the module, not checked on the machine
+● secret  ○ public  (machines) = where the var is deployed, as declared in the module, not checked on the machine
 
 Shared
 └── root-ca
-    ├── ○ cert  deploy → jon, sara
-    └── ● key   no deploy
+    ├── ○ cert  (jon, sara)
+    └── ● key   no-deploy
 
 Per-Machine
 └── jon
     └── wifi
-        ├── ● password  deploy
-        └── ○ ssid      deploy
+        ├── ● password
+        └── ○ ssid
 ```
 
 This listing answers 3 questions per var:
 
 - Is it secret (`●`) or public (`○`)?
-- Is it deployed, and to which machines?
+- Where is it deployed? A var that goes nowhere is marked `no-deploy`.
 - Is it generated already? A missing var is marked `not generated`.
 
 A per-machine var names no machine, because it can only go to the machine it
-sits under. A shared or per-export var names every machine it is deployed to.
+sits under. A shared or per-export var names every machine in parentheses.
 
-`deploy` comes from the option `deploy` of the file in your module.
+The deploy state comes from the option `deploy` of the file in your module.
 It says where the file should go. It is not a check of the machine.
 
 No value is printed here. Use `clan vars get` to read a value.

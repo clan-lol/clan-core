@@ -119,10 +119,10 @@ def test_render_groups_every_placement() -> None:
     # The legend says that the deploy state is declared, not measured
     assert "not checked on the machine" in out
     # A per-machine var leaves the machine out, the tree already shows it
-    assert "● password  deploy" in out
-    assert "password  deploy → jon" not in out
+    assert "● password" in out
+    assert "(jon)" not in out.split("Per-Machine")[1]
     # A shared var names every machine it is deployed to
-    assert "○ cert  deploy → jon" in out
+    assert "○ cert  (jon)" in out
     # No value is ever printed
     assert "CA-CERT" not in out
     assert "0123" not in out
@@ -157,8 +157,8 @@ def test_render_marks_vars_that_are_not_generated() -> None:
 
     out = "\n".join(list_mod.render_clan_vars(generators))
 
-    assert "ssid      deploy  not generated" in out
-    assert "password  deploy  not generated" in out
+    assert "ssid      not generated" in out
+    assert "password  not generated" in out
 
 
 @pytest.mark.usefixtures("no_color")
@@ -184,7 +184,7 @@ def test_render_marks_vars_without_deploy_target() -> None:
 
     out = "\n".join(list_mod.render_clan_vars(generators))
 
-    assert "● key  no deploy" in out
+    assert "● key  no-deploy" in out
     # A var that is not deployed names no machine
     assert "jon" not in out
 
@@ -225,8 +225,8 @@ def test_render_never_prints_a_value() -> None:
     out = "\n".join(list_mod.render_clan_vars(generators))
 
     assert "line1" not in out
-    assert "○ text  deploy" in out
-    assert "○ blob  deploy" in out
+    assert out.endswith("○ text")
+    assert "○ blob\n" in out
 
 
 @pytest.mark.usefixtures("no_color")

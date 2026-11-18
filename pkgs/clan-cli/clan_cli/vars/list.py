@@ -21,7 +21,8 @@ PUBLIC_GLYPH = "○"
 
 LEGEND = (
     f"{SECRET_GLYPH} secret  {PUBLIC_GLYPH} public  "
-    "deploy: declared in the module, not checked on the machine"
+    "(machines) = where the var is deployed, as declared in the module, "
+    "not checked on the machine"
 )
 
 
@@ -45,22 +46,24 @@ def describe_var(var: Var, name_width: int, own_machine: bool) -> str:
     generated or not. The value is never printed, use `clan vars get` for it.
 
     `own_machine` says that the var sits under the only machine it can be
-    deployed to. Then the machine name is left out, because the tree shows it.
+    deployed to. Then the deployment is left out, because the tree shows it.
+    Only a var that is not deployed says so.
     """
     glyph = SECRET_GLYPH if var.secret else PUBLIC_GLYPH
     glyph = colored(glyph, AnsiColor.RED if var.secret else AnsiColor.GREEN)
     name = var.name.ljust(name_width)
 
     if not var.deploy:
-        state = colored("no deploy", AnsiColor.YELLOW)
+        state = colored("no-deploy", AnsiColor.YELLOW)
     elif own_machine or not var.machines:
-        state = "deploy"
+        state = ""
     else:
-        state = f"deploy → {', '.join(sorted(var.machines))}"
+        state = f"({', '.join(sorted(var.machines))})"
 
     if not var.exists:
-        state = f"{state}  {colored('not generated', AnsiColor.YELLOW)}"
-    return f"{glyph} {name}  {state}"
+        not_generated = colored("not generated", AnsiColor.YELLOW)
+        state = f"{state}  {not_generated}" if state else not_generated
+    return f"{glyph} {name}  {state}".rstrip()
 
 
 def render_vars(generator: Generator, prefix: str, own_machine: bool) -> list[str]:
