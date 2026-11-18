@@ -67,7 +67,15 @@ def test_render_groups_every_placement() -> None:
         make_generator(
             "root-ca",
             Shared(),
-            [Var(id="root-ca/cert", name="cert", machines=["jon"], secret=False)],
+            [
+                Var(
+                    id="root-ca/cert",
+                    name="cert",
+                    machines=["jon"],
+                    secret=False,
+                    deploy=True,
+                ),
+            ],
             store,
         ),
         make_generator(
@@ -87,7 +95,15 @@ def test_render_groups_every_placement() -> None:
         make_generator(
             "network-id",
             PerExport(exports_key="zt:a"),
-            [Var(id="network-id/id", name="id", machines=[], secret=False)],
+            [
+                Var(
+                    id="network-id/id",
+                    name="id",
+                    machines=[],
+                    secret=False,
+                    deploy=True,
+                ),
+            ],
             store,
         ),
     ]
@@ -100,22 +116,33 @@ def test_render_groups_every_placement() -> None:
     assert "Per-Export" in out
     assert "jon" in out
     assert "zt:a" in out
-    assert "cert CA-CERT" in out
-    # A secret never shows its value, only the machines that receive it
-    assert "password → jon" in out
-    assert "secret" not in out
+    # The legend says that the deploy state is declared, not measured
+    assert "not checked on the machine" in out
+    # A per-machine var leaves the machine out, the tree already shows it
+    assert "● password  deploy" in out
+    assert "password  deploy → jon" not in out
+    # A shared var names every machine it is deployed to
+    assert "○ cert  deploy → jon" in out
+    # No value is ever printed
+    assert "CA-CERT" not in out
+    assert "0123" not in out
 
 
 @pytest.mark.usefixtures("no_color")
 def test_render_marks_vars_that_are_not_generated() -> None:
-    gen_id = GeneratorId(name="wifi", placement=PerMachine(machine="jon"))
     store = FakeStore({})
     generators = [
         make_generator(
             "wifi",
             PerMachine(machine="jon"),
             [
-                Var(id="wifi/ssid", name="ssid", machines=["jon"], secret=False),
+                Var(
+                    id="wifi/ssid",
+                    name="ssid",
+                    machines=["jon"],
+                    secret=False,
+                    deploy=True,
+                ),
                 Var(
                     id="wifi/password",
                     name="password",
@@ -127,16 +154,15 @@ def test_render_marks_vars_that_are_not_generated() -> None:
             store,
         ),
     ]
-    del gen_id
 
     out = "\n".join(list_mod.render_clan_vars(generators))
 
-    assert "ssid <not set>" in out
-    assert "password <not set>" in out
+    assert "ssid      deploy  not generated" in out
+    assert "password  deploy  not generated" in out
 
 
 @pytest.mark.usefixtures("no_color")
-def test_render_marks_secrets_without_deploy_target() -> None:
+def test_render_marks_vars_without_deploy_target() -> None:
     gen_id = GeneratorId(name="ca", placement=Shared())
     store = FakeStore({(gen_id, "key"): b"KEY"})
     generators = [
@@ -158,44 +184,49 @@ def test_render_marks_secrets_without_deploy_target() -> None:
 
     out = "\n".join(list_mod.render_clan_vars(generators))
 
-    assert "key not deployed" in out
+    assert "● key  no deploy" in out
+    # A var that is not deployed names no machine
+    assert "jon" not in out
 
 
 @pytest.mark.usefixtures("no_color")
-def test_render_keeps_a_long_value_on_one_line() -> None:
+def test_render_never_prints_a_value() -> None:
     gen_id = GeneratorId(name="gen", placement=Shared())
-    store = FakeStore({(gen_id, "multi"): b"line1\nline2\nline3"})
+    store = FakeStore(
+        {
+            (gen_id, "text"): b"line1\nline2\nline3",
+            (gen_id, "blob"): b"\x80\x81",
+        },
+    )
     generators = [
         make_generator(
             "gen",
             Shared(),
-            [Var(id="gen/multi", name="multi", machines=[], secret=False)],
-            store,
-        ),
-    ]
-
-    lines = list_mod.render_clan_vars(generators)
-
-    assert "line2" not in "\n".join(lines)
-    assert any(line.endswith("multi line1…") for line in lines)
-
-
-@pytest.mark.usefixtures("no_color")
-def test_render_binary_value_does_not_break_the_tree() -> None:
-    gen_id = GeneratorId(name="gen", placement=Shared())
-    store = FakeStore({(gen_id, "blob"): b"\x80\x81"})
-    generators = [
-        make_generator(
-            "gen",
-            Shared(),
-            [Var(id="gen/blob", name="blob", machines=[], secret=False)],
+            [
+                Var(
+                    id="gen/text",
+                    name="text",
+                    machines=[],
+                    secret=False,
+                    deploy=True,
+                ),
+                Var(
+                    id="gen/blob",
+                    name="blob",
+                    machines=[],
+                    secret=False,
+                    deploy=True,
+                ),
+            ],
             store,
         ),
     ]
 
     out = "\n".join(list_mod.render_clan_vars(generators))
 
-    assert "blob <binary blob>" in out
+    assert "line1" not in out
+    assert "○ text  deploy" in out
+    assert "○ blob  deploy" in out
 
 
 @pytest.mark.usefixtures("no_color")

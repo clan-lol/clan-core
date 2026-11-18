@@ -14,8 +14,15 @@ from clan_lib.vars.var import Var
 # https://no-color.org
 DISABLE_COLOR = not sys.stdout.isatty() or os.environ.get("NO_COLOR", "") != ""
 
-# Longest value printed on one line. A longer value is cut.
-MAX_VALUE_WIDTH = 60
+# Marks a secret var. A filled circle reads as "closed".
+SECRET_GLYPH = "●"  # noqa: S105 - a glyph, not a credential
+# Marks a public var. An empty circle reads as "open".
+PUBLIC_GLYPH = "○"
+
+LEGEND = (
+    f"{SECRET_GLYPH} secret  {PUBLIC_GLYPH} public  "
+    "deploy: declared in the module, not checked on the machine"
+)
 
 
 def colored(text: str, fg: AnsiColor) -> str:
@@ -31,63 +38,65 @@ def tree_branch(is_last: bool) -> tuple[str, str]:
     return "├── ", "│   "
 
 
-def one_line(value: str) -> str:
-    """Return `value` as one short line, so that it fits into the tree.
+def describe_var(var: Var, name_width: int, own_machine: bool) -> str:
+    """Return one line that describes a var.
 
-    A generator usually writes a trailing newline. That newline is not content,
-    so it never counts as cut.
+    A var has 3 states that matter: secret or public, deployed or not, and
+    generated or not. The value is never printed, use `clan vars get` for it.
+
+    `own_machine` says that the var sits under the only machine it can be
+    deployed to. Then the machine name is left out, because the tree shows it.
     """
-    text = value.rstrip("\n")
-    first_line = text.split("\n", 1)[0]
-    cut = len(first_line) < len(text)
-    if len(first_line) > MAX_VALUE_WIDTH:
-        first_line = first_line[:MAX_VALUE_WIDTH]
-        cut = True
-    return first_line + "…" if cut else first_line
+    glyph = SECRET_GLYPH if var.secret else PUBLIC_GLYPH
+    glyph = colored(glyph, AnsiColor.RED if var.secret else AnsiColor.GREEN)
+    name = var.name.ljust(name_width)
 
-
-def describe_var(var: Var) -> str:
-    """Return the name of a var and what is known about its content."""
-    name = colored(var.name, AnsiColor.RED if var.secret else AnsiColor.MAGENTA)
-    if not var.exists:
-        return f"{name} <not set>"
-    if not var.secret:
-        return f"{name} {one_line(var.printable_value)}"
     if not var.deploy:
-        return f"{name} {colored('not deployed', AnsiColor.CYAN)}"
-    receivers = ", ".join(sorted(var.machines))
-    return f"{name} {colored(f'→ {receivers}', AnsiColor.CYAN)}"
+        state = colored("no deploy", AnsiColor.YELLOW)
+    elif own_machine or not var.machines:
+        state = "deploy"
+    else:
+        state = f"deploy → {', '.join(sorted(var.machines))}"
+
+    if not var.exists:
+        state = f"{state}  {colored('not generated', AnsiColor.YELLOW)}"
+    return f"{glyph} {name}  {state}"
 
 
-def render_vars(generator: Generator, prefix: str) -> list[str]:
+def render_vars(generator: Generator, prefix: str, own_machine: bool) -> list[str]:
     """Render the vars of one generator."""
     lines = []
     files = sorted(generator.files, key=lambda var: var.name)
+    name_width = max((len(var.name) for var in files), default=0)
     for i, var in enumerate(files):
         branch, _ = tree_branch(i == len(files) - 1)
-        lines.append(f"{prefix}{branch}{describe_var(var)}")
+        lines.append(f"{prefix}{branch}{describe_var(var, name_width, own_machine)}")
     return lines
 
 
-def render_generators(generators: list[Generator], prefix: str) -> list[str]:
+def render_generators(
+    generators: list[Generator],
+    prefix: str,
+    own_machine: bool,
+) -> list[str]:
     """Render generators with their vars below them."""
     lines = []
     ordered = sorted(generators, key=lambda generator: generator.name)
     for i, generator in enumerate(ordered):
         branch, child_prefix = tree_branch(i == len(ordered) - 1)
         lines.append(f"{prefix}{branch}{colored(generator.name, AnsiColor.BLUE)}")
-        lines.extend(render_vars(generator, prefix + child_prefix))
+        lines.extend(render_vars(generator, prefix + child_prefix, own_machine))
     return lines
 
 
-def render_scope(scope: dict[str, list[Generator]]) -> list[str]:
+def render_scope(scope: dict[str, list[Generator]], own_machine: bool) -> list[str]:
     """Render one scope: every machine or export key with its generators."""
     lines = []
     entries = sorted(scope.items())
     for i, (entry, generators) in enumerate(entries):
         branch, child_prefix = tree_branch(i == len(entries) - 1)
         lines.append(f"{branch}{colored(entry, AnsiColor.GREEN)}")
-        lines.extend(render_generators(generators, child_prefix))
+        lines.extend(render_generators(generators, child_prefix, own_machine))
     return lines
 
 
@@ -107,18 +116,18 @@ def render_clan_vars(generators: list[Generator]) -> list[str]:
             per_export.setdefault(placement.exports_key, []).append(generator)
 
     blocks = [
-        ("Shared", render_generators(shared, "")),
-        ("Per-Machine", render_scope(per_machine)),
-        ("Per-Export", render_scope(per_export)),
+        ("Shared", render_generators(shared, "", own_machine=False)),
+        # A per-machine var can only be deployed to the machine it sits under
+        ("Per-Machine", render_scope(per_machine, own_machine=True)),
+        ("Per-Export", render_scope(per_export, own_machine=False)),
     ]
     blocks = [(title, body) for title, body in blocks if body]
     if not blocks:
         return ["No vars found"]
 
-    lines: list[str] = []
-    for i, (title, body) in enumerate(blocks):
-        if i:
-            lines.append("")
+    lines: list[str] = [colored(LEGEND, AnsiColor.CYAN)]
+    for title, body in blocks:
+        lines.append("")
         lines.append(colored(title, AnsiColor.YELLOW))
         lines.extend(body)
     return lines

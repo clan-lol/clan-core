@@ -72,18 +72,21 @@ def test_vars_list_covers_every_placement(
     assert "Shared" in out
     assert "Per-Machine" in out
     assert "Per-Export" in out
-    # shared public var with its value, shared secret with its receiver
-    assert "cert CA-CERT-BODY" in out
-    assert "key not deployed" in out
-    # per-machine scope, grouped by machine and generator
+    # A shared public var is deployed to every machine that declares it
+    assert "○ cert  deploy → jon" in out
+    assert "● key   no deploy" in out
+    # per-machine scope, grouped by machine and generator, without the machine
     assert "jon" in out
-    assert "ssid home-network" in out
-    assert "password → jon" in out
+    assert "○ ssid      deploy" in out
+    assert "● password  deploy" in out
+    assert "password  deploy → jon" not in out
     # per-export scope, keyed by the export key
     assert "zerotier:default:controller:jon" in out
-    assert "id 0123456789abcdef" in out
-    assert "token → jon" in out
-    # no secret value is ever printed
+    assert "○ id     no deploy" in out
+    assert "● token  deploy → jon" in out
+    # no value is ever printed, public or secret
+    assert "home-network" not in out
+    assert "0123456789abcdef" not in out
     assert "s3cret" not in out
     assert "api-token" not in out
     assert "CA-KEY-BODY" not in out
