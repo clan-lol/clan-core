@@ -74,13 +74,14 @@ The vars are grouped into the scopes `shared`, `per-machine` and `per-export`:
 
 Shared
 └── root-ca
-    ├── ○ cert  (jon, sara)
-    └── ● key   no-deploy
+    ├── ○ cert          (jon, sara)
+    └── ● key           no-deploy
 
 Per-Machine
 └── jon
     └── wifi
         ├── ● password
+        ├── ● seed      no-deploy    not generated
         └── ○ ssid
 ```
 
@@ -89,6 +90,9 @@ This listing answers 3 questions per var:
 - Is it secret (`●`) or public (`○`)?
 - Where is it deployed? A var that goes nowhere is marked `no-deploy`.
 - Is it generated already? A missing var is marked `not generated`.
+
+Every column starts at the same position in the whole tree, so you can scan
+one column from top to bottom.
 
 A per-machine var names no machine, because it can only go to the machine it
 sits under. A shared or per-export var names every machine in parentheses.

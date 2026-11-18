@@ -122,7 +122,7 @@ def test_render_groups_every_placement() -> None:
     assert "● password" in out
     assert "(jon)" not in out.split("Per-Machine")[1]
     # A shared var names every machine it is deployed to
-    assert "○ cert  (jon)" in out
+    assert any("○ cert" in line and line.endswith("(jon)") for line in lines)
     # No value is ever printed
     assert "CA-CERT" not in out
     assert "0123" not in out
@@ -155,10 +155,11 @@ def test_render_marks_vars_that_are_not_generated() -> None:
         ),
     ]
 
-    out = "\n".join(list_mod.render_clan_vars(generators))
-
-    assert "ssid      not generated" in out
-    assert "password  not generated" in out
+    lines = list_mod.render_clan_vars(generators)
+    assert any("○ ssid" in line and line.endswith("not generated") for line in lines)
+    assert any(
+        "● password" in line and line.endswith("not generated") for line in lines
+    )
 
 
 @pytest.mark.usefixtures("no_color")
@@ -182,9 +183,10 @@ def test_render_marks_vars_without_deploy_target() -> None:
         ),
     ]
 
-    out = "\n".join(list_mod.render_clan_vars(generators))
+    lines = list_mod.render_clan_vars(generators)
+    out = "\n".join(lines)
 
-    assert "● key  no-deploy" in out
+    assert any("● key" in line and line.endswith("no-deploy") for line in lines)
     # A var that is not deployed names no machine
     assert "jon" not in out
 
@@ -227,6 +229,50 @@ def test_render_never_prints_a_value() -> None:
     assert "line1" not in out
     assert out.endswith("○ text")
     assert "○ blob\n" in out
+
+
+@pytest.mark.usefixtures("no_color")
+def test_render_aligns_the_columns_across_every_scope() -> None:
+    """`no-deploy` starts at the same column in every row of the whole tree."""
+    store = FakeStore({})
+    generators = [
+        make_generator(
+            "root-ca",
+            Shared(),
+            [Var(id="root-ca/key", name="key", machines=["jon"], secret=True)],
+            store,
+        ),
+        make_generator(
+            "a-very-long-generator-name",
+            PerMachine(machine="jon"),
+            [
+                Var(
+                    id="a-very-long-generator-name/a-very-long-file-name",
+                    name="a-very-long-file-name",
+                    machines=["jon"],
+                    secret=True,
+                ),
+            ],
+            store,
+        ),
+        make_generator(
+            "network-id",
+            PerExport(exports_key="zt:a"),
+            [Var(id="network-id/id", name="id", machines=[], secret=False)],
+            store,
+        ),
+    ]
+
+    lines = list_mod.render_clan_vars(generators)
+
+    deploy_columns = {line.index("no-deploy") for line in lines if "no-deploy" in line}
+    assert len(deploy_columns) == 1
+    state_columns = {
+        line.index("not generated") for line in lines if "not generated" in line
+    }
+    assert len(state_columns) == 1
+    # 3 scopes, 3 generators, 3 vars
+    assert len([line for line in lines if "no-deploy" in line]) == 3
 
 
 @pytest.mark.usefixtures("no_color")

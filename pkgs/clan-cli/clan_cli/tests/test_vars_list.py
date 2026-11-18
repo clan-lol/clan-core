@@ -68,22 +68,25 @@ def test_vars_list_covers_every_placement(
     capsys.readouterr()
     cli.run(["vars", "list", "--flake", str(flake.path)])
     out = ANSI.sub("", capsys.readouterr().out)
+    lines = out.split("\n")
 
     assert "Shared" in out
     assert "Per-Machine" in out
     assert "Per-Export" in out
     # A shared public var is deployed to every machine that declares it
-    assert "○ cert  (jon)" in out
-    assert "● key   no-deploy" in out
+    assert any("○ cert" in line and line.endswith("(jon)") for line in lines)
+    assert any("● key" in line and line.endswith("no-deploy") for line in lines)
     # per-machine scope, grouped by machine and generator, without the machine
     assert "jon" in out
-    assert "○ ssid" in out
-    assert "● password" in out
+    assert any(line.endswith("○ ssid") for line in lines)
+    assert any(line.endswith("● password") for line in lines)
     assert "(jon)" not in out.split("Per-Machine")[1].split("Per-Export")[0]
     # per-export scope, keyed by the export key
     assert "zerotier:default:controller:jon" in out
-    assert "○ id     no-deploy" in out
-    assert "● token  (jon)" in out
+    assert any("○ id" in line and line.endswith("no-deploy") for line in lines)
+    assert any("● token" in line and line.endswith("(jon)") for line in lines)
+    # every no-deploy starts at the same column
+    assert len({line.index("no-deploy") for line in lines if "no-deploy" in line}) == 1
     # no value is ever printed, public or secret
     assert "home-network" not in out
     assert "0123456789abcdef" not in out
