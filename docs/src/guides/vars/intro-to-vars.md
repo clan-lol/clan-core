@@ -91,16 +91,7 @@ It shows:
 - What does the config say about where it should be deployed?
 - Is it generated already?
 
-Every column starts at the same position in the whole tree, so you can scan
-one column from top to bottom.
-
-A per-machine var names no machine, because it can only go to the machine it
-sits under. A shared or per-export var names every machine in parentheses.
-
-The deploy state comes from the option `deploy` of the file in your module.
-It says where the file should go. It is not a check of the machine.
-
-No value is printed here. Use `clan vars get` to read a value.
+Use `clan vars get` to read a value.
 
 ## Retrieving a Secret
 
