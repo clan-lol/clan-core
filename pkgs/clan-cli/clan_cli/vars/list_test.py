@@ -116,8 +116,8 @@ def test_render_groups_every_placement() -> None:
     assert "Per-Export" in out
     assert "jon" in out
     assert "zt:a" in out
-    # The legend says that the deploy state is declared, not measured
-    assert "not checked on the machine" in out
+    # The legend explains the parentheses
+    assert "(machines) = where the var will be deployed" in out
     # A per-machine var leaves the machine out, the tree already shows it
     assert "● password" in out
     assert "(jon)" not in out.split("Per-Machine")[1]

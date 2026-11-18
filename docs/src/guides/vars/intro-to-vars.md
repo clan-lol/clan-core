@@ -70,7 +70,7 @@ clan vars list
 The vars are grouped into the scopes `shared`, `per-machine` and `per-export`:
 
 ```console
-● secret  ○ public  (machines) = where the var is deployed, as declared in the module, not checked on the machine
+● secret  ○ public  (machines) = where the var will be deployed
 
 Shared
 └── root-ca
@@ -85,11 +85,11 @@ Per-Machine
         └── ○ ssid
 ```
 
-This listing answers 3 questions per var:
+It shows:
 
 - Is it secret (`●`) or public (`○`)?
-- Where is it deployed? A var that goes nowhere is marked `no-deploy`.
-- Is it generated already? A missing var is marked `not generated`.
+- What does the config say about where it should be deployed?
+- Is it generated already?
 
 Every column starts at the same position in the whole tree, so you can scan
 one column from top to bottom.

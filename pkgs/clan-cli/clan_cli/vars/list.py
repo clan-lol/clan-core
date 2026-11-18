@@ -22,8 +22,7 @@ PUBLIC_GLYPH = "○"
 
 LEGEND = (
     f"{SECRET_GLYPH} secret  {PUBLIC_GLYPH} public  "
-    "(machines) = where the var is deployed, as declared in the module, "
-    "not checked on the machine"
+    "(machines) = where the var will be deployed"
 )
 
 # Space between 2 columns.
