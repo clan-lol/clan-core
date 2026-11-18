@@ -80,11 +80,16 @@ Examples:
 
     list_parser = subparser.add_parser(
         "list",
-        help="list all vars",
+        help="list vars of the clan or of one machine",
         epilog=(
             f"""
-This subcommand allows listing all non-secret vars for a specific machine.
+Without a machine this subcommand lists every var of the clan as a tree,
+grouped into the scopes `shared`, `per-machine` and `per-export`.
+Each var shows whether it is secret or public, where it is deployed, and
+whether it is generated yet. No value is printed.
+The deploy state is declared in the module, it is not checked on the machine.
 
+With a machine this subcommand lists all vars of that machine.
 The resulting list will be strings terminated by newlines as key-value pairs separated by a space.
 
 This is how an example output might look like:
@@ -94,6 +99,9 @@ This is how an example output might look like:
 ```
 
 Examples:
+
+  $ clan vars list
+  Will list all vars of the clan as a tree.
 
   $ clan vars list [MACHINE]
   Will list vars for the specified machine.

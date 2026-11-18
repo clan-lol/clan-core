@@ -1,7 +1,10 @@
 import logging
 
+from clan_lib.flake import Flake
+from clan_lib.machines.actions import list_machines
 from clan_lib.machines.machines import Machine
-from clan_lib.vars.generator import Var, get_machine_generators
+from clan_lib.vars.generate import get_flake_generators
+from clan_lib.vars.generator import Generator, Var, get_machine_generators
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +36,32 @@ def get_machine_vars(machine: Machine) -> list[Var]:
             var.generator(generator)
             all_vars.append(var)
     return all_vars
+
+
+def get_clan_generators(flake: Flake) -> list[Generator]:
+    """Get all generators of a clan.
+
+    This covers every placement: shared, per-machine and per-export.
+
+    Every var is bound to the store that holds it, so callers can read
+    `var.exists` and `var.printable_value` without knowing which secret
+    backend the clan uses.
+
+    Args:
+        flake: The clan to get the generators from.
+
+    Returns:
+        List of all generators of the clan.
+
+    """
+    generators = get_machine_generators(list(list_machines(flake)), flake)
+    generators.extend(get_flake_generators(flake).values())
+
+    for generator in generators:
+        for var in generator.files:
+            var.store(generator.store_for(var))
+            var.generator(generator)
+    return generators
 
 
 def stringify_all_vars(machine: Machine) -> str:

@@ -61,6 +61,38 @@ openssh/ssh.id_ed25519.pub ssh-ed25519 AAAA...
 
 Secret values are hidden with `********`.
 
+To see every var of the clan, leave the machine out:
+
+```bash
+clan vars list
+```
+
+The vars are grouped into the scopes `shared`, `per-machine` and `per-export`:
+
+```console
+● secret  ○ public  (machines) = where the var will be deployed
+
+Shared
+└── root-ca
+    ├── ○ cert          (jon, sara)
+    └── ● key           no-deploy
+
+Per-Machine
+└── jon
+    └── wifi
+        ├── ● password
+        ├── ● seed      no-deploy    not generated
+        └── ○ ssid
+```
+
+It shows:
+
+- Is it secret (`●`) or public (`○`)?
+- What does the config say about where it should be deployed?
+- Is it generated already?
+
+Use `clan vars get` to read a value.
+
 ## Retrieving a Secret
 
 To see the actual value of a secret:
@@ -119,6 +151,7 @@ vars/
 | `clan vars generate <machine>` | Generate all missing vars |
 | `clan vars generate <machine> --regenerate` | Regenerate all vars (even existing ones) |
 | `clan vars list <machine>` | List all vars for a machine |
+| `clan vars list` | List all vars of the clan as a tree |
 | `clan vars get <machine> <var-id>` | Show a specific var's value |
 
 ## The Age Key
