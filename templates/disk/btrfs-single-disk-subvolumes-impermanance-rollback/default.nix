@@ -1,7 +1,6 @@
 { config, ... }:
 let
-  # Adjust, to match the partition's priority.
-  rootPartition = "${config.disko.devices.disk."main".device}-part3";
+  rootPartition = config.disko.devices.disk.main.content.partitions.root.device;
 in
 {
   boot.loader.grub = {
@@ -21,12 +20,10 @@ in
             "boot" = {
               size = "1M";
               type = "EF02"; # for grub MBR
-              priority = 1;
             };
             "ESP" = {
               type = "EF00";
               size = "500M";
-              priority = 2;
               content = {
                 type = "filesystem";
                 format = "vfat";
@@ -34,9 +31,15 @@ in
                 mountOptions = [ "umask=0077" ];
               };
             };
+            #"swap" = {
+            #  size = "8G"; # adjust
+            #  content = {
+            #    type = "swap";
+            #    discardPolicy = "both";
+            #  };
+            #};
             "root" = {
               size = "100%";
-              priority = 3;
               content = {
                 type = "btrfs";
                 extraArgs = [
@@ -66,13 +69,6 @@ in
                 };
               };
             };
-            #"swap" = {
-            #  size = "8G"; # adjust
-            #  content = {
-            #    type = "swap";
-            #    discardPolicy = "both";
-            #  };
-            #};
           };
         };
       };
